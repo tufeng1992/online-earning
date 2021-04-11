@@ -1,0 +1,219 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.powerboot.dao.PayDao">
+
+	<select id="get" resultType="com.powerboot.domain.PayDO">
+		select `id`,`user_id`,`type`,`amount`,`status`,`third_no`,`third_status`,
+		`third_callback_time`,`order_no`,`create_time`,`update_time`,`pay_channel`,`pay_channel_branch`,`third_url`
+		,`ref_no`,`request_time`,`third_response`,`apply_status`
+		from pay where id = #{value}
+	</select>
+
+	<select id="list" resultType="com.powerboot.domain.PayDO">
+		select `id`,`user_id`,`type`,`amount`,`status`,`third_no`,`third_status`,`third_callback_time`,`order_no`,`create_time`,`update_time`
+		,`pay_channel`,`pay_channel_branch`,`third_url`
+		,`ref_no`,`request_time`,`third_response`,`apply_status`
+		 from pay
+        <where>  
+		  		  <if test="id != null and id != ''"> and id = #{id} </if>
+		  		  <if test="userId != null and userId != ''"> and user_id = #{userId} </if>
+		  		  <if test="type != null and type != ''"> and type = #{type} </if>
+		  		  <if test="amount != null and amount != ''"> and amount = #{amount} </if>
+		  		  <if test="status != null and status != ''"> and status = #{status} </if>
+		  		  <if test="thirdNo != null and thirdNo != ''"> and third_no = #{thirdNo} </if>
+		  		  <if test="thirdStatus != null and thirdStatus != ''"> and third_status = #{thirdStatus} </if>
+		  		  <if test="thirdCallbackTime != null and thirdCallbackTime != ''"> and third_callback_time = #{thirdCallbackTime} </if>
+		  		  <if test="orderNo != null and orderNo != ''"> and order_no = #{orderNo} </if>
+		  		  <if test="createTime != null and createTime != ''"> and create_time = #{createTime} </if>
+		  		  <if test="updateTime != null and updateTime != ''"> and update_time = #{updateTime} </if>
+		  		</where>
+        <choose>
+            <when test="sort != null and sort.trim() != ''">
+                order by ${sort} ${order}
+            </when>
+			<otherwise>
+                order by id desc
+			</otherwise>
+        </choose>
+		<if test="offset != null and limit != null">
+			limit #{offset}, #{limit}
+		</if>
+	</select>
+	
+ 	<select id="count" resultType="int">
+		select count(*) from pay
+		 <where>  
+		  		  <if test="id != null and id != ''"> and id = #{id} </if>
+		  		  <if test="userId != null and userId != ''"> and user_id = #{userId} </if>
+		  		  <if test="type != null and type != ''"> and type = #{type} </if>
+		  		  <if test="amount != null and amount != ''"> and amount = #{amount} </if>
+		  		  <if test="status != null and status != ''"> and status = #{status} </if>
+		  		  <if test="thirdNo != null and thirdNo != ''"> and third_no = #{thirdNo} </if>
+		  		  <if test="thirdStatus != null and thirdStatus != ''"> and third_status = #{thirdStatus} </if>
+		  		  <if test="thirdCallbackTime != null and thirdCallbackTime != ''"> and third_callback_time = #{thirdCallbackTime} </if>
+		  		  <if test="orderNo != null and orderNo != ''"> and order_no = #{orderNo} </if>
+		  		  <if test="createTime != null and createTime != ''"> and create_time = #{createTime} </if>
+		  		  <if test="updateTime != null and updateTime != ''"> and update_time = #{updateTime} </if>
+		  		</where>
+	</select>
+	 
+	<insert id="save" parameterType="com.powerboot.domain.PayDO">
+		<selectKey keyProperty="id" order="AFTER" resultType="java.lang.Long">
+			SELECT LAST_INSERT_ID()
+		</selectKey>
+		insert into pay
+		(
+			`user_id`, 
+			`type`,
+			`amount`,
+			`status`, 
+			`third_no`, 
+			`order_no`,
+			`pay_channel`,
+			`pay_channel_branch`,
+			`third_url`,
+			`ref_no`,
+			`create_time`,
+			`update_time`,
+			`request_time`,
+			`third_response`,
+			`apply_status`,
+			`sale_id`
+		)
+		values
+		(
+			#{userId},
+			#{type},
+			#{amount},
+			#{status}, 
+			#{thirdNo}, 
+			#{orderNo},
+			#{payChannel},
+			#{payChannelBranch},
+			#{thirdUrl},
+			#{refNo},
+			now(),
+			now(),
+			#{requestTime},
+			#{thirdResponse},
+			#{applyStatus},
+			#{saleId}
+		)
+	</insert>
+	 
+	<update id="update" parameterType="com.powerboot.domain.PayDO">
+		update pay 
+		<set>
+			<if test="userId != null">`user_id` = #{userId}, </if>
+			<if test="amount != null">`amount` = #{amount}, </if>
+			<if test="status != null">`status` = #{status}, </if>
+			<if test="thirdNo != null">`third_no` = #{thirdNo}, </if>
+			<if test="thirdStatus != null">`third_status` = #{thirdStatus}, </if>
+			<if test="thirdCallbackTime != null">`third_callback_time` = #{thirdCallbackTime}, </if>
+			<if test="orderNo != null">`order_no` = #{orderNo}, </if>
+			<if test="thirdResponse != null">`third_response` = #{thirdResponse}, </if>
+			<if test="applyStatus != null">`apply_status` = #{applyStatus}, </if>
+			<if test="remark != null">`remark` = #{remark}, </if>
+		</set>
+		where id = #{id}
+	</update>
+
+	<update id="updatePay" parameterType="com.powerboot.domain.PayDO">
+		update pay
+		<set>
+			<if test="userId != null">`user_id` = #{userId}, </if>
+			<if test="amount != null">`amount` = #{amount}, </if>
+			<if test="status != null">`status` = #{status}, </if>
+			<if test="thirdNo != null and thirdNo != ''">`third_no` = #{thirdNo}, </if>
+			<if test="thirdStatus != null">`third_status` = #{thirdStatus}, </if>
+			<if test="thirdCallbackTime != null">`third_callback_time` = #{thirdCallbackTime}, </if>
+			<if test="orderNo != null">`order_no` = #{orderNo}, </if>
+			<if test="thirdResponse != null">`third_response` = #{thirdResponse}, </if>
+			<if test="applyStatus != null">`apply_status` = #{applyStatus}, </if>
+			<if test="remark != null">`remark` = #{remark}, </if>
+		</set>
+		where id = #{id} and `status` = 1
+	</update>
+	
+	<delete id="remove">
+		delete from pay where id = #{value}
+	</delete>
+	
+	<delete id="batchRemove">
+		delete from pay where id in 
+		<foreach item="id" collection="array" open="(" separator="," close=")">
+			#{id}
+		</foreach>
+	</delete>
+
+	<select id="getByOrderNo" resultType="com.powerboot.domain.PayDO">
+		select `id`,`user_id`,`type`,`amount`,`status`,`third_no`,`third_status`,`third_callback_time`,
+		       `order_no`,`create_time`,`update_time`,`third_response`,`apply_status`,
+		       `pay_channel`,`pay_channel_branch`,`third_url`,`ref_no`,`request_time` from pay
+		where order_no = #{orderNo}
+	</select>
+
+	<select id="getByOutNo" resultType="com.powerboot.domain.PayDO">
+		select `id`,`user_id`,`type`,`amount`,`status`,`third_no`,`third_status`,`third_callback_time`,
+		       `order_no`,`create_time`,`update_time`,`pay_channel`,`pay_channel_branch`,`third_url`,`apply_status`,
+		       `ref_no`,`request_time`,`third_response` from pay
+		where third_no = #{thirdNo}
+	</select>
+
+	<select id="getRechargeByUserId" resultType="com.powerboot.domain.PayDO">
+		select `id`,`user_id`,`type`,`amount`,`status`,`third_no`,`third_status`,`third_callback_time`,
+		       `order_no`,`create_time`,`update_time`,`pay_channel`,`pay_channel_branch`,`third_url`,`apply_status`,
+		       `ref_no`,`request_time`,`third_response` from pay
+		where user_id = #{userId}
+		  and type &lt; 99
+		order by id desc
+	</select>
+
+	<select id="getWithdrawByUserId" resultType="com.powerboot.domain.PayDO">
+		select `id`,`user_id`,`type`,`amount`,`status`,`third_no`,`third_status`,`third_callback_time`,
+		       `order_no`,`create_time`,`update_time`,`pay_channel`,`pay_channel_branch`,`third_url`,`apply_status`,
+		       `ref_no`,`request_time`,`third_response` from pay
+		where user_id = #{userId}
+		and type = 99
+		order by id desc
+	</select>
+
+	<select id="getPayinOrder" resultType="com.powerboot.domain.PayDO">
+		select `id`,`user_id`,`type`,`amount`,`status`,`third_no`,`third_status`,`third_callback_time`,
+		       `order_no`,`create_time`,`update_time`,`pay_channel`,`pay_channel_branch`,`third_url`,`apply_status`,
+		       `ref_no`,`request_time`,`third_response` from pay
+		where type &lt; 99
+		  and status = 1 and create_time>=CURRENT_TIMESTAMP - INTERVAL 180 MINUTE and   create_time &lt; CURRENT_TIMESTAMP - INTERVAL 30 MINUTE
+	</select>
+
+	<select id="getCountByTypeStatus" resultType="com.powerboot.response.PayVO">
+		select sum(amount) as amount,count(*) as count
+		from pay
+		where type in
+		<foreach collection="typeList" separator="," open="(" close=")" item="item">
+			#{item}
+		</foreach>
+		<if test="status != null">
+			and status = #{status}
+		</if>
+		<if test="userId != null">
+			and user_id = #{userId}
+		</if>
+		<if test="startDate != null">
+			and create_time &gt;= #{startDate}
+		</if>
+		<if test="endDate != null">
+			and create_time &lt;= #{endDate}
+		</if>
+	</select>
+
+	<update id="timeout">
+		update pay
+		set status = -1
+		where
+		type &lt; 99
+		and status = 1
+		and create_time &lt; #{yesterday}
+	</update>
+</mapper>

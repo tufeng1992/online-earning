@@ -1,0 +1,99 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.powerboot.dao.WithdrawalRecordDao">
+    <sql id="Base_Column_List">
+        `id`,
+        `user_id`,
+        `total_amount`,
+        `change_amount`,
+        `change_tax`,
+        `effective_date`,
+        `count`,
+        `create_time`,
+        `update_time`
+    </sql>
+
+    <select id="getLocalDateSysInfo" resultType="com.powerboot.domain.WithdrawalRecordDO">
+        select
+        <include refid="Base_Column_List"/>
+        FROM `withdrawal_record`
+        where user_id = -1
+        and effective_date = current_date()
+    </select>
+
+    <select id="getSysInfoByDate" resultType="com.powerboot.domain.WithdrawalRecordDO">
+        select
+        <include refid="Base_Column_List"/>
+        FROM `withdrawal_record`
+        where user_id = -1
+        and effective_date = #{date}
+    </select>
+
+    <select id="getInfoByUserIdAndDate" resultType="com.powerboot.domain.WithdrawalRecordDO">
+        select
+        <include refid="Base_Column_List"/>
+        FROM `withdrawal_record`
+        where user_id = #{userId}
+        and effective_date = #{date}
+    </select>
+
+    <select id="getLocalDateInfoByUserId" resultType="com.powerboot.domain.WithdrawalRecordDO">
+        select
+        <include refid="Base_Column_List"/>
+        FROM `withdrawal_record`
+        where user_id = #{userId}
+        and effective_date = current_date()
+    </select>
+
+    <update id="changeAmount" parameterType="com.powerboot.domain.WithdrawalRecordDO">
+        UPDATE `online_earning`.`withdrawal_record`
+        SET
+        `change_amount` = change_amount + #{changeAmount},
+        `change_tax` = change_tax + #{changeTax},
+        `count` = count + 1
+        WHERE `id` = #{id} and count = #{count} and total_amount &gt;= change_amount + #{changeAmount}
+    </update>
+
+    <insert id="initSysData" parameterType="com.powerboot.domain.WithdrawalRecordDO" keyProperty="id"
+            useGeneratedKeys="true">
+        INSERT INTO `withdrawal_record`
+        (
+        `user_id`,
+        `total_amount`,
+        `change_amount`,
+        `effective_date`,
+        `change_tax`
+        )
+        VALUES
+        ('-1',#{totalAmount},#{changeAmount},current_date(),#{changeTax})
+    </insert>
+
+    <insert id="initUserData" parameterType="com.powerboot.domain.WithdrawalRecordDO" keyProperty="id"
+            useGeneratedKeys="true">
+        INSERT INTO `withdrawal_record`
+        (
+        `user_id`,
+        `total_amount`,
+        `change_amount`,
+        `effective_date`,
+        `change_tax`
+        )
+        VALUES
+        (
+        #{userId},
+        #{totalAmount},
+        #{changeAmount},
+        current_date(),
+        #{changeTax}
+        )
+    </insert>
+
+    <update id="rollbackCountById">
+        update `withdrawal_record`
+        set count = count - 1
+        where
+        id = #{id}
+    </update>
+
+</mapper>

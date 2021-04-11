@@ -1,0 +1,146 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.powerboot.dao.FinancialOrderDao">
+
+    <select id="getExpiredOrder" resultType="java.lang.Integer">
+		select `id`
+		from financial_order
+		where order_status = 1 and last_date <![CDATA[ < ]]> now()
+	</select>
+
+    <select id="getById" resultType="com.powerboot.domain.FinancialOrderDO">
+		select `id`,`user_id`,`product_id`,`order_status`,`amount`,`buy_date`,
+		`last_date`,`day_interest`,`total_interest`,`called_amount`,`called_time`,
+		`create_time`,`update_time`,`product_name`,`day_rate`,`year_rate`,
+		`lock_days`,`called_rate`
+		from financial_order
+		where id = #{id}
+	</select>
+
+    <select id="getByParams" resultType="com.powerboot.domain.FinancialOrderDO">
+        select `id`,`user_id`,`product_id`,`order_status`,`amount`,`buy_date`,
+        `last_date`,`day_interest`,`total_interest`,`called_amount`,`called_time`,
+        `create_time`,`update_time`,`product_name`,`day_rate`,`year_rate`,
+        `lock_days`,`called_rate`
+        from financial_order
+        <where>
+            <trim suffixOverrides=",">
+                <include refid="condition_sql"/>
+            </trim>
+        </where>
+        <if test="param.sort != null">
+            order by ${param.sort}
+        </if>
+        <if test="param.offset != null and param.limit != null">
+            limit ${param.offset}, ${param.limit}
+        </if>
+        <if test="param.offset == null and param.limit != null">
+            limit ${param.limit}
+        </if>
+    </select>
+
+    <select id="count" resultType="int">
+        select count(*) from financial_order
+        <where>
+            <trim suffixOverrides=",">
+                <include refid="condition_sql"/>
+            </trim>
+        </where>
+    </select>
+
+    <insert id="save" parameterType="com.powerboot.domain.FinancialOrderDO">
+		insert into financial_order
+        (`user_id`,`product_id`,`order_status`,
+        `amount`,`buy_date`,`last_date`,`day_interest`,
+        `total_interest`,`called_amount`,`called_time`,
+        `create_time`,`update_time`,`product_name`,
+        `day_rate`,`year_rate`,`lock_days`,`called_rate`,`sale_id`)
+		values
+		(#{userId},#{productId},#{orderStatus},#{amount},
+		#{buyDate},#{lastDate},#{dayInterest},#{totalInterest},
+		#{calledAmount},#{calledTime},now(),now(),#{productName},
+		#{dayRate},#{yearRate},#{lockDays},#{calledRate},#{saleId})
+	</insert>
+
+    <insert id="saveBatch" useGeneratedKeys="true">
+        insert into financial_order
+        (`user_id`,`product_id`,`order_status`,
+        `amount`,`buy_date`,`last_date`,`day_interest`,
+        `total_interest`,`called_amount`,`called_time`,
+        `create_time`,`update_time`,`product_name`,
+        `day_rate`,`year_rate`,`lock_days`,`called_rate`)
+        values
+        <foreach collection="list" item="item" index="index" separator=",">
+            (
+            #{item.id}, #{item.userId}, #{item.productId}, #{item.orderStatus}, #{item.amount}, #{item.buyDate},
+            #{item.lastDate}, #{item.dayInterest}, #{item.totalInterest}, #{item.calledAmount}, #{item.calledTime},
+            #{item.createTime}, #{item.updateTime},#{item.productName},#{item.dayRate},#{item.yearRate},
+            #{item.lockDays},#{item.calledRate} )
+        </foreach>
+    </insert>
+
+    <update id="update">
+        update financial_order
+        <set>
+            <if test="entity.userId != null">`user_id` = #{entity.userId},</if>
+            <if test="entity.productId != null">`product_id` = #{entity.productId},</if>
+            <if test="entity.orderStatus != null">`order_status` = #{entity.orderStatus},</if>
+            <if test="entity.amount != null">`amount` = #{entity.amount},</if>
+            <if test="entity.buyDate != null">`buy_date` = #{entity.buyDate},</if>
+            <if test="entity.lastDate != null">`last_date` = #{entity.lastDate},</if>
+            <if test="entity.dayInterest != null">`day_interest` = #{entity.dayInterest},</if>
+            <if test="entity.totalInterest != null">`total_interest` = #{entity.totalInterest},</if>
+            <if test="entity.calledAmount != null">`called_amount` = #{entity.calledAmount},</if>
+            <if test="entity.calledTime != null">`called_time` = #{entity.calledTime},</if>
+            <if test="entity.createTime != null">`create_time` = #{entity.createTime},</if>
+            <if test="entity.updateTime != null">`update_time` = #{entity.updateTime}</if>
+        </set>
+        <where>
+            <trim suffixOverrides=",">
+                <include refid="condition_sql"/>
+            </trim>
+        </where>
+    </update>
+
+    <sql id="condition_sql">
+        <trim suffixOverrides="AND | OR">
+            <if test="param.minUserId != null">and user_id > #{param.minUserId} </if>
+            <if test="param.id != null">and id = #{param.id} </if>
+            <if test="param.userId != null">and user_id = #{param.userId} </if>
+            <if test="param.productId != null">and product_id = #{param.productId} </if>
+            <if test="param.orderStatus != null">and order_status = #{param.orderStatus} </if>
+            <if test="param.orderStatusList != null and param.orderStatusList.size()>0">
+                and order_status in
+                <foreach collection="param.orderStatusList" separator="," open="(" close=")" item="orderStatus">
+                    #{orderStatus}
+                </foreach>
+            </if>
+            <if test="param.amount != null">and amount = #{param.amount} </if>
+            <if test="param.buyDate != null">and buy_date = #{param.buyDate} </if>
+            <if test="param.buyDateStart != null"> and buy_date <![CDATA[ >= ]]> #{param.buyDateStart} </if>
+            <if test="param.buyDateEnd != null"> and buy_date <![CDATA[ <= ]]> #{param.buyDateEnd} </if>
+            <if test="param.lastDate != null">and last_date = #{param.lastDate} </if>
+            <if test="param.lastDateStart != null">and last_date <![CDATA[ >= ]]> #{param.lastDateStart} </if>
+            <if test="param.lastDateEnd != null"> and last_date <![CDATA[ <= ]]> #{param.lastDateEnd} </if>
+            <if test="param.dayInterest != null">and day_interest = #{param.dayInterest} </if>
+            <if test="param.totalInterest != null">and total_interest = #{param.totalInterest} </if>
+            <if test="param.calledAmount != null">and called_amount = #{param.calledAmount} </if>
+            <if test="param.calledTime != null">and called_time = #{param.calledTime} </if>
+            <if test="param.calledTimeStart != null"> and called_time <![CDATA[ >= ]]> #{param.calledTimeStart} </if>
+            <if test="param.calledTimeEnd != null"> and called_time <![CDATA[ <= ]]> #{param.calledTimeEnd} </if>
+            <if test="param.createTime != null">and create_time = #{param.createTime} </if>
+            <if test="param.updateTime != null">and update_time = #{param.updateTime} </if>
+        </trim>
+    </sql>
+
+    <select id="getInAmountSum" resultType="java.math.BigDecimal">
+        select sum(amount) from financial_order
+        where order_status = 1
+        <where>
+            <if test="buyDateStart != null "> and buy_date <![CDATA[ >= ]]> #{buyDateStart} </if>
+            <if test="buyDateEnd != null "> and buy_date <![CDATA[ <= ]]> #{buyDateEnd} </if>
+        </where>
+    </select>
+
+</mapper>

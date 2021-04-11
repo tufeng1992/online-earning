@@ -1,0 +1,104 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.powerboot.dao.InviteLogDao">
+
+    <select id="get" resultType="com.powerboot.domain.InviteLogDO">
+		select `id`,`invite_user_id`,`new_user_id`,`new_user_status`,`invite_amount`,`reg_date`,`first_recharge_date`,`create_time`,`update_time` from invite_log where id = #{value}
+	</select>
+
+    <select id="list" resultType="com.powerboot.domain.InviteLogDO">
+        select
+        `id`,`invite_user_id`,`new_user_id`,`new_user_status`,`invite_amount`,`reg_date`,`first_recharge_date`,`create_time`,`update_time`
+        from invite_log
+        <where>
+            <if test="id != null and id != ''">and id = #{id}</if>
+            <if test="inviteUserId != null and inviteUserId != ''">and invite_user_id = #{inviteUserId}</if>
+            <if test="newUserId != null and newUserId != ''">and new_user_id = #{newUserId}</if>
+            <if test="newUserStatus != null and newUserStatus != ''">and new_user_status = #{newUserStatus}</if>
+            <if test="inviteAmount != null and inviteAmount != ''">and invite_amount = #{inviteAmount}</if>
+            <if test="regDate != null and regDate != ''">and reg_date = #{regDate}</if>
+            <if test="firstRechargeDate != null and firstRechargeDate != ''">and first_recharge_date =
+                #{firstRechargeDate}
+            </if>
+            <if test="createTime != null and createTime != ''">and create_time = #{createTime}</if>
+            <if test="updateTime != null and updateTime != ''">and update_time = #{updateTime}</if>
+        </where>
+        <choose>
+            <when test="sort != null and sort.trim() != ''">
+                order by ${sort} ${order}
+            </when>
+            <otherwise>
+                order by id desc
+            </otherwise>
+        </choose>
+        <if test="offset != null and limit != null">
+            limit #{offset}, #{limit}
+        </if>
+    </select>
+
+    <select id="count" resultType="com.powerboot.domain.InviteLogDO">
+        select
+          `id`,`invite_user_id`,`new_user_id`,`new_user_status`,`invite_amount`,`reg_date`,
+          `first_recharge_date`,`create_time`,`update_time`
+         from invite_log
+       where invite_user_id = #{inviteUserId}
+       and first_recharge_date <![CDATA[ > ]]> #{firstRechargeDate}
+    </select>
+
+    <insert id="save" parameterType="com.powerboot.domain.InviteLogDO" useGeneratedKeys="true" keyProperty="id">
+		insert into invite_log
+		(
+			`invite_user_id`, 
+			`new_user_id`, 
+			`new_user_status`, 
+			`reg_date`,
+			`create_time`,
+			`update_time`
+		)
+		values
+		(
+			#{inviteUserId}, 
+			#{newUserId}, 
+			#{newUserStatus}, 
+			#{regDate},
+			now(),
+			now()
+		)
+	</insert>
+
+    <update id="update" parameterType="com.powerboot.domain.InviteLogDO">
+        update invite_log
+        <set>
+            <if test="inviteUserId != null">`invite_user_id` = #{inviteUserId},</if>
+            <if test="newUserId != null">`new_user_id` = #{newUserId},</if>
+            <if test="newUserStatus != null">`new_user_status` = #{newUserStatus},</if>
+            <if test="inviteAmount != null">`invite_amount` = #{inviteAmount},</if>
+            <if test="regDate != null">`reg_date` = #{regDate},</if>
+            <if test="firstRechargeDate != null">`first_recharge_date` = #{firstRechargeDate},</if>
+        </set>
+        where id = #{id}
+    </update>
+
+    <update id="updateByNewUserId" parameterType="com.powerboot.domain.InviteLogDO">
+        update invite_log
+        <set>
+            <if test="newUserStatus != null">`new_user_status` = #{newUserStatus},</if>
+            <if test="inviteAmount != null">`invite_amount` = #{inviteAmount},</if>
+            <if test="firstRechargeDate != null">`first_recharge_date` = #{firstRechargeDate},</if>
+        </set>
+        where new_user_id = #{newUserId}
+    </update>
+
+    <delete id="remove">
+		delete from invite_log where id = #{value}
+	</delete>
+
+    <delete id="batchRemove">
+        delete from invite_log where id in
+        <foreach item="id" collection="array" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+    </delete>
+
+</mapper>

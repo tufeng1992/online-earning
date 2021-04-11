@@ -1,0 +1,313 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.powerboot.dao.UserDao">
+	<sql id="Base_Column_List" >
+		`id`,
+		       `nike_name`,
+			   `device_number`,
+			   `app_id`,
+			   `role`,
+			   `mobile`,
+			   `password`,
+			   `fund_password`,
+			   `member_level`,
+			   `balance`,
+			   `parent_id`,
+			   `ident_id`,
+			   `account_number`,
+			   `account_phone`,
+			   `account_ifsc`,
+			   `name`,
+			   `first_name`,
+			   `last_name`,
+			   `bind_status`,
+			   `bind_time`,
+			   `sale_id`,
+			   `user_level`,
+			   `referral_code`,
+			   `contacts_id`,
+			   `fundAccount_id`,
+			   `first_recharge`,
+			   `create_time`,
+			   `update_time`,
+			   `withdraw_check`,
+			   `email`,
+			   `address`,
+			   `sd_switch`,
+			   `lx_switch`,
+			   `recharge_check`,
+			   `version`,
+			   `share_flag`,
+			   `login_flag`,
+			   `black_flag`,
+			   `team_flag`,
+			   `account_cvv`,
+			   `account_expire_year`,
+			   `account_expire_month`,
+			   `bank_name`,
+			   `bank_code`
+	</sql>
+
+	<select id="get" resultType="com.powerboot.domain.UserDO">
+		SELECT
+		<include refid="Base_Column_List" />
+		FROM user where id = #{value}
+	</select>
+
+	<select id="getByReferralCode" resultType="com.powerboot.domain.UserDO">
+		SELECT
+		<include refid="Base_Column_List" />
+		FROM user where referral_code = #{referralCode}
+	</select>
+
+	<select id="getByMobileAndAppId" resultType="com.powerboot.domain.UserDO">
+		SELECT
+		<include refid="Base_Column_List" />
+		FROM user where mobile = #{mobile} and app_id = #{appId}
+	</select>
+	<insert id="insertSale" parameterType="com.powerboot.domain.UserDO" keyProperty="id" useGeneratedKeys="true">
+		INSERT INTO `online_earning`.`user`
+		(
+		`nike_name`,
+		`app_id`,
+		`mobile`,
+		`role`,
+		`password`,
+		`referral_code`,
+		`user_level`,
+		`create_time`,
+		`update_time`)
+		VALUES
+		(
+		#{nike_name},
+		#{appId},
+		#{mobile},
+		1,
+		#{password},
+		#{referralCode},
+		0,
+		now(),
+		now())
+	</insert>
+
+	<insert id="save" parameterType="com.powerboot.domain.UserDO" keyProperty="id" useGeneratedKeys="true">
+		INSERT INTO `online_earning`.`user`
+		(
+		`nike_name`,
+		`device_number`,
+		`app_id`,
+		`mobile`,
+		`password`,
+		`parent_id`,
+		`sale_id`,
+		`referral_code`,
+		`user_level`,
+		`register_ip`,
+		`team_flag`,
+		`create_time`,
+		`update_time`)
+		VALUES
+		(
+		#{mobile},
+		#{deviceNumber},
+		#{appId},
+		#{mobile},
+		#{password},
+		#{parentId},
+		#{saleId},
+		#{referralCode},
+		#{userLevel},
+		#{registerIp},
+		#{teamFlag},
+		now(),
+		now())
+	</insert>
+
+	<update id="updateClose">
+		update user set withdraw_check = 0,
+		sd_switch=0,
+		lx_switch=0,
+		recharge_check=0,
+		black_flag=1,
+		version = version+1
+		where id = #{userId}
+	</update>
+
+	<update id="update" parameterType="com.powerboot.domain.UserDO">
+		update user
+		<set>
+			<if test="nikeName != null"> `nike_name` = #{nikeName},   </if>
+			<if test="appId != null"> app_id = #{appId},   </if>
+			<if test="mobile != null">  mobile = #{mobile},  </if>
+			<if test="password != null">  password = #{password},  </if>
+			<if test="fundPassword != null">  fund_password = #{fundPassword},  </if>
+			<if test="memberLevel != null">  member_level = #{memberLevel},  </if>
+			<if test="balance != null">  balance = #{balance},  </if>
+			<if test="parentId != null">  parent_id = #{parentId},  </if>
+			<if test="identId != null">   ident_id = #{identId}, </if>
+			<if test="accountNumber != null">  account_number = #{accountNumber},  </if>
+			<if test="accountPhone != null">  account_phone = #{accountPhone},  </if>
+			<if test="accountIfsc != null">  account_ifsc = #{accountIfsc},  </if>
+			<if test="name != null">  `name` = #{name},  </if>
+			<if test="bindStatus != null">  bind_status = #{bindStatus},  </if>
+			<if test="bindTime != null">  bind_time = #{bindTime},  </if>
+			<if test="saleId != null">   sale_id = #{saleId}, </if>
+			<if test="referralCode != null">   referral_code = #{referralCode}, </if>
+			<if test="contactsId != null"> `contacts_id` = #{contactsId}, </if>
+			<if test="fundAccountId != null"> fundAccount_id = #{fundAccountId}, </if>
+			<if test="email != null"> email = #{email}, </if>
+			<if test="address != null"> address = #{address}, </if>
+			<if test="firstName != null"> first_name = #{firstName}, </if>
+			<if test="lastName != null"> last_name = #{lastName}, </if>
+			<if test="accountCvv != null"> account_cvv = #{accountCvv}, </if>
+			<if test="accountExpireYear != null"> account_expire_year = #{accountExpireYear}, </if>
+			<if test="accountExpireMonth != null"> account_expire_month = #{accountExpireMonth}, </if>
+			<if test="bankName != null"> bank_name = #{bankName}, </if>
+			<if test="bankCode != null"> bank_code = #{bankCode}, </if>
+			version = version+1,
+		</set>
+		where id = #{id} and version  = #{version}
+	</update>
+
+	<update id="updateMoney">
+		update user
+		set
+		balance = balance + #{amount}
+		where id = #{id} and balance + #{amount} &gt;= 0
+	</update>
+
+
+	<update id="addMoney">
+		update user
+		set
+		balance = balance + #{amount},
+		version = version+1
+		where id = #{id} and version  = #{version}
+	</update>
+
+	<update id="reduceMoney">
+		update user
+		set
+		balance = balance - #{amount},
+		version = version+1
+		where id = #{id} and balance &gt;= #{amount} and version  = #{version}
+	</update>
+
+	<update id="updateUserVIP">
+		update user
+		set
+		member_level = #{memberLevel},
+		version = version+1
+		where id = #{id}
+	</update>
+
+	<update id="updateFirstRechargeById">
+		update user
+		set
+		first_recharge = 1,
+		version = version+1
+		where id = #{id}
+	</update>
+
+	<select id="getUserByParentId" resultType="com.powerboot.domain.UserDO">
+		SELECT
+		<include refid="Base_Column_List" />
+		FROM user where parent_id = #{parentId}
+	</select>
+
+	<select id="getUserByParentIdByPage" resultType="com.powerboot.domain.UserDO">
+		SELECT
+		<include refid="Base_Column_List" />
+		FROM user where parent_id = #{parentId}
+		<if test="offset != null and limit != null">
+			limit #{offset}, #{limit}
+		</if>
+	</select>
+	<select id="getUserList" resultType="com.powerboot.domain.UserDO">
+		SELECT
+		<include refid="Base_Column_List" />
+		FROM user where parent_id in (
+		<foreach collection="list" item="id" separator=",">
+			#{id}
+		</foreach>
+		)
+	</select>
+
+	<select id="getUserListByPage" resultType="com.powerboot.domain.UserDO">
+		SELECT
+		<include refid="Base_Column_List" />
+		FROM user where parent_id in (
+		<foreach collection="list" item="id" separator=",">
+			#{id}
+		</foreach>
+		)
+		<if test="offset != null and limit != null">
+			limit #{offset}, #{limit}
+		</if>
+	</select>
+
+	<select id="getTotalPeople" resultType="com.powerboot.domain.UserDO">
+		select <include refid="Base_Column_List" />
+		from user where parent_id = #{id}
+	</select>
+
+	<select id="getCountPeople" resultType="java.lang.Integer">
+		select count(1)
+		from user where parent_id = #{id}
+	</select>
+
+	<select id="getAllVIP" resultType="com.powerboot.domain.UserDO">
+		select
+		member_level,balance,first_recharge
+		from user where role = 2
+	</select>
+
+	<select id="getUserCount" resultType="java.lang.Integer">
+		select count(*)
+		from `user`
+		where
+		id > 108
+		<if test="role != null">
+			and role = #{role}
+		</if>
+		<if test="startDate != null">
+			and create_time &gt;= #{startDate}
+		</if>
+		<if test="endDate != null">
+			and create_time &lt;= #{endDate}
+		</if>
+		<if test="userReferral != null">
+			and parent_id is not null
+		</if>
+		<if test="saleReferral != null">
+			and parent_id is null
+		</if>
+	</select>
+
+	<select id="getRegisterIpCount" resultType="java.lang.Integer">
+		select count(*)
+		from `user`
+		where register_ip=#{registerIp}
+	</select>
+
+	<select id="getUserByAccountNumber" resultType="com.powerboot.domain.UserDO">
+		select <include refid="Base_Column_List" />
+		from user where account_number = #{accountNumber}
+	</select>
+
+	<select id="getInviteUserCount" resultType="java.lang.Integer">
+		select count(id)
+		from user
+		where parent_id = #{parentId}
+	</select>
+
+	<select id="getUserRechargeAmount" resultType="java.math.BigDecimal">
+		select sum(amount)
+		from pay
+		where user_id = #{id}
+		and type=1
+		and status=2
+	</select>
+
+</mapper>

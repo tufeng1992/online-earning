@@ -1,0 +1,119 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.powerboot.dao.SmsDao">
+
+	<select id="get" resultType="com.powerboot.domain.SmsDO">
+		select `id`,`ip`,`app_id`,`mobile`,`ver_code`,`send_result`,`create_time`,`update_time`,`msgid`,`status` from sms where id = #{value}
+	</select>
+
+	<select id="getByMsgid" resultType="com.powerboot.domain.SmsDO">
+		select `id`,`ip`,`app_id`,`mobile`,`ver_code`,`send_result`,`create_time`,`update_time`,`msgid`,`status` from sms where msgid = #{msgid}
+	</select>
+
+	<select id="list" resultType="com.powerboot.domain.SmsDO">
+		select `id`,`ip`,`app_id`,`mobile`,`ver_code`,`send_result`,`create_time`,`update_time`,`msgid`,`status` from sms
+        <where>  
+		  		  <if test="id != null and id != ''"> and id = #{id} </if>
+		  		  <if test="ip != null and ip != ''"> and ip = #{ip} </if>
+		  		  <if test="appId != null and appId != ''"> and app_id = #{appId} </if>
+		  		  <if test="mobile != null and mobile != ''"> and mobile = #{mobile} </if>
+		  		  <if test="verCode != null and verCode != ''"> and ver_code = #{verCode} </if>
+		  		  <if test="sendResult != null and sendResult != ''"> and send_result = #{sendResult} </if>
+		  		  <if test="createTime != null "> and create_time = #{createTime} </if>
+		  		  <if test="updateTime != null"> and update_time = #{updateTime} </if>
+		  		  <if test="msgid != null and msgid != ''"> and msgid = #{msgid} </if>
+		  		  <if test="status != null and status != ''"> and status = #{status} </if>
+		  		</where>
+        <choose>
+            <when test="sort != null and sort.trim() != ''">
+                order by ${sort} ${order}
+            </when>
+			<otherwise>
+                order by id desc
+			</otherwise>
+        </choose>
+		<if test="offset != null and limit != null">
+			limit #{offset}, #{limit}
+		</if>
+	</select>
+	
+ 	<select id="count" resultType="int">
+		select count(*) from sms
+		 <where>  
+		  		  <if test="id != null and id != ''"> and id = #{id} </if>
+		  		  <if test="ip != null and ip != ''"> and ip = #{ip} </if>
+			 	  <if test="appId != null and appId != ''"> and app_id = #{appId} </if>
+		  		  <if test="mobile != null and mobile != ''"> and mobile = #{mobile} </if>
+		  		  <if test="verCode != null and verCode != ''"> and ver_code = #{verCode} </if>
+		  		  <if test="sendResult != null and sendResult != ''"> and send_result = #{sendResult} </if>
+		  		  <if test="createTime != null "> and create_time = #{createTime} </if>
+		  		  <if test="updateTime != null "> and update_time = #{updateTime} </if>
+		  		  <if test="msgid != null and msgid != ''"> and msgid = #{msgid} </if>
+		  		  <if test="status != null and status != ''"> and status = #{status} </if>
+		  		</where>
+	</select>
+	 
+	<insert id="save" parameterType="com.powerboot.domain.SmsDO">
+		insert into sms
+		(
+			`id`,
+		 	`ip`,
+		 	`app_id`,
+			`mobile`,
+			`ver_code`, 
+			`send_result`, 
+			`create_time`, 
+			`update_time`,
+		 	`msgid`
+		)
+		values
+		(
+			#{id},
+		 	#{ip},
+		 	#{appId},
+			#{mobile},
+			#{verCode}, 
+			#{sendResult}, 
+			#{createTime}, 
+			#{updateTime},
+		 	#{msgid}
+		)
+	</insert>
+	 
+	<update id="update" parameterType="com.powerboot.domain.SmsDO">
+		update sms 
+		<set>
+			<if test="ip != null">`ip` = #{ip}, </if>
+			<if test="appId != null">`app_id` = #{appId}, </if>
+			<if test="mobile != null">`mobile` = #{mobile}, </if>
+			<if test="verCode != null">`ver_code` = #{verCode}, </if>
+			<if test="sendResult != null">`send_result` = #{sendResult}, </if>
+			<if test="createTime != null">`create_time` = #{createTime}, </if>
+			<if test="updateTime != null">`update_time` = #{updateTime},</if>
+			<if test="msgid != null">`msgid` = #{msgid},</if>
+			<if test="status != null">`status` = #{status}</if>
+		</set>
+		where id = #{id}
+	</update>
+	
+	<delete id="remove">
+		delete from sms where id = #{value}
+	</delete>
+	
+	<delete id="batchRemove">
+		delete from sms where id in 
+		<foreach item="id" collection="array" open="(" separator="," close=")">
+			#{id}
+		</foreach>
+	</delete>
+
+	<select id="getLastByAppTel" resultType="com.powerboot.domain.SmsDO">
+		select `id`,`ip`,`app_id`,`mobile`,`ver_code`,`send_result`,`create_time`,`update_time`,`msgid`,`status` from sms
+		where mobile = #{tel}
+		and app_id = #{appId}
+		order by id desc
+		limit 1
+	</select>
+
+</mapper>

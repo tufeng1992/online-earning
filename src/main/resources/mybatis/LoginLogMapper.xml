@@ -1,0 +1,104 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.powerboot.dao.LoginLogDao">
+
+	<select id="get" resultType="com.powerboot.domain.LoginLogDO">
+		select `id`,`user_id`,`mobile`,`app_id`,`first_login`,`ip`,`device_number`,`create_time`,`update_time`
+		from login_log where id = #{value}
+	</select>
+
+	<select id="list" resultType="com.powerboot.domain.LoginLogDO">
+		select `id`,`user_id`,`mobile`,`app_id`,`first_login`,`ip`,`device_number`,`create_time`,`update_time`
+		from login_log
+        <where>  
+		  		  <if test="id != null and id != ''"> and id = #{id} </if>
+		  		  <if test="userId != null and userId != ''"> and user_id = #{userId} </if>
+		  		  <if test="mobile != null and mobile != ''"> and mobile = #{mobile} </if>
+		  		  <if test="appId != null and appId != ''"> and app_id = #{appId} </if>
+		  		  <if test="firstLogin != null and firstLogin != ''"> and first_login = #{firstLogin} </if>
+		  		  <if test="ip != null and ip != ''"> and ip = #{ip} </if>
+		  		  <if test="deviceNumber != null and deviceNumber != ''"> and device_number = #{deviceNumber} </if>
+		  		  <if test="createTime != null and createTime != ''"> and create_time = #{createTime} </if>
+		  		  <if test="updateTime != null and updateTime != ''"> and update_time = #{updateTime} </if>
+		  		</where>
+        <choose>
+            <when test="sort != null and sort.trim() != ''">
+                order by ${sort} ${order}
+            </when>
+			<otherwise>
+                order by id desc
+			</otherwise>
+        </choose>
+		<if test="offset != null and limit != null">
+			limit #{offset}, #{limit}
+		</if>
+	</select>
+	
+ 	<select id="count" resultType="int">
+		select count(*) from login_log
+		 <where>  
+		  		  <if test="id != null and id != ''"> and id = #{id} </if>
+		  		  <if test="userId != null and userId != ''"> and user_id = #{userId} </if>
+		  		  <if test="mobile != null and mobile != ''"> and mobile = #{mobile} </if>
+		  		  <if test="appId != null and appId != ''"> and app_id = #{appId} </if>
+		  		  <if test="firstLogin != null and firstLogin != ''"> and first_login = #{firstLogin} </if>
+		  		  <if test="ip != null and ip != ''"> and ip = #{ip} </if>
+		  		  <if test="deviceNumber != null and deviceNumber != ''"> and device_number = #{deviceNumber} </if>
+		  		  <if test="createTime != null and createTime != ''"> and create_time = #{createTime} </if>
+		  		  <if test="updateTime != null and updateTime != ''"> and update_time = #{updateTime} </if>
+		  		</where>
+	</select>
+	 
+	<insert id="save" parameterType="com.powerboot.domain.LoginLogDO">
+		insert into login_log
+		(
+			`user_id`, 
+			`mobile`, 
+			`app_id`, 
+			`first_login`, 
+			`ip`, 
+			`device_number`, 
+			`create_time`, 
+			`update_time`
+		)
+		values
+		(
+			#{userId}, 
+			#{mobile}, 
+			#{appId}, 
+			#{firstLogin}, 
+			#{ip}, 
+			#{deviceNumber}, 
+			#{createTime}, 
+			#{updateTime}
+		)
+	</insert>
+	 
+	<update id="update" parameterType="com.powerboot.domain.LoginLogDO">
+		update login_log 
+		<set>
+			<if test="userId != null">`user_id` = #{userId}, </if>
+			<if test="mobile != null">`mobile` = #{mobile}, </if>
+			<if test="appId != null">`app_id` = #{appId}, </if>
+			<if test="firstLogin != null">`first_login` = #{firstLogin}, </if>
+			<if test="ip != null">`ip` = #{ip}, </if>
+			<if test="deviceNumber != null">`device_number` = #{deviceNumber}, </if>
+			<if test="createTime != null">`create_time` = #{createTime}, </if>
+			<if test="updateTime != null">`update_time` = #{updateTime}</if>
+		</set>
+		where id = #{id}
+	</update>
+	
+	<delete id="remove">
+		delete from login_log where id = #{value}
+	</delete>
+	
+	<delete id="batchRemove">
+		delete from login_log where id in 
+		<foreach item="id" collection="array" open="(" separator="," close=")">
+			#{id}
+		</foreach>
+	</delete>
+
+</mapper>

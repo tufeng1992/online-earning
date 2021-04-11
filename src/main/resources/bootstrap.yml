@@ -1,0 +1,33 @@
+spring:
+  application:
+    name: dev
+  servlet:
+    multipart:
+      max-file-size: 100Mb
+      max-request-size: 30Mb
+  devtools:
+    restart:
+      enabled: true
+  cache:
+    type: ehcache
+    ehcache:
+      config: classpath:config/ehcache.xml
+
+mybatis:
+  configuration:
+    map-underscore-to-camel-case: true
+
+  mapper-locations: mybatis/*Mapper.xml
+  typeAliasesPackage: com.powerboot.dto
+
+config:
+  tempPath : ./tempPath
+
+
+eureka:
+  client:
+    register-with-eureka: false
+    fetch-registry: false
+
+
+

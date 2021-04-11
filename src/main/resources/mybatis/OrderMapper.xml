@@ -1,0 +1,173 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.powerboot.dao.OrderDao">
+
+	<select id="get" resultType="com.powerboot.domain.OrderDO">
+		select `id`,`order_number`,`user_id`,`amount`,`product_id`,`product_ration`,`product_commission`,`one_id`,`one_ratio`,`one_amount`,`two_id`,`two_ratio`,`two_amount`,`three_id`,`three_ratio`,`three_amount`,`create_time`,`update_time` from task_order where id = #{value}
+	</select>
+	<select id="sumAmount" resultType="BigDecimal">
+		select sum(`product_commission`) from task_order where user_id = #{userId}
+	</select>
+
+	<select id="list" resultType="com.powerboot.domain.OrderDO">
+		select `id`,`order_number`,`user_id`,`amount`,`product_id`,`product_ration`,`product_commission`,`one_id`,`one_ratio`,`one_amount`,`two_id`,`two_ratio`,`two_amount`,`three_id`,`three_ratio`,`three_amount`,`create_time`,`update_time` from task_order
+        <where>  
+		  		  <if test="id != null and id != ''"> and id = #{id} </if>
+		  		  <if test="orderNumber != null and orderNumber != ''"> and order_number = #{orderNumber} </if>
+		  		  <if test="userId != null and userId != ''"> and user_id = #{userId} </if>
+		  		  <if test="amount != null and amount != ''"> and amount = #{amount} </if>
+		  		  <if test="productId != null and productId != ''"> and product_id = #{productId} </if>
+		  		  <if test="productCommission != null and productCommission != ''"> and product_commission = #{productCommission} </if>
+		  		  <if test="oneId != null and oneId != ''"> and one_id = #{oneId} </if>
+		  		  <if test="oneRatio != null and oneRatio != ''"> and one_ratio = #{oneRatio} </if>
+		  		  <if test="oneAmount != null and oneAmount != ''"> and one_amount = #{oneAmount} </if>
+		  		  <if test="twoId != null and twoId != ''"> and two_id = #{twoId} </if>
+		  		  <if test="twoRatio != null and twoRatio != ''"> and two_ratio = #{twoRatio} </if>
+		  		  <if test="twoAmount != null and twoAmount != ''"> and two_amount = #{twoAmount} </if>
+		  		  <if test="threeId != null and threeId != ''"> and three_id = #{threeId} </if>
+		  		  <if test="threeRatio != null and threeRatio != ''"> and three_ratio = #{threeRatio} </if>
+		  		  <if test="threeAmount != null and threeAmount != ''"> and three_amount = #{threeAmount} </if>
+		  		  <if test="createTime != null"> and create_time >= #{createTime} </if>
+		  		  <if test="updateTime != null "> and update_time = #{updateTime} </if>
+		  		</where>
+        <choose>
+            <when test="sort != null and sort.trim() != ''">
+                order by ${sort} ${order}
+            </when>
+			<otherwise>
+                order by id desc
+			</otherwise>
+        </choose>
+		<if test="offset != null and limit != null">
+			limit #{offset}, #{limit}
+		</if>
+	</select>
+
+	<select id="teamList" resultType="com.powerboot.domain.OrderDO">
+		select `id`,`order_number`,`user_id`,`amount`,`product_id`,`product_ration`,`product_commission`,`one_id`,`one_ratio`,`one_amount`,`two_id`,`two_ratio`,`two_amount`,`three_id`,`three_ratio`,`three_amount`,`create_time`,`update_time` from task_order
+		<where>
+			<if test="oneId != null and oneId != ''"> or one_id = #{userId} </if>
+			<if test="twoId != null and twoId != ''"> or two_id = #{userId} </if>
+			<if test="threeId != null and threeId != ''"> or three_id = #{userId} </if>
+			<if test="createTime != null"> and create_time >= #{createTime} </if>
+		</where>
+		<if test="offset != null and limit != null">
+			limit #{offset}, #{limit}
+		</if>
+	</select>
+ 	<select id="count" resultType="int">
+		select count(*) from task_order
+		 <where>  
+		  		  <if test="id != null and id != ''"> and id = #{id} </if>
+		  		  <if test="orderNumber != null and orderNumber != ''"> and order_number = #{orderNumber} </if>
+		  		  <if test="userId != null and userId != ''"> and user_id = #{userId} </if>
+		  		  <if test="amount != null and amount != ''"> and amount = #{amount} </if>
+		  		  <if test="productId != null and productId != ''"> and product_id = #{productId} </if>
+		  		  <if test="productCommission != null and productCommission != ''"> and product_commission = #{productCommission} </if>
+		  		  <if test="oneId != null and oneId != ''"> and one_id = #{oneId} </if>
+		  		  <if test="oneRatio != null and oneRatio != ''"> and one_ratio = #{oneRatio} </if>
+		  		  <if test="oneAmount != null and oneAmount != ''"> and one_amount = #{oneAmount} </if>
+		  		  <if test="twoId != null and twoId != ''"> and two_id = #{twoId} </if>
+		  		  <if test="twoRatio != null and twoRatio != ''"> and two_ratio = #{twoRatio} </if>
+		  		  <if test="twoAmount != null and twoAmount != ''"> and two_amount = #{twoAmount} </if>
+		  		  <if test="threeId != null and threeId != ''"> and three_id = #{threeId} </if>
+		  		  <if test="threeRatio != null and threeRatio != ''"> and three_ratio = #{threeRatio} </if>
+		  		  <if test="threeAmount != null and threeAmount != ''"> and three_amount = #{threeAmount} </if>
+		  		  <if test="createTime != null and createTime != ''"> and create_time = #{createTime} </if>
+		  		  <if test="updateTime != null and updateTime != ''"> and update_time = #{updateTime} </if>
+		  		</where>
+	</select>
+	 
+	<insert id="save" parameterType="com.powerboot.domain.OrderDO">
+		insert into task_order
+		(
+			`id`, 
+			`order_number`, 
+			`user_id`, 
+			`amount`, 
+			`product_id`,
+			`product_ration`,
+			`product_commission`, 
+			`one_id`, 
+			`one_ratio`, 
+			`one_amount`, 
+			`two_id`, 
+			`two_ratio`, 
+			`two_amount`, 
+			`three_id`, 
+			`three_ratio`, 
+			`three_amount`, 
+			`create_time`, 
+			`update_time`
+		)
+		values
+		(
+			#{id}, 
+			#{orderNumber}, 
+			#{userId}, 
+			#{amount}, 
+			#{productId},
+			#{productRation},
+			#{productCommission}, 
+			#{oneId}, 
+			#{oneRatio}, 
+			#{oneAmount}, 
+			#{twoId}, 
+			#{twoRatio}, 
+			#{twoAmount}, 
+			#{threeId}, 
+			#{threeRatio}, 
+			#{threeAmount}, 
+			#{createTime}, 
+			#{updateTime}
+		)
+	</insert>
+	 
+	<update id="update" parameterType="com.powerboot.domain.OrderDO">
+		update task_order 
+		<set>
+			<if test="orderNumber != null">`order_number` = #{orderNumber}, </if>
+			<if test="userId != null">`user_id` = #{userId}, </if>
+			<if test="amount != null">`amount` = #{amount}, </if>
+			<if test="productId != null">`product_id` = #{productId}, </if>
+			<if test="productCommission != null">`product_commission` = #{productCommission}, </if>
+			<if test="oneId != null">`one_id` = #{oneId}, </if>
+			<if test="oneRatio != null">`one_ratio` = #{oneRatio}, </if>
+			<if test="oneAmount != null">`one_amount` = #{oneAmount}, </if>
+			<if test="twoId != null">`two_id` = #{twoId}, </if>
+			<if test="twoRatio != null">`two_ratio` = #{twoRatio}, </if>
+			<if test="twoAmount != null">`two_amount` = #{twoAmount}, </if>
+			<if test="threeId != null">`three_id` = #{threeId}, </if>
+			<if test="threeRatio != null">`three_ratio` = #{threeRatio}, </if>
+			<if test="threeAmount != null">`three_amount` = #{threeAmount}, </if>
+			<if test="createTime != null">`create_time` = #{createTime}, </if>
+			<if test="updateTime != null">`update_time` = #{updateTime}</if>
+		</set>
+		where id = #{id}
+	</update>
+	
+	<delete id="remove">
+		delete from task_order where id = #{value}
+	</delete>
+	
+	<delete id="batchRemove">
+		delete from task_order where id in 
+		<foreach item="id" collection="array" open="(" separator="," close=")">
+			#{id}
+		</foreach>
+	</delete>
+
+	<select id="getByIds" resultType="com.powerboot.domain.OrderDO">
+		select `id`,`order_number`,`user_id`,`amount`,`product_id`,`product_ration`,`product_commission`,`one_id`,`one_ratio`,`one_amount`,`two_id`,`two_ratio`,`two_amount`,`three_id`,`three_ratio`,`three_amount`,`create_time`,`update_time`
+		from task_order where  id in (
+		<foreach collection="list" item="id" separator=",">
+			#{id}
+		</foreach>
+		)
+	</select>
+
+	<select id="getRiskUser" resultType="Long">
+		SELECT distinct user_id from online_earning.task_order where product_commission > 0.0095 * amount
+	</select>
+</mapper>

@@ -1,0 +1,107 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.powerboot.dao.SummaryTableDao">
+    <sql id="Base_Column_List">
+		`id`,
+		`generated_date`,
+		`vip_count`,
+		`vip1_count`,
+		`vip2_count`,
+		`vip3_count`,
+		`vip4_count`,
+		`vip5_count`,
+		`vip_valid_count`,
+		`recharge_amount`,
+		`vip_balance_count`,
+		`commissions_amount`,
+		`financial_profit_amount`,
+		`local_user_count`,
+		`recharge_count`,
+		`withdraw_count`,
+		`withdraw_amount`,
+		`vip_pay_count`,
+		`vip_pay_amount`,
+		`first_recharge_amount`,
+		`financial_profit_in_amount`,
+		`financial_profit_out_amount`,
+		`create_time`,
+		`update_time`
+	</sql>
+
+    <select id="list" resultType="com.powerboot.domain.SummaryTableDO">
+        select
+        <include refid="Base_Column_List"/>
+        from summary_table order by id desc
+    </select>
+
+
+    <insert id="save" parameterType="com.powerboot.domain.SummaryTableDO">
+		INSERT INTO `summary_table`
+		(
+		`generated_date`,
+		`vip_count`,
+		`vip1_count`,
+		`vip2_count`,
+		`vip3_count`,
+		`vip4_count`,
+		`vip5_count`,
+		`vip_valid_count`,
+		`recharge_amount`,
+		`vip_balance_count`,
+		`commissions_amount`,
+		`financial_profit_amount`,
+		`local_user_count`,
+		`recharge_count`,
+		`withdraw_count`,
+		`withdraw_amount`,
+		`vip_pay_count`,
+		`vip_pay_amount`,
+		`first_recharge_amount`,
+		`financial_profit_in_amount`,
+		`financial_profit_out_amount`,
+		`financial_profit_count_amount`,
+		`user_referral`,
+		`sale_referral`
+		)
+		VALUES
+		(
+		#{generatedDate},
+		#{vipCount},
+		#{vip1Count},
+		#{vip2Count},
+		#{vip3Count},
+		#{vip4Count},
+		#{vip5Count},
+		#{vipValidCount},
+		#{rechargeAmount},
+		#{vipBalanceCount},
+		#{commissionsAmount},
+		#{financialProfitAmount},
+		#{localUserCount},
+		#{rechargeCount},
+		#{withdrawCount},
+		#{withdrawAmount},
+		#{vipPayCount},
+		#{vipPayAmount},
+		#{firstRechargeAmount},
+		#{financialProfitInAmount},
+		#{financialProfitOutAmount},
+		#{financialProfitCountAmount},
+		#{userReferral},
+		#{saleReferral}
+		);
+	</insert>
+
+	<update id="updateByDate">
+		update summary_table set user_referral = #{userReferral}, sale_referral = #{saleReferral}
+		where id = #{id}
+	</update>
+
+	<update id="updateById">
+		update summary_table set withdraw_amount = #{withdrawAmount}, vip_pay_amount = #{vipPayAmount}
+		where id = #{id}
+	</update>
+
+
+</mapper>

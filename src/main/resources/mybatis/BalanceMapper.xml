@@ -1,0 +1,171 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.powerboot.dao.BalanceDao">
+
+	<select id="get" resultType="com.powerboot.domain.BalanceDO">
+		select `id`,`order_no`,`user_id`,`amount`,`type`,`withdraw_amount`,`service_fee`,`status`,`create_time`,`update_time` from balance where id = #{value}
+	</select>
+
+	<select id="getByOrderNo" resultType="com.powerboot.domain.BalanceDO">
+		select `id`,`order_no`,`user_id`,`amount`,`type`,`withdraw_amount`,`service_fee`,`status`,`create_time`,`update_time` from balance where order_no = #{orderNo}
+	</select>
+
+	<select id="list" resultType="com.powerboot.domain.BalanceDO">
+		select `id`,`order_no`,`user_id`,`amount`,`type`,`withdraw_amount`,`service_fee`,`status`,`create_time`,`update_time` from balance
+        <where>  
+		  		  <if test="id != null and id != ''"> and id = #{id} </if>
+				  <if test="orderNo != null and orderNo != ''"> and order_no = #{orderNo} </if>
+		  		  <if test="userId != null and userId != ''"> and user_id = #{userId} </if>
+		  		  <if test="amount != null and amount != ''"> and amount = #{amount} </if>
+		  		  <if test="type != null and type != ''"> and type = #{type} </if>
+		  		  <if test="withdrawAmount != null and withdrawAmount != ''"> and withdraw_amount = #{withdrawAmount} </if>
+		  		  <if test="serviceFee != null and serviceFee != ''"> and service_fee = #{serviceFee} </if>
+		  		  <if test="status != null and status != ''"> and status = #{status} </if>
+		  		  <if test="createTime != null and createTime != ''"> and create_time = #{createTime} </if>
+		  		  <if test="updateTime != null and updateTime != ''"> and update_time = #{updateTime} </if>
+		  		</where>
+        <choose>
+            <when test="sort != null and sort.trim() != ''">
+                order by ${sort} ${order}
+            </when>
+			<otherwise>
+                order by id desc
+			</otherwise>
+        </choose>
+		<if test="offset != null and limit != null">
+			limit #{offset}, #{limit}
+		</if>
+	</select>
+
+	<select id="listByDate" resultType="com.powerboot.domain.BalanceDO">
+		select `id`,`order_no`,`user_id`,`amount`,`type`,`withdraw_amount`,`service_fee`,`status`,`create_time`,`update_time` from balance
+		<where>
+			<if test="id != null"> and id = #{id} </if>
+			<if test="orderNo != null"> and order_no = #{orderNo} </if>
+			<if test="userId != null"> and user_id = #{userId} </if>
+			<if test="amount != null"> and amount = #{amount} </if>
+			<if test="type != null"> and type = #{type} </if>
+			<if test="withdrawAmount != null"> and withdraw_amount = #{withdrawAmount} </if>
+			<if test="serviceFee != null"> and service_fee = #{serviceFee} </if>
+			<if test="status != null"> and status = #{status} </if>
+			<if test="createTime != null"> and create_time >= #{createTime} and create_time &lt; #{endTime}</if>
+		</where>
+		<choose>
+			<when test="sort != null">
+				order by ${sort} ${order}
+			</when>
+			<otherwise>
+				order by id desc
+			</otherwise>
+		</choose>
+		<if test="offset != null and limit != null">
+			limit #{offset}, #{limit}
+		</if>
+	</select>
+
+ 	<select id="count" resultType="int">
+		select count(*) from balance
+		 <where>  
+		  		  <if test="id != null and id != ''"> and id = #{id} </if>
+			      <if test="orderNo != null and orderNo != ''"> and order_no = #{orderNo} </if>
+		  		  <if test="userId != null and userId != ''"> and user_id = #{userId} </if>
+		  		  <if test="amount != null and amount != ''"> and amount = #{amount} </if>
+		  		  <if test="type != null and type != ''"> and type = #{type} </if>
+		  		  <if test="withdrawAmount != null and withdrawAmount != ''"> and withdraw_amount = #{withdrawAmount} </if>
+		  		  <if test="serviceFee != null and serviceFee != ''"> and service_fee = #{serviceFee} </if>
+		  		  <if test="status != null and status != ''"> and status = #{status} </if>
+		  		  <if test="createTime != null and createTime != ''"> and create_time = #{createTime} </if>
+		  		  <if test="updateTime != null and updateTime != ''"> and update_time = #{updateTime} </if>
+		  		</where>
+	</select>
+	 
+	<insert id="save" parameterType="com.powerboot.domain.BalanceDO">
+		insert into balance
+		(
+		    `order_no`,
+			`user_id`,
+			`amount`, 
+			`type`, 
+			`withdraw_amount`, 
+			`service_fee`, 
+			`status`, 
+			`create_time`, 
+			`update_time`,
+			`sale_id`
+		)
+		values
+		(
+		    #{orderNo},
+			#{userId},
+			#{amount}, 
+			#{type}, 
+			#{withdrawAmount}, 
+			#{serviceFee}, 
+			#{status}, 
+			now(),
+			now(),
+			#{saleId}
+		)
+	</insert>
+	 
+	<update id="update" parameterType="com.powerboot.domain.BalanceDO">
+		update balance 
+		<set>
+			<if test="userId != null">`user_id` = #{userId}, </if>
+			<if test="amount != null">`amount` = #{amount}, </if>
+			<if test="type != null">`type` = #{type}, </if>
+			<if test="withdrawAmount != null">`withdraw_amount` = #{withdrawAmount}, </if>
+			<if test="serviceFee != null">`service_fee` = #{serviceFee}, </if>
+			<if test="status != null">`status` = #{status}, </if>
+			<if test="createTime != null">`create_time` = #{createTime}, </if>
+			<if test="updateTime != null">`update_time` = #{updateTime}</if>
+		</set>
+		where id = #{id}
+	</update>
+	
+	<delete id="remove">
+		delete from balance where id = #{value}
+	</delete>
+	
+	<delete id="batchRemove">
+		delete from balance where id in 
+		<foreach item="id" collection="array" open="(" separator="," close=")">
+			#{id}
+		</foreach>
+	</delete>
+
+	<update id="updateStatusByOrderNo">
+		update
+		balance
+		set status = #{status}
+		where order_no = #{orderNo}
+	</update>
+
+	<select id="listByTypeAndUserId" resultType="com.powerboot.domain.BalanceDO">
+		select `id`,`order_no`,`user_id`,`amount`,`type`,`withdraw_amount`,`service_fee`,`status`,`create_time`,`update_time`
+		from balance
+		where user_id = #{userId}
+		and type = #{type}
+		order by id desc
+	</select>
+
+	<select id="getCountByTypeStatus" resultType="com.powerboot.response.PayVO">
+		select sum(amount) as amount,count(*) as count
+		from balance
+		where type in
+		<foreach collection="typeList" separator="," open="(" close=")" item="item">
+			#{item}
+		</foreach>
+		<if test="status != null">
+			and status = #{status}
+		</if>
+		<if test="startDate != null">
+			and create_time &gt;= #{startDate}
+		</if>
+		<if test="endDate != null">
+			and create_time &lt;= #{endDate}
+		</if>
+	</select>
+
+</mapper>
