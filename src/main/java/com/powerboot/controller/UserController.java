@@ -361,9 +361,9 @@ public class UserController extends BaseController {
         String nineClock = RedisUtils.getString(DictConsts.WITHDRAW_START_TIME);
         String eighteenClock = RedisUtils.getString(DictConsts.WITHDRAW_END_TIME);
         String now = DateUtils.format(new Date(), DateUtils.SIMPLE_DATEFORMAT_HHMM);
-//        if (DateUtils.checkWeekend() || now.compareTo(nineClock) < 0 || now.compareTo(eighteenClock) > 0) {
-//            return BaseResponse.fail(RedisUtils.getString(DictConsts.WITHDRAW_TIME_TIP));
-//        }
+        if (DateUtils.checkWeekend() || now.compareTo(nineClock) < 0 || now.compareTo(eighteenClock) > 0) {
+            return BaseResponse.fail(RedisUtils.getString(DictConsts.WITHDRAW_TIME_TIP));
+        }
 
         //系统提现开关 0-关(不允许提现) 1-开(允许提现)
         Integer sysWithdrawalCheck = RedisUtils.getInteger(DictConsts.SYS_WITHDRAWAL_CHECK);
