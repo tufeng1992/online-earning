@@ -45,6 +45,7 @@ public class RedisUtils {
             }
             return false;
         }catch (Exception e){
+            log.error("setIfAbsent异常", e);
             stringRedisTemplate.delete(key);
             return false;
         }
@@ -82,10 +83,12 @@ public class RedisUtils {
     }
 
     public static void setValue(String key, String value, Integer expireTime) {
+        log.info("setValue : key : {}, value : {}, expireTime : {}", key, value, expireTime);
         stringRedisTemplate.opsForValue().set(key, value, expireTime, TimeUnit.SECONDS);
     }
 
     public static Boolean remove(String key) {
+        log.info("remove key:{}", key);
         return stringRedisTemplate.delete(key);
     }
 
