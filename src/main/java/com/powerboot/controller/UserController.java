@@ -303,7 +303,6 @@ public class UserController extends BaseController {
         if (userId == null) {
             return BaseResponse.fail(TipConsts.NO_LOGIN);
         }
-
         //风控校验
         blackUserService.blackCheck(request.getMobile(), request.getName(), request.getEmail(), userId);
         UserDO user = userService.get(userId);
@@ -316,12 +315,12 @@ public class UserController extends BaseController {
         String phone = StringUtils.replace(request.getMobile(), " ", "");
         //补全手机号
         if (phone != null && phone.length() == 10 && "0".equals(phone.subSequence(0, 1))) {
-            phone = "254" + phone.substring(1, phone.length());
-        } else if (phone != null && phone.length() == 9) {
-            phone = "254" + phone;
+            phone = MobileUtil.NIGERIA_MOBILE_PREFIX + phone.substring(1, phone.length());
+        } else if (phone != null && phone.length() == 10) {
+            phone = MobileUtil.NIGERIA_MOBILE_PREFIX + phone;
         }
 
-        if (MobileUtil.isKenyaMobile(phone)) {
+        if (MobileUtil.isNigeriaMobile(phone)) {
             user.setAccountPhone(phone);
         } else {
             return BaseResponse.fail("nrecognized,please check your MPEAS!");
@@ -330,7 +329,7 @@ public class UserController extends BaseController {
         user.setBindTime(LocalDateTime.now());
         user.setEmail(StringUtils.replace(request.getEmail(), " ", ""));
         user.setAccountCvv(request.getAccountCvv().trim());
-        user.setAccountExpireYear(request.getAccountExpireYear().trim());
+        user.setAccountExpireDay(request.getAccountExpireDay().trim());
         user.setAccountExpireMonth(request.getAccountExpireMonth().trim());
         user.setBankName(request.getBankName().trim());
         user.setBankCode(request.getBankCode().trim());

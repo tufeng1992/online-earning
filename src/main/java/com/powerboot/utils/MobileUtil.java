@@ -14,12 +14,17 @@ import org.springframework.util.StopWatch;
 public class MobileUtil {
     private static Pattern indiaMobile =  Pattern.compile("^(\\+?91|0)?[6789]\\d{9}$");
 
-    public static boolean isKenyaMobile(String mobile) {
+    /**
+     * 尼日利亚号码前缀
+     */
+    public static final String NIGERIA_MOBILE_PREFIX = "234";
+
+    public static boolean isNigeriaMobile(String mobile) {
         if (StringUtils.isBlank(mobile)) {
             return false;
         }
         int index = mobile.length();
-        if (index == 9 || (index == 12 && mobile.substring(0, 3).equals("254"))) {
+        if (index == 10 || (index == 13 && mobile.substring(0, 3).equals(NIGERIA_MOBILE_PREFIX))) {
             return true;
         }
         return false;
@@ -57,10 +62,10 @@ public class MobileUtil {
             phone = phone.substring(1,phone.length());
         }
         int index = phone.length();
-        String tel =  "254"+phone;
+        String tel =  "234"+phone;
         System.out.println(tel);
-        System.out.println(isKenyaMobile(tel));
-        System.out.println(isKenyaMobile(phone));
+        System.out.println(isNigeriaMobile(tel));
+        System.out.println(isNigeriaMobile(phone));
     }
 
 }

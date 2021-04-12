@@ -153,6 +153,12 @@ public class UserDO implements Serializable {
 	private String accountExpireMonth;
 
 	/**
+	 * 银行卡过期日
+	 */
+	@ApiModelProperty(value = "银行卡过期日")
+	private String accountExpireDay;
+
+	/**
 	 * 银行名称
 	 */
 	@ApiModelProperty(value = "银行名称")

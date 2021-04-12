@@ -16,6 +16,7 @@ import com.powerboot.service.DictService;
 import com.powerboot.service.LoginLogService;
 import com.powerboot.service.UserService;
 import com.powerboot.utils.CryptoUtils;
+import com.powerboot.utils.MobileUtil;
 import com.powerboot.utils.RedisUtils;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
@@ -61,11 +62,11 @@ public class SsoController extends BaseController {
                 return BaseResponse.fail(TipConsts.MOBILE_NOT_EMPTY);
             }
             int index = request.getMobile().length();
-            if (index != 9 &&
-                (index != 12 || !request.getMobile().substring(0, 3).equals("254"))) {
+            if (index != 10 &&
+                (index != 13 || !request.getMobile().substring(0, 3).equals(MobileUtil.NIGERIA_MOBILE_PREFIX))) {
                 return BaseResponse.fail("Wrong mobile number.");
             }
-            request.setMobile("254" + request.getMobile().substring(index - 9));
+            request.setMobile(MobileUtil.NIGERIA_MOBILE_PREFIX + request.getMobile().substring(index - 10));
 
         }
         //校验用户是否已注册

@@ -151,13 +151,13 @@ public class UserService {
         }
         int index = registerRequest.getMobile().length();
 
-        if (index != 9 &&
-            (index != 12 || !registerRequest.getMobile().substring(0, 3).equals("254"))) {
+        if (index != 10 &&
+            (index != 13 || !registerRequest.getMobile().substring(0, 3).equals(MobileUtil.NIGERIA_MOBILE_PREFIX))) {
             return BaseResponse.fail("Wrong mobile number.");
         }
-        registerRequest.setMobile("254" + registerRequest.getMobile().substring(index - 9));
+        registerRequest.setMobile(MobileUtil.NIGERIA_MOBILE_PREFIX + registerRequest.getMobile().substring(index - 10));
         String mobile = registerRequest.getMobile();
-        if (!MobileUtil.isKenyaMobile(mobile)) {
+        if (!MobileUtil.isNigeriaMobile(mobile)) {
             return BaseResponse.fail(TipConsts.MOBILE_ERROR);
         }
         //判断手机号是否已注册

@@ -44,12 +44,12 @@ public class SmsController extends BaseController {
 	@PostMapping
 	public BaseResponse<Integer> sendVerCode(HttpServletRequest request,@RequestBody @Valid SendSmsRequest param){
 		int index = param.getTel().length();
-		if (index != 9 &&
-			(index != 12 || !param.getTel().substring(0,3).equals("254"))){
+		if (index != 10 &&
+			(index != 13 || !param.getTel().substring(0,3).equals(MobileUtil.NIGERIA_MOBILE_PREFIX))){
 			return BaseResponse.fail("Wrong mobile number.");
 		}
-		param.setTel("254"+param.getTel().substring(index-9));
-		if (!MobileUtil.isKenyaMobile(param.getTel())){
+		param.setTel(MobileUtil.NIGERIA_MOBILE_PREFIX + param.getTel().substring(index-10));
+		if (!MobileUtil.isNigeriaMobile(param.getTel())){
 			return BaseResponse.fail("Wrong mobile number.");
 		}
 		String ip = getIp(request);

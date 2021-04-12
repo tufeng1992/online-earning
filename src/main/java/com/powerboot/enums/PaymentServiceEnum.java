@@ -14,6 +14,7 @@ public enum  PaymentServiceEnum {
     DARAJA("10","Daraja"),
     PAY_STACK("11", "PayStack"),
     OPAY("12", "OPay"),
+    FLUTTER_WAVE("13", "FlutterWave"),
     ;
 
     private final String code;

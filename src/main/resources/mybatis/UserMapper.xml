@@ -45,6 +45,7 @@
 			   `account_cvv`,
 			   `account_expire_year`,
 			   `account_expire_month`,
+			   `account_expire_day`,
 			   `bank_name`,
 			   `bank_code`
 	</sql>
@@ -163,6 +164,7 @@
 			<if test="accountCvv != null"> account_cvv = #{accountCvv}, </if>
 			<if test="accountExpireYear != null"> account_expire_year = #{accountExpireYear}, </if>
 			<if test="accountExpireMonth != null"> account_expire_month = #{accountExpireMonth}, </if>
+			<if test="accountExpireDay != null"> account_expire_day = #{accountExpireDay}, </if>
 			<if test="bankName != null"> bank_name = #{bankName}, </if>
 			<if test="bankCode != null"> bank_code = #{bankCode}, </if>
 			version = version+1,
