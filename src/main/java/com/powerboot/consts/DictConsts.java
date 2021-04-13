@@ -247,9 +247,6 @@ public class DictConsts {
      */
     public static final String PAY_STACK_PAY_CALL_BACK_URL = "PAY_STACK_PAY_CALL_BACK_URL";
 
-    //payStack 支付url
-    public static final String PAY_STACK_PAY_URL = "PAY_STACK_PAY_URL";
-
     /**
      * payStack 公钥
      */
@@ -295,6 +292,51 @@ public class DictConsts {
      * opay网关地址
      */
     public static final String OPAY_GATEWAY_URL = "OPAY_GATEWAY_URL";
+
+    /**
+     * flutter私钥
+     */
+    public static final String FLUTTER_SK = "FLUTTER_SK";
+
+    /**
+     * flutter公钥
+     */
+    public static final String FLUTTER_PK = "FLUTTER_PK";
+
+    /**
+     * flutter加密key
+     */
+    public static final String FLUTTER_ENCRYPTION_KEY = "FLUTTER_ENCRYPTION_KEY";
+
+    /**
+     * flutter网关地址
+     */
+    public static final String FLUTTER_GATEWAY_URL = "FLUTTER_GATEWAY_URL";
+
+    /**
+     * flutter redirect地址
+     */
+    public static final String FLUTTER_REDIRECT_URL = "FLUTTER_REDIRECT_URL";
+
+    /**
+     * flutter callback地址
+     */
+    public static final String FLUTTER_CALLBACK_URL = "FLUTTER_CALLBACK_URL";
+
+    /**
+     * flutter支付自定义title
+     */
+    public static final String FLUTTER_CUSTOMER_TITLE = "FLUTTER_CUSTOMER_TITLE";
+
+    /**
+     * flutter支付自定义des
+     */
+    public static final String FLUTTER_CUSTOMER_DES = "FLUTTER_CUSTOMER_DES";
+
+    /**
+     * flutter支付自定义logo
+     */
+    public static final String FLUTTER_CUSTOMER_LOGO = "FLUTTER_CUSTOMER_LOGO";
 
 
     //相同ip注册最大个数

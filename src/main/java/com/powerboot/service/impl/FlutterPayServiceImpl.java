@@ -14,6 +14,7 @@ import com.powerboot.response.pay.PaymentResult;
 import com.powerboot.response.pay.WalletResult;
 import com.powerboot.service.PaymentService;
 import com.powerboot.utils.RedisUtils;
+import com.powerboot.utils.flutter.core.FlutterPayment;
 import com.powerboot.utils.paystack.constants.PayStackConts;
 import com.powerboot.utils.paystack.core.PaystackInline;
 import com.powerboot.utils.paystack.domain.dto.PayStackResponse;
@@ -33,18 +34,14 @@ public class FlutterPayServiceImpl implements PaymentService {
     private static Logger logger = LoggerFactory.getLogger(FlutterPayServiceImpl.class);
 
     @Autowired
-    private PaystackInline paystackInline;
-
-    private String getPayCallBackURL() {
-        return RedisUtils.getValue(DictConsts.PAY_STACK_PAY_CALL_BACK_URL, String.class);
-    }
+    private FlutterPayment flutterPayment;
 
     @Override
     public BaseResponse<PaymentResult> getPayInOrder(QueryPayInParam queryPayInParam) {
         log.info("getPayInfoOrder : {}", queryPayInParam);
         PaymentResult paymentResult = new PaymentResult();
         String localOrderNo = queryPayInParam.getLocalOrderNo();
-        JSONObject jsonObject = paystackInline.verifyTransactions(localOrderNo);
+        JSONObject jsonObject = null;//paystackInline.verifyTransactions(localOrderNo);
         log.info("getPayInfoOrder : jsonObject : {}", jsonObject);
         if (check(jsonObject)) {
             JSONObject data = jsonObject.getJSONObject("data");
