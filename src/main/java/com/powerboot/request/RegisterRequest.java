@@ -2,12 +2,14 @@ package com.powerboot.request;
 
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
+import lombok.Data;
 
 import javax.validation.constraints.NotEmpty;
 
 /**
  * Create  2020 - 10 - 28 5:21 下午
  */
+@Data
 @ApiModel(value = "注册入参")
 public class RegisterRequest extends BaseRequest{
     @ApiModelProperty(value = "手机号")
@@ -21,6 +23,9 @@ public class RegisterRequest extends BaseRequest{
     @ApiModelProperty(value = "登陆密码")
     @NotEmpty(message = "please enter your password")
     private String password;
+    @ApiModelProperty(value = "邮箱")
+    @NotEmpty(message = "please enter your email")
+    private String email;
 
     public String getMobile() {
         return mobile;

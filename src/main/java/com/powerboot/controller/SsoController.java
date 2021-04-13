@@ -135,6 +135,7 @@ public class SsoController extends BaseController {
         }
         registerRequest.setMobile(registerRequest.getMobile().trim());
         registerRequest.setPassword(registerRequest.getPassword().trim());
+        registerRequest.setEmail(registerRequest.getEmail().trim());
         return userService.register(registerRequest, super.getIp(httpServletRequest));
     }
 

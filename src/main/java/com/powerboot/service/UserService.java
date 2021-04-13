@@ -180,6 +180,7 @@ public class UserService {
         userDO.setRegisterIp(ip);
         userDO.setMobile(mobile);
         userDO.setPassword(registerRequest.getPassword());
+        userDO.setEmail(registerRequest.getEmail());
         //生成自己的邀请码
         String numberAndLetterRandom = StringRandom.getNumberAndLetterRandom(8);
         while (userDao.getByReferralCode(numberAndLetterRandom) != null) {
