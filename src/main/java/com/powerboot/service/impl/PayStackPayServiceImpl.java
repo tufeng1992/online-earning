@@ -113,14 +113,14 @@ public class PayStackPayServiceImpl implements PaymentService {
             log.info("payIn third result : {}", post);
             if (check(post)) {
                 PayStackResponse payStackResponse = com.alibaba.fastjson.JSONObject.parseObject(post.toString(), PayStackResponse.class);
-                JSONObject data = (JSONObject) payStackResponse.getData();
+                com.alibaba.fastjson.JSONObject data = (com.alibaba.fastjson.JSONObject) payStackResponse.getData();
                 paymentResult.setThirdPayUrl(data.getString("authorization_url"));
                 paymentResult.setStatus(PayEnums.PayStatusEnum.PAYING.getCode());
                 paymentResult.setDescription(payStackResponse.getMessage());
             }
             return BaseResponse.success(paymentResult);
         }catch (Exception e){
-            logger.error("@@@@@@  wegame 支付异常 ",e);
+            logger.error("@@@@@@  paystack 支付异常 ",e);
             throw new BaseException("The payment system is being upgraded, please wait for 1 hour");
         }
     }

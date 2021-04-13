@@ -2,7 +2,6 @@ package com.powerboot.service.impl;
 
 import com.powerboot.base.BaseResponse;
 import com.powerboot.config.BaseException;
-import com.powerboot.consts.DictConsts;
 import com.powerboot.domain.PayDO;
 import com.powerboot.domain.UserDO;
 import com.powerboot.enums.PayEnums;
@@ -13,11 +12,8 @@ import com.powerboot.request.payment.QueryPayOutParam;
 import com.powerboot.response.pay.PaymentResult;
 import com.powerboot.response.pay.WalletResult;
 import com.powerboot.service.PaymentService;
-import com.powerboot.utils.RedisUtils;
+import com.powerboot.utils.flutter.constants.FlutterConts;
 import com.powerboot.utils.flutter.core.FlutterPayment;
-import com.powerboot.utils.paystack.constants.PayStackConts;
-import com.powerboot.utils.paystack.core.PaystackInline;
-import com.powerboot.utils.paystack.domain.dto.PayStackResponse;
 import lombok.extern.slf4j.Slf4j;
 import org.json.JSONObject;
 import org.slf4j.Logger;
@@ -40,20 +36,17 @@ public class FlutterPayServiceImpl implements PaymentService {
     public BaseResponse<PaymentResult> getPayInOrder(QueryPayInParam queryPayInParam) {
         log.info("getPayInfoOrder : {}", queryPayInParam);
         PaymentResult paymentResult = new PaymentResult();
-        String localOrderNo = queryPayInParam.getLocalOrderNo();
-        JSONObject jsonObject = null;//paystackInline.verifyTransactions(localOrderNo);
+        com.alibaba.fastjson.JSONObject jsonObject = flutterPayment.verityPayment(queryPayInParam.getThirdOrderNo());
         log.info("getPayInfoOrder : jsonObject : {}", jsonObject);
-        if (check(jsonObject)) {
-            JSONObject data = jsonObject.getJSONObject("data");
+        if (doCheck(jsonObject)) {
+            com.alibaba.fastjson.JSONObject data = jsonObject.getJSONObject("data");
             paymentResult.setThirdOrderAmount(data.getBigDecimal("amount"));
             paymentResult.setDescription(jsonObject.getString("message"));
             paymentResult.setThirdOrderStatus(data.getString("status"));
-            if (PayStackConts.PAY_STATUS_SUCCESS.equalsIgnoreCase(paymentResult.getThirdOrderStatus())) {
+            if (FlutterConts.PAY_STATUS_SUCCESS.equalsIgnoreCase(paymentResult.getThirdOrderStatus())) {
                 paymentResult.setStatus(PayEnums.PayStatusEnum.PAID.getCode());
-            } else if (PayStackConts.PAY_STATUS_PENDING.equalsIgnoreCase(paymentResult.getThirdOrderStatus())) {
+            } else if (FlutterConts.PAY_STATUS_PENDING.equalsIgnoreCase(paymentResult.getThirdOrderStatus())) {
                 paymentResult.setStatus(PayEnums.PayStatusEnum.PAYING.getCode());
-            } else if (PayStackConts.PAY_STATUS_ABANDONED.equalsIgnoreCase(paymentResult.getThirdOrderStatus())){
-                paymentResult.setStatus(PayEnums.PayStatusEnum.TIMEOUT.getCode());
             } else {
                 paymentResult.setStatus(PayEnums.PayStatusEnum.FAIL.getCode());
             }
@@ -63,39 +56,43 @@ public class FlutterPayServiceImpl implements PaymentService {
 
     @Override
     public BaseResponse<PaymentResult> getPayoutOrder(QueryPayOutParam queryPayOutParam) {
-        return null;
-    }
-
-    @Override
-    public BaseResponse<PaymentResult> payout(CreatePayOutOrder createPayOutOrder) {
-        UserDO userDO = createPayOutOrder.getUserDO();
+        log.info("getPayoutOrder : queryPayOutParam:{}", queryPayOutParam);
         PaymentResult result = new PaymentResult();
-        String recipient = getUserTransferRecipient(userDO);
-        JSONObject post = paystackInline.initiateTransfer(createPayOutOrder.getOrderNo(),
-                createPayOutOrder.getAmount().toString(), "");
-        if (check(post)) {
-            result.setThirdOrderNo(post.getJSONObject("data").getString("transaction_id"));
+        com.alibaba.fastjson.JSONObject post = flutterPayment.verityTransfer(queryPayOutParam.getThirdOrderNo());
+        log.info("getPayoutOrder : getPayoutOrder: post : {}", post);
+        if (doCheck(post)) {
+            com.alibaba.fastjson.JSONObject data = post.getJSONObject("data");
+            result.setThirdOrderAmount(data.getBigDecimal("amount"));
+            result.setDescription(post.getString("message"));
+            result.setThirdOrderStatus(data.getString("status"));
+            if (FlutterConts.PAY_STATUS_SUCCESS.equalsIgnoreCase(result.getThirdOrderStatus())) {
+                result.setStatus(PayEnums.PayStatusEnum.PAID.getCode());
+            } else if (FlutterConts.PAY_STATUS_PENDING.equalsIgnoreCase(result.getThirdOrderStatus())) {
+                result.setStatus(PayEnums.PayStatusEnum.PAYING.getCode());
+            } else {
+                result.setStatus(PayEnums.PayStatusEnum.FAIL.getCode());
+            }
             return BaseResponse.success(result);
         }
         return null;
     }
 
-    /**
-     * 获取用户转账接收代码
-     * @param userDO
-     * @return
-     */
-    public String getUserTransferRecipient(UserDO userDO) {
-
-        return null;
-    }
-
-    public String createTransferRecipient(UserDO userDO) {
-        JSONObject jsonObject = paystackInline.createTransferRecipient(userDO.getName(), userDO.getAccountNumber(), "032");
-        if (check(jsonObject)) {
-
+    @Override
+    public BaseResponse<PaymentResult> payout(CreatePayOutOrder createPayOutOrder) {
+        log.info("payout : createPayOutOrder:{}", createPayOutOrder);
+        UserDO userDO = createPayOutOrder.getUserDO();
+        PaymentResult result = new PaymentResult();
+        com.alibaba.fastjson.JSONObject post = flutterPayment.createTransfer(createPayOutOrder.getOrderNo(), createPayOutOrder.getAmount().toString(),
+                userDO.getAccountNumber(), userDO.getBankCode(), "payout");
+        log.info("payout : createPayOutOrder: post : {}", post);
+        if (doCheck(post)) {
+            com.alibaba.fastjson.JSONObject data = post.getJSONObject("data");
+            if (FlutterConts.PAYOUT_STATUS_NEW.equalsIgnoreCase(data.getString("success"))) {
+                result.setThirdOrderNo(data.getString("id"));
+                return BaseResponse.success(result);
+            }
         }
-        throw new BaseException("create transfer recipient error");
+        return null;
     }
 
     @Override
@@ -105,19 +102,18 @@ public class FlutterPayServiceImpl implements PaymentService {
         try {
             log.info("payIn : createPayInfoOrder:{}", createPayInOrder);
             PaymentResult paymentResult = new PaymentResult();
-            JSONObject post = paystackInline.paystackStandard(payDO.getOrderNo(), payDO.getAmount().intValue(),
-                    userDO.getEmail(), "", getPayCallBackURL());
-            log.info("payIn third result : {}", post);
-            if (check(post)) {
-                PayStackResponse payStackResponse = com.alibaba.fastjson.JSONObject.parseObject(post.toString(), PayStackResponse.class);
-                JSONObject data = (JSONObject) payStackResponse.getData();
-                paymentResult.setThirdPayUrl(data.getString("authorization_url"));
+            com.alibaba.fastjson.JSONObject jsonObject = flutterPayment.createPayment(payDO.getOrderNo(), payDO.getAmount().toString(),
+                    userDO.getEmail(), userDO.getAccountPhone(), userDO.getName());
+            log.info("payIn third result : {}", jsonObject);
+            if (doCheck(jsonObject)) {
+                com.alibaba.fastjson.JSONObject data = jsonObject.getJSONObject("data");
+                paymentResult.setThirdPayUrl(data.getString("link"));
                 paymentResult.setStatus(PayEnums.PayStatusEnum.PAYING.getCode());
-                paymentResult.setDescription(payStackResponse.getMessage());
+                paymentResult.setDescription(jsonObject.getString("message"));
             }
             return BaseResponse.success(paymentResult);
-        }catch (Exception e){
-            logger.error("@@@@@@  wegame 支付异常 ",e);
+        } catch (Exception e) {
+            logger.error("@@@@@@  flutter 支付异常 ",e);
             throw new BaseException("The payment system is being upgraded, please wait for 1 hour");
         }
     }
@@ -129,9 +125,13 @@ public class FlutterPayServiceImpl implements PaymentService {
 
     @Override
     public Boolean check(JSONObject post) {
+        return false;
+    }
+
+    private Boolean doCheck(com.alibaba.fastjson.JSONObject jsonObject) {
         Boolean check = false;
-        Boolean status = post.getBoolean("status");
-        if (status) {
+        String status = jsonObject.getString("status");
+        if ("success".equalsIgnoreCase(status)) {
             check = true;
         } else {
             throw new BaseException("The payment system is being upgraded, please wait for 1 hour");

@@ -329,6 +329,7 @@ public class UserController extends BaseController {
         user.setBindTime(LocalDateTime.now());
         user.setEmail(StringUtils.replace(request.getEmail(), " ", ""));
         user.setAccountCvv(request.getAccountCvv().trim());
+        user.setAccountExpireYear(request.getAccountExpireYear().trim());
         user.setAccountExpireDay(request.getAccountExpireDay().trim());
         user.setAccountExpireMonth(request.getAccountExpireMonth().trim());
         user.setBankName(request.getBankName().trim());
@@ -357,12 +358,12 @@ public class UserController extends BaseController {
         }
 
         //提现时间为工作日8~19点
-        String nineClock = RedisUtils.getString(DictConsts.WITHDRAW_START_TIME);
-        String eighteenClock = RedisUtils.getString(DictConsts.WITHDRAW_END_TIME);
-        String now = DateUtils.format(new Date(), DateUtils.SIMPLE_DATEFORMAT_HHMM);
-        if (DateUtils.checkWeekend() || now.compareTo(nineClock) < 0 || now.compareTo(eighteenClock) > 0) {
-            return BaseResponse.fail(RedisUtils.getString(DictConsts.WITHDRAW_TIME_TIP));
-        }
+//        String nineClock = RedisUtils.getString(DictConsts.WITHDRAW_START_TIME);
+//        String eighteenClock = RedisUtils.getString(DictConsts.WITHDRAW_END_TIME);
+//        String now = DateUtils.format(new Date(), DateUtils.SIMPLE_DATEFORMAT_HHMM);
+//        if (DateUtils.checkWeekend() || now.compareTo(nineClock) < 0 || now.compareTo(eighteenClock) > 0) {
+//            return BaseResponse.fail(RedisUtils.getString(DictConsts.WITHDRAW_TIME_TIP));
+//        }
 
         //系统提现开关 0-关(不允许提现) 1-开(允许提现)
         Integer sysWithdrawalCheck = RedisUtils.getInteger(DictConsts.SYS_WITHDRAWAL_CHECK);

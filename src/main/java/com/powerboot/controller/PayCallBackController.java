@@ -7,6 +7,7 @@ import com.powerboot.service.CallBackService;
 import com.powerboot.service.PayService;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
+import org.apache.commons.lang3.StringUtils;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -104,7 +105,24 @@ public class PayCallBackController extends BaseController{
     @ApiOperation("payStack 支付回调")
     @PostMapping("/payStack/payIn")
     public String payStackPayInCallBack(@RequestBody String requestJson) {
-        logger.info("wegeme 支付回调：" + requestJson);
+        logger.info("payStack 支付回调：" + requestJson);
+        return "SUCCESS";
+    }
+
+    @ApiOperation("flutter 支付回调")
+    @PostMapping("/flutter/payIn")
+    public String flutterPayInCallBack(String tx_ref, String transaction_id, String status) {
+        logger.info("flutter 支付回调：tx_ref : {}, transaction_id : [}. status : {}",
+                tx_ref, transaction_id, status);
+        if (StringUtils.isBlank(tx_ref)) {
+            return "FAIL";
+        }
+        PayDO payDO = payService.getOrderNo(tx_ref);
+        if (null != payDO) {
+            payDO.setThirdNo(transaction_id);
+            payDO.setThirdStatus(status);
+            payService.update(payDO);
+        }
         return "SUCCESS";
     }
 

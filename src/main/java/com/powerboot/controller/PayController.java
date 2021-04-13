@@ -80,10 +80,6 @@ public class PayController extends BaseController {
             return BaseResponse.fail(RedisUtils.getString(DictConsts.PAY_CLOSE_USER_CONTENT));
         }
 
-        if (userDO.getAccountPhone() == null || StringUtils.isBlank(userDO.getAccountPhone())){
-            return BaseResponse.fail(TipConsts.BANK_INFO_DEFECT);
-        }
-
         if (param.getType() == null || BigDecimal.ZERO.compareTo(param.getPayAmount()) >= 0) {
             return BaseResponse.fail("Recharge can not low of 300!");
         }

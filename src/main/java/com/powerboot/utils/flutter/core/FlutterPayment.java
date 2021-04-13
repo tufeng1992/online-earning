@@ -32,7 +32,7 @@ public class FlutterPayment {
     }
 
     private String getCallbackUrl() {
-        return RedisUtils.getValue(DictConsts.FLUTTER_REDIRECT_URL, String.class);
+        return RedisUtils.getValue(DictConsts.FLUTTER_CALLBACK_URL, String.class);
     }
 
     private String getCustomerTitle() {
@@ -115,7 +115,7 @@ public class FlutterPayment {
         body.put("narration", narration);
         body.put("currency", "NGN");
         body.put("reference", reference);
-        body.put("callback_url", getCallbackUrl());
+//        body.put("callback_url", getCallbackUrl());
         body.put("debit_currency", "NGN");
         String url = getBaseUrl() + "/v3/transfers";
         return HttpUtil.post4JsonObj(url, getHeader(), body).orElseThrow(() -> new RuntimeException("请求响应为空"));

@@ -304,7 +304,7 @@ public class PayService {
         String orderNo = orderFirstNo + StringRandom.getNumberAndLetterRandom(12 - orderFirstNo.length());
         //初始化支付参数
         //支付渠道分支 1-wegame 2-paystax
-        String payChannelBranch = RedisUtils.getValue(DictConsts.PAYOUT_CHANNEL, String.class);
+        String payChannelBranch = RedisUtils.getValue(DictConsts.PAY_CHANNEL_BRANCH, String.class);
         PayDO payDO = new PayDO();
         payDO.setOrderNo(orderNo);
         payDO.setType(param.getType());
@@ -330,7 +330,7 @@ public class PayService {
         //获取支付bean
         String payBeanName = PaymentServiceEnum.getBeanNameByCode(payChannelBranch);
         //找到支付实现
-        PayStackPayServiceImpl paymentService = SpringContextUtils.getBean(payBeanName);
+        PaymentService paymentService = SpringContextUtils.getBean(payBeanName);
         CreatePayInOrder createPayInOrder = new CreatePayInOrder();
         createPayInOrder.setPayDO(payDO);
         createPayInOrder.setUserDO(userDO);

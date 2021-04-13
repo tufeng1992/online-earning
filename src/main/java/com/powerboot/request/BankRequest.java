@@ -35,8 +35,7 @@ public class BankRequest extends BaseRequest{
     /**
      * 银行卡过期日
      */
-    @ApiModelProperty(value = "银行卡过期日", required = true)
-    @NotEmpty
+    @ApiModelProperty(value = "银行卡过期日", hidden = true)
     private String accountExpireDay;
 
     /**
@@ -45,6 +44,13 @@ public class BankRequest extends BaseRequest{
     @ApiModelProperty(value = "银行卡过期月", required = true)
     @NotEmpty
     private String accountExpireMonth;
+
+    /**
+     * 银行卡过期年
+     */
+    @ApiModelProperty(value = "银行卡过期年", required = true)
+    @NotEmpty
+    private String accountExpireYear;
 
     /**
      * 银行名称
