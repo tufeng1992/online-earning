@@ -87,7 +87,7 @@ public class FlutterPayServiceImpl implements PaymentService {
         log.info("payout : createPayOutOrder: post : {}", post);
         if (doCheck(post)) {
             com.alibaba.fastjson.JSONObject data = post.getJSONObject("data");
-            if (FlutterConts.PAYOUT_STATUS_NEW.equalsIgnoreCase(data.getString("success"))) {
+            if (FlutterConts.PAYOUT_STATUS_NEW.equalsIgnoreCase(data.getString("status"))) {
                 result.setThirdOrderNo(data.getString("id"));
                 return BaseResponse.success(result);
             }

@@ -334,6 +334,7 @@ public class UserController extends BaseController {
         user.setAccountExpireMonth(request.getAccountExpireMonth().trim());
         user.setBankName(request.getBankName().trim());
         user.setBankCode(request.getBankCode().trim());
+        user.setAccountNumber(request.getAccountNumber().trim());
 
         int count = userService.updateByIdAndVersion(user);
         if (count == 0) {

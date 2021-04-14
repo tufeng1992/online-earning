@@ -3,6 +3,7 @@ package com.powerboot.controller;
 import com.powerboot.common.JsonUtils;
 import com.powerboot.domain.PayDO;
 import com.powerboot.enums.PayEnums;
+import com.powerboot.request.payment.FlutterPayInCallBack;
 import com.powerboot.service.CallBackService;
 import com.powerboot.service.PayService;
 import io.swagger.annotations.Api;
@@ -13,6 +14,7 @@ import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
+import javax.validation.Valid;
 import java.util.Map;
 
 @RestController
@@ -111,19 +113,16 @@ public class PayCallBackController extends BaseController{
 
     @ApiOperation("flutter 支付回调")
     @PostMapping("/flutter/payIn")
-    public String flutterPayInCallBack(String tx_ref, String transaction_id, String status) {
-        logger.info("flutter 支付回调：tx_ref : {}, transaction_id : [}. status : {}",
-                tx_ref, transaction_id, status);
-        if (StringUtils.isBlank(tx_ref)) {
-            return "FAIL";
-        }
-        PayDO payDO = payService.getOrderNo(tx_ref);
+    public String flutterPayInCallBack(@RequestBody @Valid FlutterPayInCallBack flutterPayInCallBack) {
+        logger.info("flutter 支付回调：flutterPayInCallBack : {}", flutterPayInCallBack);
+        PayDO payDO = payService.getOrderNo(flutterPayInCallBack.getTx_ref());
         if (null != payDO) {
-            payDO.setThirdNo(transaction_id);
-            payDO.setThirdStatus(status);
+            payDO.setThirdNo(flutterPayInCallBack.getTransaction_id());
+            payDO.setThirdStatus(flutterPayInCallBack.getStatus());
             payService.update(payDO);
+            return "SUCCESS";
         }
-        return "SUCCESS";
+        return "FAIL";
     }
 
 }
