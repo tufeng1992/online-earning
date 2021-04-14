@@ -727,12 +727,11 @@ public class UserController extends BaseController {
         createPayOutOrder.setUserDO(userDO);
 
         String payChannel = RedisUtils.getValue(DictConsts.PAYOUT_CHANNEL, String.class);
-        String payChannelBranch = "10";
+        String payChannelBranch = RedisUtils.getValue(DictConsts.PAYOUT_CHANNEL_BRANCH, String.class);
         //获取支付bean
         String payBeanName = PaymentServiceEnum.getBeanNameByCode(payChannelBranch);
-        //        String payBeanName = PaymentServiceEnum.getBeanNameByCode("3");
         //找到支付实现
-        PaymentService paymentService = (PaymentService) SpringContextUtils.getBean(payBeanName);
+        PaymentService paymentService = SpringContextUtils.getBean(payBeanName);
 
         BaseResponse<PaymentResult> payout = paymentService.payout(createPayOutOrder);
         if (payout == null) {
