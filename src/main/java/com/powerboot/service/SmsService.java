@@ -72,13 +72,13 @@ public class SmsService {
     }
 
     @Transactional
-    public BaseResponse<Integer> sendVerCode(SendSmsRequest param, String ip) {
+    public BaseResponse<String> sendVerCode(SendSmsRequest param, String ip) {
 
         //白名单手机不发送验证码
         String whitePhone = RedisUtils.getValue(DictConsts.WHITE_PHONE, String.class);
         if (StringUtils.isNotBlank(whitePhone) &&
                 Arrays.asList(whitePhone.split(",")).contains(param.getTel().substring(param.getTel().length() - 10))) {
-            return BaseResponse.success(60);
+            return BaseResponse.success("60");
         }
 
         String tel = param.getTel();
@@ -120,8 +120,7 @@ public class SmsService {
 
         //验证码位数
         Integer codeNumber = verCodeString == null ? null : Integer.parseInt(verCodeString);
-//        String verCode = StringRandom.getStringRandom(codeNumber);
-        String verCode = "123456";
+        String verCode = StringRandom.getStringRandom(codeNumber);
         //send sms
         String sendMsg = StringCommonUtils.buildString("Your Verification Code:{}", verCode);
         SmsDO lastTel = getLastByAppTel(tel, appId);
@@ -165,7 +164,7 @@ public class SmsService {
             RedisUtils.increment(ipKey, ipLive == null ? 36000 : ipLive);
 
             RedisUtils.increment(phoneKey, phoneLive == null ? 36000 : phoneLive);
-            return BaseResponse.success(smsResendTime);
+            return BaseResponse.success(verCode);
         } else {
             throw new BaseException("Send message error");
         }

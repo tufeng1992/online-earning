@@ -42,7 +42,7 @@ public class SmsController extends BaseController {
 
 	@ApiOperation(value = "发送验证码")
 	@PostMapping
-	public BaseResponse<Integer> sendVerCode(HttpServletRequest request,@RequestBody @Valid SendSmsRequest param){
+	public BaseResponse<String> sendVerCode(HttpServletRequest request,@RequestBody @Valid SendSmsRequest param){
 		int index = param.getTel().length();
 		if (index != 10 &&
 			(index != 13 || !param.getTel().substring(0,3).equals(MobileUtil.NIGERIA_MOBILE_PREFIX))){
@@ -64,7 +64,6 @@ public class SmsController extends BaseController {
 		if(RedisUtils.getString(loginKey)!=null){
             return BaseResponse.fail(RedisUtils.getString(DictConsts.RISK_USER_BLACK_TIP));
 		}
-
 		return smsService.sendVerCode(param,ip);
 	}
 

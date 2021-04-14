@@ -81,11 +81,12 @@
             $.ajax({
                 url:"/pay/callback/flutter/payIn",
                 type:"POST",
-                data:{
+                contentType: 'application/json',
+                data:JSON.stringify({
                     status: getQueryString('status'),
                     tx_ref: getQueryString('tx_ref'),
                     transaction_id:getQueryString('transaction_id'),
-                },
+                }),
                 success:function(result){
                     // window.closeWebview()
                     if(result ==='success'){
