@@ -28,28 +28,25 @@ public class BankRequest extends BaseRequest{
     /**
      * 银行卡CVV
      */
-    @ApiModelProperty(value = "银行卡CVV", required = true)
-    @NotEmpty
+    @ApiModelProperty(value = "银行卡CVV")
     private String accountCvv;
 
     /**
      * 银行卡过期日
      */
-    @ApiModelProperty(value = "银行卡过期日", hidden = true)
+    @ApiModelProperty(value = "银行卡过期日")
     private String accountExpireDay;
 
     /**
      * 银行卡过期月
      */
-    @ApiModelProperty(value = "银行卡过期月", required = true)
-    @NotEmpty
+    @ApiModelProperty(value = "银行卡过期月")
     private String accountExpireMonth;
 
     /**
      * 银行卡过期年
      */
-    @ApiModelProperty(value = "银行卡过期年", required = true)
-    @NotEmpty
+    @ApiModelProperty(value = "银行卡过期年")
     private String accountExpireYear;
 
     /**
