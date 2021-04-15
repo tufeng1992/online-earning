@@ -158,11 +158,11 @@ public class OrderController extends BaseController {
         orderDO.setProductId(param.getProductId());
         orderDO.setProductRation(param.getRatio().multiply(new BigDecimal(100)).longValue());
 
-        if(userDO.getMemberLevel() + 1 < param.getProductId()){
-            logger.error("非法接口刷单:" + userId);
-            response = BaseResponse.fail("error product");
-            return response;
-        }
+//        if(userDO.getMemberLevel() + 1 < param.getProductId()){
+//            logger.error("非法接口刷单:" + userId);
+//            response = BaseResponse.fail("error product");
+//            return response;
+//        }
 
         String priceStr = RedisUtils.getValue(userId.toString() + param.getProductId() + "price", String.class);
         String returnFundStr = RedisUtils.getValue(userId.toString() + param.getProductId() + "returnFund", String.class);

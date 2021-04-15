@@ -12,6 +12,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
@@ -113,6 +114,7 @@ public class PayCallBackController extends BaseController{
 
     @ApiOperation("flutter 支付回调")
     @PostMapping("/flutter/payIn")
+    @Transactional(rollbackFor = Exception.class)
     public String flutterPayInCallBack(@RequestBody @Valid FlutterPayInCallBack flutterPayInCallBack) {
         logger.info("flutter 支付回调：flutterPayInCallBack : {}", flutterPayInCallBack);
         PayDO payDO = payService.getOrderNo(flutterPayInCallBack.getTx_ref());
@@ -120,7 +122,8 @@ public class PayCallBackController extends BaseController{
             payDO.setThirdNo(flutterPayInCallBack.getTransaction_id());
             payDO.setThirdStatus(flutterPayInCallBack.getStatus());
             payService.update(payDO);
-            return "SUCCESS";
+            payService.getByOrderNo(payDO.getOrderNo());
+            return "success";
         }
         return "FAIL";
     }

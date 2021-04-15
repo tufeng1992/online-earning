@@ -46,7 +46,7 @@ public class MobileUtil {
         String e2 = getRandom(0,9);
         String e3 = getRandom(0,9);
         String e4 = getRandom(0,9);
-        return "254 7" +s1+ "****" + e1 + e2 + e3 ;
+        return "234 7" +s1+ "****" + e1 + e2 + e3 ;
     }
 
     public static String getRandom(int min, int max){

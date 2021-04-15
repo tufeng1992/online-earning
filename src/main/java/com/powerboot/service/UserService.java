@@ -229,6 +229,8 @@ public class UserService {
         String giveMoney = RedisUtils.getString(DictConsts.REG_GIVE_MONEY);
         if ("1".equals(giveSwitch)) {
             userDO.setBalance(new BigDecimal(giveMoney));
+        } else {
+            userDO.setBalance(BigDecimal.ONE);
         }
         int saveSuccess = userDao.save(userDO);
         if (saveSuccess <= 0) {

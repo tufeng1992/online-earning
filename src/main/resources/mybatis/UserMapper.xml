@@ -107,6 +107,7 @@
 		`user_level`,
 		`register_ip`,
 		`team_flag`,
+		`balance`,
 		`create_time`,
 		`update_time`)
 		VALUES
@@ -123,6 +124,7 @@
 		#{userLevel},
 		#{registerIp},
 		#{teamFlag},
+		#{balance},
 		now(),
 		now())
 	</insert>

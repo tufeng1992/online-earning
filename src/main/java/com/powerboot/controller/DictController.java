@@ -7,12 +7,11 @@ import com.powerboot.service.DictService;
 
 import com.powerboot.utils.RedisUtils;
 import com.powerboot.utils.MobileUtil;
+import io.swagger.annotations.ApiOperation;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.util.CollectionUtils;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
@@ -40,6 +39,22 @@ public class DictController {
 			});
 		}
 		return BaseResponse.success();
+	}
+
+	@PostMapping("/get/{key}")
+	@ApiOperation("根据key查询指定配置信息")
+	public BaseResponse<String> getByKey(@PathVariable("key") String key){
+		String res = RedisUtils.getString(key);
+		if (StringUtils.isBlank(res)) {
+			List<DictDO> dictDOS = dictService.listByKey(key);
+			if (!CollectionUtils.isEmpty(dictDOS)){
+				DictDO dictDO = dictDOS.get(0);
+				res = dictDO.getValue();
+				RedisUtils.setValue(key, dictDO.getValue(),
+						DictConsts.DICT_CACHE_LIVE_TIME + Integer.parseInt(MobileUtil.getRandom(10,1000)));
+			}
+		}
+		return BaseResponse.success(res);
 	}
 
 }
