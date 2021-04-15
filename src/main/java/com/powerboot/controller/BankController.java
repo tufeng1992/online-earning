@@ -13,6 +13,7 @@ import io.swagger.annotations.ApiOperation;
 import org.apache.commons.collections.CollectionUtils;
 import org.json.JSONObject;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -27,7 +28,7 @@ public class BankController extends BaseController {
      * 获取银行列表信息
      * @return
      */
-    @GetMapping("/banks")
+    @PostMapping("/banks")
     @ApiOperation("获取银行列表信息")
     public BaseResponse<List<PayStackBank>> selectBankList() {
         List<PayStackBank> res = RedisUtils.getList(DictConsts.PAY_STACK_BANK_LIST, PayStackBank.class);
