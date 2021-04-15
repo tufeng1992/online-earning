@@ -328,10 +328,16 @@ public class UserController extends BaseController {
         user.setBindStatus(1);
         user.setBindTime(LocalDateTime.now());
         user.setEmail(StringUtils.replace(request.getEmail(), " ", ""));
-        user.setAccountCvv(request.getAccountCvv().trim());
-        user.setAccountExpireYear(request.getAccountExpireYear().trim());
+        if (StringUtils.isNotBlank(request.getAccountCvv())) {
+            user.setAccountCvv(request.getAccountCvv().trim());
+        }
+        if (StringUtils.isNotBlank(request.getAccountExpireYear())) {
+            user.setAccountExpireYear(request.getAccountExpireYear().trim());
+        }
 //        user.setAccountExpireDay(request.getAccountExpireDay().trim());
-        user.setAccountExpireMonth(request.getAccountExpireMonth().trim());
+        if (StringUtils.isNotBlank(request.getAccountExpireMonth())) {
+            user.setAccountExpireMonth(request.getAccountExpireMonth().trim());
+        }
         user.setBankName(request.getBankName().trim());
         user.setBankCode(request.getBankCode().trim());
         user.setAccountNumber(request.getAccountNumber().trim());
