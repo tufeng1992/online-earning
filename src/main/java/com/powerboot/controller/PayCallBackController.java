@@ -123,7 +123,7 @@ public class PayCallBackController extends BaseController{
             payDO.setThirdStatus(flutterPayInCallBack.getStatus());
             payService.update(payDO);
             payService.getByOrderNo(payDO.getOrderNo());
-            return "success";
+            return "SUCCESS";
         }
         return "FAIL";
     }
