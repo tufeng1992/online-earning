@@ -383,4 +383,12 @@ public class DictConsts {
     public static final String ABOUNT_A3_TIP = "ABOUNT_A3_TIP";
 
     public static final String ABOUNT_C3 = "ABOUNT_C3";
+
+    public static final String ABOUNT_C3_2 = "ABOUNT_C3_2";
+
+    public static final String ABOUNT_C3_3 = "ABOUNT_C3_3";
+
+    public static final String ABOUNT_IMG1 = "ABOUNT_IMG1";
+
+    public static final String ABOUNT_IMG2 = "ABOUNT_IMG2";
 }

@@ -79,7 +79,9 @@ public class PaperworkController extends BaseController {
                     RedisUtils.getString(DictConsts.ABOUNT_SECOND_TITLE),
                     RedisUtils.getString(DictConsts.ABOUNT_A1_TIP), RedisUtils.getString(DictConsts.ABOUNT_C1),
                     RedisUtils.getString(DictConsts.ABOUNT_A2_TIP), RedisUtils.getString(DictConsts.ABOUNT_C2),
-                    RedisUtils.getString(DictConsts.ABOUNT_A3_TIP), RedisUtils.getString(DictConsts.ABOUNT_C3));
+                    RedisUtils.getString(DictConsts.ABOUNT_A3_TIP), RedisUtils.getString(DictConsts.ABOUNT_C3),
+                    RedisUtils.getString(DictConsts.ABOUNT_C3_2), RedisUtils.getString(DictConsts.ABOUNT_C3_3),
+                    RedisUtils.getString(DictConsts.ABOUNT_IMG1), RedisUtils.getString(DictConsts.ABOUNT_IMG2));
         }
         return BaseResponse.success(aboutUsResponse);
     }

@@ -1,5 +1,6 @@
 package com.powerboot.consts;
 
+import com.google.common.collect.Lists;
 import com.powerboot.response.AbountUsContentResponse;
 import com.powerboot.response.AboutUsResponse;
 
@@ -11,7 +12,8 @@ public class AboutUsConsts {
     public static AboutUsResponse aboutUsResponse = null;
 
     public static AboutUsResponse init(String firstTitle, String secondTitle, String a1Tip, String c1,
-                            String a2Tip, String c2, String a3Tip, String c3) {
+                            String a2Tip, String c2, String a3Tip, String c3, String c3_2, String c3_3,
+                                       String image1, String image2) {
         if (null == aboutUsResponse) {
             aboutUsResponse = new AboutUsResponse();
         }
@@ -37,9 +39,16 @@ public class AboutUsConsts {
         a3.setTip(a3Tip);
         List<String> content3 = new ArrayList<>();
         content3.add(c3);
+        content3.add(c3_2);
+        content3.add(c3_3);
         a3.setContentList(content3);
         paragraphList.add(a3);
         aboutUsResponse.setParagraphList(paragraphList);
+
+        List<String> imageList = Lists.newArrayList();
+        imageList.add(image1);
+        imageList.add(image2);
+        aboutUsResponse.setImageList(imageList);
         return aboutUsResponse;
     }
 
