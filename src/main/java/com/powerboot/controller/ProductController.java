@@ -81,7 +81,9 @@ public class ProductController extends BaseController {
                         BigDecimal resultAmount = BigDecimal.valueOf(Math.random() * (high - low) + low).setScale(2, BigDecimal.ROUND_DOWN);
                         o.setOriginPrice(levelLowPrice);
                         po.setPrice(resultAmount);
-                        po.setReturnFund(resultAmount.add(resultAmount.multiply(new BigDecimal(hashMapBalance.get(o.getLevel()).get(3)).divide(new BigDecimal(10000)))).setScale(2, BigDecimal.ROUND_DOWN));
+                        po.setReturnFund(resultAmount.add(resultAmount.multiply(
+                                new BigDecimal(hashMapBalance.get(o.getLevel())
+                                        .get(3)).divide(new BigDecimal(10000)))).setScale(2, BigDecimal.ROUND_DOWN));
                     }
 
                     //新增改造字段，赋值
@@ -140,7 +142,9 @@ public class ProductController extends BaseController {
                                 count = Integer.valueOf(countStr);
                             }
                             if (count == 0) {
-                                po.setReturnFund(po.getPrice().add(po.getReturnFund().subtract(po.getPrice()).divide(new BigDecimal("2"), 2, BigDecimal.ROUND_DOWN)));
+                                po.setReturnFund(po.getPrice().add(
+                                        po.getReturnFund().subtract(
+                                                po.getPrice()).divide(new BigDecimal("2"), 2, BigDecimal.ROUND_DOWN)));
                             }
                         }
                     }

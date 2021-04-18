@@ -367,4 +367,20 @@ public class DictConsts {
 
     //审批开关 0-关 1-开
     public static final String APPLY_SWITCH = "APPLY_SWITCH";
+
+    public static final String ABOUNT_FIRST_TITLE = "ABOUNT_FIRST_TITLE";
+
+    public static final String ABOUNT_SECOND_TITLE = "ABOUNT_SECOND_TITLE";
+
+    public static final String ABOUNT_A1_TIP = "ABOUNT_A1_TIP";
+
+    public static final String ABOUNT_C1 = "ABOUNT_C1";
+
+    public static final String ABOUNT_A2_TIP = "ABOUNT_A2_TIP";
+
+    public static final String ABOUNT_C2 = "ABOUNT_C2";
+
+    public static final String ABOUNT_A3_TIP = "ABOUNT_A3_TIP";
+
+    public static final String ABOUNT_C3 = "ABOUNT_C3";
 }

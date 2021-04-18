@@ -4,19 +4,18 @@ import com.powerboot.base.BaseResponse;
 import com.powerboot.common.JsonUtils;
 import com.powerboot.consts.AboutUsConsts;
 import com.powerboot.consts.CacheConsts;
+import com.powerboot.consts.DictConsts;
 import com.powerboot.domain.IncomeMethodsDO;
 import com.powerboot.domain.UserDO;
 import com.powerboot.request.BaseRequest;
-import com.powerboot.response.AboutUsResponse;
-import com.powerboot.response.InviteFriendResponse;
-import com.powerboot.response.ServiceCenterResponse;
-import com.powerboot.response.ServiceMobileResponse;
+import com.powerboot.response.*;
 import com.powerboot.service.IncomeMethodsService;
 import com.powerboot.service.UserService;
 import com.powerboot.utils.RedisUtils;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 
+import java.util.ArrayList;
 import java.util.List;
 import javax.validation.Valid;
 
@@ -74,7 +73,15 @@ public class PaperworkController extends BaseController {
     @PostMapping("/aboutUs")
     @ResponseBody
     public BaseResponse<AboutUsResponse> aboutUs() {
-        return BaseResponse.success(AboutUsConsts.aboutUsResponse);
+        AboutUsResponse aboutUsResponse = AboutUsConsts.aboutUsResponse;
+        if (null == aboutUsResponse) {
+            aboutUsResponse = AboutUsConsts.init(RedisUtils.getString(DictConsts.ABOUNT_FIRST_TITLE),
+                    RedisUtils.getString(DictConsts.ABOUNT_SECOND_TITLE),
+                    RedisUtils.getString(DictConsts.ABOUNT_A1_TIP), RedisUtils.getString(DictConsts.ABOUNT_C1),
+                    RedisUtils.getString(DictConsts.ABOUNT_A2_TIP), RedisUtils.getString(DictConsts.ABOUNT_C2),
+                    RedisUtils.getString(DictConsts.ABOUNT_A3_TIP), RedisUtils.getString(DictConsts.ABOUNT_C3));
+        }
+        return BaseResponse.success(aboutUsResponse);
     }
 
     @ApiOperation(value = "邀请好友提示")
