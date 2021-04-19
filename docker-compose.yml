@@ -43,3 +43,19 @@ services:
     command:
       # 执行的命令
       redis-server --requirepass adminvxadmin
+  nginx:
+    restart: always
+    container_name: nginx
+    image: nginx
+    ports:
+      - 80:80
+      - 443:443
+    volumes:
+      - /home/ubuntu/nginx/conf.d:/etc/nginx/conf.d
+      - /home/ubuntu/nginx/log:/var/log/nginx
+      - /home/ubuntu/nginx/wwww:/var/www
+      - /home/ubuntu/nginx/etc/letsencrypt:/etc/letsencrypt
+      - /home/ubuntu/nginx/html:/usr/share/nginx/html
+      - /home/ubuntu/nginx/cert:/etc/nginx/cert
+    links:
+      - app:app
