@@ -368,27 +368,73 @@ public class DictConsts {
     //审批开关 0-关 1-开
     public static final String APPLY_SWITCH = "APPLY_SWITCH";
 
+    /**
+     * 关于我配置
+     */
     public static final String ABOUNT_FIRST_TITLE = "ABOUNT_FIRST_TITLE";
 
+    /**
+     * 关于我配置
+     */
     public static final String ABOUNT_SECOND_TITLE = "ABOUNT_SECOND_TITLE";
 
+    /**
+     * 关于我配置
+     */
     public static final String ABOUNT_A1_TIP = "ABOUNT_A1_TIP";
 
+    /**
+     * 关于我配置
+     */
     public static final String ABOUNT_C1 = "ABOUNT_C1";
 
+    /**
+     * 关于我配置
+     */
     public static final String ABOUNT_A2_TIP = "ABOUNT_A2_TIP";
 
+    /**
+     * 关于我配置
+     */
     public static final String ABOUNT_C2 = "ABOUNT_C2";
 
+    /**
+     * 关于我配置
+     */
     public static final String ABOUNT_A3_TIP = "ABOUNT_A3_TIP";
 
+    /**
+     * 关于我配置
+     */
     public static final String ABOUNT_C3 = "ABOUNT_C3";
 
+    /**
+     * 关于我配置
+     */
     public static final String ABOUNT_C3_2 = "ABOUNT_C3_2";
 
+    /**
+     * 关于我配置
+     */
     public static final String ABOUNT_C3_3 = "ABOUNT_C3_3";
 
+    /**
+     * 关于我配置
+     */
     public static final String ABOUNT_IMG1 = "ABOUNT_IMG1";
 
+    /**
+     * 关于我配置
+     */
     public static final String ABOUNT_IMG2 = "ABOUNT_IMG2";
+
+    /**
+     * 商品等级金额配置
+     */
+    public static final String PRODUCT_DESC_AMOUNT = "PRODUCT_DESC_AMOUNT";
+
+    /**
+     * 商品等级描述配置
+     */
+    public static final String PRODUCT_INTRODUCTION = "PRODUCT_INTRODUCTION";
 }

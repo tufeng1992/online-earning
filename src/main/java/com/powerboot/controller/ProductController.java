@@ -2,6 +2,7 @@ package com.powerboot.controller;
 
 import com.powerboot.base.BaseResponse;
 import com.powerboot.consts.DictAccount;
+import com.powerboot.consts.DictConsts;
 import com.powerboot.domain.OrderDO;
 import com.powerboot.domain.ProductDO;
 import com.powerboot.domain.UserDO;
@@ -214,26 +215,29 @@ public class ProductController extends BaseController {
     }
 
     private void addNewInfo(ProductListDto po, ProductDO productDO) {
-
+        String a = RedisUtils.getString(DictConsts.PRODUCT_DESC_AMOUNT);
+        String[] amounts = a.split("\\|");
+        String i = RedisUtils.getString(DictConsts.PRODUCT_INTRODUCTION);
+        String[] introductions = i.split("\\|");
         if (productDO.getLevel().equals(1)) {
-            po.setIntroduction("Accessories");
-            po.setDescAmount(new BigDecimal(100));
+            po.setIntroduction(introductions[0]);
+            po.setDescAmount(new BigDecimal(amounts[0]));
         }
         if (productDO.getLevel().equals(2)) {
-            po.setIntroduction("Kitchenware");
-            po.setDescAmount(new BigDecimal(500));
+            po.setIntroduction(introductions[1]);
+            po.setDescAmount(new BigDecimal(amounts[1]));
         }
         if (productDO.getLevel().equals(3)) {
-            po.setIntroduction("Consumer electronics");
-            po.setDescAmount(new BigDecimal(3000));
+            po.setIntroduction(introductions[2]);
+            po.setDescAmount(new BigDecimal(amounts[2]));
         }
         if (productDO.getLevel().equals(4)) {
-            po.setIntroduction("Fitness Equipment");
-            po.setDescAmount(new BigDecimal(8000));
+            po.setIntroduction(introductions[3]);
+            po.setDescAmount(new BigDecimal(amounts[3]));
         }
         if (productDO.getLevel().equals(5)) {
-            po.setIntroduction("Household appliances");
-            po.setDescAmount(new BigDecimal(20000));
+            po.setIntroduction(introductions[4]);
+            po.setDescAmount(new BigDecimal(amounts[4]));
         }
     }
 }
