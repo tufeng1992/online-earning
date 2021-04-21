@@ -1,11 +1,17 @@
 package com.powerboot.controller;
 
 import com.powerboot.common.JsonUtils;
+import com.powerboot.config.BaseException;
+import com.powerboot.consts.DictConsts;
 import com.powerboot.domain.PayDO;
 import com.powerboot.enums.PayEnums;
+import com.powerboot.enums.PaymentChannelEnum;
+import com.powerboot.enums.PaymentServiceEnum;
 import com.powerboot.request.payment.FlutterPayInCallBack;
+import com.powerboot.request.payment.FlutterPayInWebhook;
 import com.powerboot.service.CallBackService;
 import com.powerboot.service.PayService;
+import com.powerboot.utils.flutter.constants.FlutterConts;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import org.apache.commons.lang3.StringUtils;
@@ -124,6 +130,44 @@ public class PayCallBackController extends BaseController{
             payService.update(payDO);
             payService.getByOrderNo(payDO.getOrderNo());
             return "SUCCESS";
+        }
+        return "FAIL";
+    }
+
+    @PostMapping("/flutter/pay/webhook")
+    @Transactional(rollbackFor = Exception.class)
+    public String flutterPayInWebhook(@RequestBody FlutterPayInWebhook resp) {
+        logger.info("flutter 支付回调：flutterPayInWebhook : {}", resp);
+        String event = resp.getEvent();
+        String eventType = resp.getEventType();
+        Map<String, Object> data = resp.getData();
+        if (!"transfer.completed".equalsIgnoreCase(event) || null == data) {
+            throw new BaseException("flutterPayInWebhook error");
+        }
+
+        String txRef = null;
+        String transacationId = data.get("id").toString();
+        String status = data.get("status").toString();
+        if ("Transfer".equalsIgnoreCase(eventType)) {
+            txRef = data.get("reference").toString();
+        } else {
+            txRef = data.get("tx_ref").toString();
+        }
+        if (FlutterConts.PAY_STATUS_SUCCESS.equalsIgnoreCase(status)) {
+            PayDO payDO = payService.getOrderNo(txRef);
+            if (null != payDO) {
+                payDO.setThirdNo(transacationId);
+                payDO.setThirdStatus(status);
+                payService.update(payDO);
+                if ("Transfer".equalsIgnoreCase(eventType)) {
+                    payService.payoutSuccess(payDO, PaymentServiceEnum.FLUTTER_WAVE.getBeanName());
+                } else {
+                    payService.getByOrderNo(payDO.getOrderNo());
+                }
+                return "SUCCESS";
+            }
+        } else {
+            throw new BaseException("transcation not successful");
         }
         return "FAIL";
     }
