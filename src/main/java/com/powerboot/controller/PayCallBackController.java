@@ -11,6 +11,8 @@ import com.powerboot.request.payment.FlutterPayInCallBack;
 import com.powerboot.request.payment.FlutterPayInWebhook;
 import com.powerboot.service.CallBackService;
 import com.powerboot.service.PayService;
+import com.powerboot.utils.RedisUtils;
+import com.powerboot.utils.ServletUtils;
 import com.powerboot.utils.flutter.constants.FlutterConts;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
@@ -21,6 +23,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 
+import javax.servlet.http.HttpServletRequest;
 import javax.validation.Valid;
 import java.util.Map;
 
@@ -138,6 +141,12 @@ public class PayCallBackController extends BaseController{
     @Transactional(rollbackFor = Exception.class)
     public String flutterPayInWebhook(@RequestBody FlutterPayInWebhook resp) {
         logger.info("flutter 支付回调：flutterPayInWebhook : {}", resp);
+        HttpServletRequest request = ServletUtils.getRequest();
+        String flutterWebhookHash = RedisUtils.getString(DictConsts.FLUTTER_WEBHOOK_HASH);
+        String reqHash = request.getHeader("verif-hash");
+        if (StringUtils.isBlank(reqHash) || !flutterWebhookHash.equalsIgnoreCase(reqHash)) {
+            throw new BaseException("flutterPayInWebhook hash error");
+        }
         String event = resp.getEvent();
         String eventType = resp.getEventType();
         Map<String, Object> data = resp.getData();

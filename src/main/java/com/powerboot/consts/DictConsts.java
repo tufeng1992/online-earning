@@ -338,6 +338,11 @@ public class DictConsts {
      */
     public static final String FLUTTER_CUSTOMER_LOGO = "FLUTTER_CUSTOMER_LOGO";
 
+    /**
+     * flutter支付webhook hash
+     */
+    public static final String FLUTTER_WEBHOOK_HASH = "FLUTTER_WEBHOOK_HASH";
+
 
     //相同ip注册最大个数
     public static final String IP_REGISTER_MAX_COUNT = "IP_REGISTER_MAX_COUNT";
