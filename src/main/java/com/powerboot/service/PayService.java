@@ -214,24 +214,14 @@ public class PayService {
                         && relPayAmount.compareTo(new BigDecimal("300")) >= 0
                         && userDO.getParentId() != null) {
                         //给上级返现
-                        BalanceDO parent = new BalanceDO();
-                        BigDecimal parentAmount = new BigDecimal(RedisUtils.getString(DictConsts.FIRST_RECHARGE_PARENT_AMOUNT));
-                        parent.setAmount(parentAmount);
-                        parent.setType(BalanceTypeEnum.C.getCode());
-                        parent.setUserId(userDO.getParentId());
-                        parent.setWithdrawAmount(BigDecimal.ZERO);
-                        parent.setServiceFee(BigDecimal.ZERO);
-                        parent.setStatus(StatusTypeEnum.SUCCESS.getCode());
-                        parent.setCreateTime(now);
-                        parent.setUpdateTime(now);
-                        parent.setOrderNo(payDO.getOrderNo());
-                        balanceService.addBalanceDetail(parent);
+                        addParentBalance(1, userDO, now, payDO.getOrderNo());
                         //更新邀请记录
                         commonExecutor.execute(()->{
                             InviteLogDO inviteLog = new InviteLogDO();
                             inviteLog.setNewUserId(payDO.getUserId().intValue());
                             inviteLog.setFirstRechargeDate(now);
                             inviteLog.setNewUserStatus(InviteUserStatusEnum.RECHARGE.getCode());
+                            BigDecimal parentAmount = new BigDecimal(RedisUtils.getString(DictConsts.FIRST_RECHARGE_PARENT_AMOUNT));
                             inviteLog.setInviteAmount(parentAmount);
                             inviteLogService.updateByNewUserId(inviteLog);
                         });
@@ -268,6 +258,52 @@ public class PayService {
 
         }
         return BaseResponse.success(payDO);
+    }
+
+    /**
+     * 添加上级返现
+     * @param parentLevel
+     * @param userDO
+     * @param now
+     * @param orderNo
+     */
+    private void addParentBalance(int parentLevel, UserDO userDO, Date now, String orderNo) {
+        UserDO parentUser = userService.getUser(userDO.getParentId());
+        if (null == parentUser || parentLevel == 4) {
+            return;
+        }
+        BalanceDO parent = new BalanceDO();
+        //获取首冲返现级别金额
+        BigDecimal parentAmount = getParentAmount(parentLevel);
+        parent.setAmount(parentAmount);
+        parent.setType(BalanceTypeEnum.C.getCode());
+        parent.setUserId(parentUser.getId());
+        parent.setWithdrawAmount(BigDecimal.ZERO);
+        parent.setServiceFee(BigDecimal.ZERO);
+        parent.setStatus(StatusTypeEnum.SUCCESS.getCode());
+        parent.setCreateTime(now);
+        parent.setUpdateTime(now);
+        parent.setOrderNo(orderNo);
+        balanceService.addBalanceDetail(parent);
+        parentLevel++;
+        addParentBalance(parentLevel, parentUser, now, orderNo);
+    }
+
+    /**
+     * 获取首冲返现级别金额
+     * @param parentLevel
+     * @return
+     */
+    private BigDecimal getParentAmount(int parentLevel) {
+        BigDecimal parentAmount = null;
+        if (1 == parentLevel) {
+            parentAmount = new BigDecimal(RedisUtils.getString(DictConsts.FIRST_RECHARGE_PARENT_AMOUNT));
+        } else if (2 == parentLevel) {
+            parentAmount = new BigDecimal(RedisUtils.getString(DictConsts.FIRST_RECHARGE_PARENT_AMOUNT_LEVEL2));
+        } else if (3 == parentLevel) {
+            parentAmount = new BigDecimal(RedisUtils.getString(DictConsts.FIRST_RECHARGE_PARENT_AMOUNT_LEVEL3));
+        }
+        return parentAmount;
     }
 
     public BaseResponse<PayDO> handelOrderStatus(Map<String, Object> requestJson) {

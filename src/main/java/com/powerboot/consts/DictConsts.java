@@ -88,6 +88,13 @@ public class DictConsts {
     //首冲上级返现金额
     public static final String FIRST_RECHARGE_PARENT_AMOUNT = "FIRST_RECHARGE_PARENT_AMOUNT";
 
+    //首冲上级返现金额
+    public static final String FIRST_RECHARGE_PARENT_AMOUNT_LEVEL2 = "FIRST_RECHARGE_PARENT_AMOUNT_LEVEL2";
+
+    //首冲上级返现金额
+    public static final String FIRST_RECHARGE_PARENT_AMOUNT_LEVEL3 = "FIRST_RECHARGE_PARENT_AMOUNT_LEVEL3";
+
+
     //充值金额集合
     public static final String RECHARGE_AMOUNT_LIST = "RECHARGE_AMOUNT_LIST";
 
