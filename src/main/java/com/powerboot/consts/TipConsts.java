@@ -81,6 +81,6 @@ public class TipConsts {
     //用户利息开关关闭提现警告
     public static final String LX_SWITCH_CLOSE = "The account has been restricted, you can only withdraw the principal,please contact Customer Service.";
 
-
-
+    //余额不足
+    public static final String CREATE_ORDER_BALANCE_FAIL = "Your account balance is insufficient, please recharge it ";
 }

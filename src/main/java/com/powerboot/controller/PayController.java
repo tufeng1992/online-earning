@@ -143,6 +143,47 @@ public class PayController extends BaseController {
         return payService.createOrder(param, userDO);
     }
 
+    @ApiOperation(value = "创建支付订单:购买VIP")
+    @PostMapping("/createForBalance")
+    public BaseResponse<PayDO> createOrderForBalance(@RequestBody @Valid LoanDetailRequest param) {
+        UserDO userDO = userService.get(getUserId(param));
+        if (userDO == null) {
+            return BaseResponse.fail("error : vip amount!");
+        }
+
+        //充值风控校验
+        BaseResponse checkResult = checkRule(param,userDO);
+        if (checkResult.isFail()){
+            return checkResult;
+        }
+
+        if (!param.getType().equals(1)) {
+            BigDecimal VIPAmount;
+            if (param.getType().equals(2)) {
+                VIPAmount = RedisUtils.getValue(DictAccount.VIP2_CHARGE, BigDecimal.class);
+            } else if (param.getType().equals(3)) {
+                VIPAmount = RedisUtils.getValue(DictAccount.VIP3_CHARGE, BigDecimal.class);
+            } else if (param.getType().equals(4)) {
+                VIPAmount = RedisUtils.getValue(DictAccount.VIP4_CHARGE, BigDecimal.class);
+            } else if (param.getType().equals(5)) {
+                VIPAmount = RedisUtils.getValue(DictAccount.VIP5_CHARGE, BigDecimal.class);
+            } else {
+                return BaseResponse.fail("error amount!");
+            }
+            if (VIPAmount == null) {
+                return BaseResponse.fail("error : vip amount!");
+            }
+            param.setPayAmount(VIPAmount);
+        } else {
+            return BaseResponse.fail("System error");
+        }
+        if (userDO.getBalance().compareTo(param.getPayAmount()) < 0) {
+            return BaseResponse.fail(TipConsts.CREATE_ORDER_BALANCE_FAIL);
+        }
+        param.setUserId(getUserId(param));
+        return payService.createOrderForBalance(param, userDO);
+    }
+
     @ApiOperation("获取 充值 记录")
     @PostMapping("/recharge")
     public BaseResponse<List<PayDO>> getRecharge(@RequestBody @Valid BaseRequest request) {

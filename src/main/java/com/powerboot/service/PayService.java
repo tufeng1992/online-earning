@@ -5,6 +5,7 @@ import com.powerboot.common.JsonUtils;
 import com.powerboot.config.BaseException;
 import com.powerboot.consts.CacheConsts;
 import com.powerboot.consts.DictConsts;
+import com.powerboot.consts.TipConsts;
 import com.powerboot.dao.PayDao;
 import com.powerboot.domain.*;
 import com.powerboot.enums.*;
@@ -376,6 +377,54 @@ public class PayService {
         logger.info("支付渠道:{} 用户id:{},创建支付订单成功,内部订单号:{},第三方URL:{}", "daraja", param.getUserId(), orderNo,
             payDO.getThirdUrl());
         update(payDO);
+        return BaseResponse.success(payDO);
+    }
+
+    //创建订单
+    @Transactional(rollbackFor = Exception.class)
+    public BaseResponse<PayDO> createOrderForBalance(LoanDetailRequest param, UserDO userDO) {
+        logger.info("创建订单,参数:{}", param);
+        logger.info("用户id:{},准备创建订单!", param.getUserId());
+        //生成随机订单号
+        String orderFirstNo = param.getUserId() + "p";
+        String orderNo = orderFirstNo + StringRandom.getNumberAndLetterRandom(12 - orderFirstNo.length());
+        //初始化支付参数
+        PayDO payDO = new PayDO();
+        payDO.setOrderNo(orderNo);
+        payDO.setType(param.getType());
+        payDO.setUserId(param.getUserId());
+        payDO.setAmount(param.getPayAmount());
+        payDO.setStatus(PayEnums.PayStatusEnum.PAID.getCode());
+        payDO.setPayChannel("1");
+        String payChannelBranch = RedisUtils.getValue(DictConsts.PAY_CHANNEL_BRANCH, String.class);
+        payDO.setPayChannelBranch(payChannelBranch);
+        payDO.setSaleId(userDO.getSaleId());
+        payDO.setApplyStatus(PayEnums.PayApplyStatusEnum.PASS.getCode());
+        if (StringUtils.isEmpty(param.getRefNo())) {
+            //生成随机凭证号
+            String refNo = "unit_ref_" + param.getUserId() + "_" + StringRandom.getNumberAndLetterRandom(10);
+            payDO.setRefNo(refNo);
+        } else {
+            payDO.setRefNo(param.getRefNo());
+        }
+
+        int saveSuccess = save(payDO);
+        if (saveSuccess <= 0) {
+            return BaseResponse.fail("Unknown error : Your payment was fail,please try again later!");
+        }
+        UserDO tempUserDO = userService.get(userDO.getId());
+        BigDecimal subBalance = tempUserDO.getBalance().subtract(param.getPayAmount());
+        if (subBalance.doubleValue() < 0) {
+            return BaseResponse.fail(TipConsts.CREATE_ORDER_BALANCE_FAIL);
+        }
+        //扣减余额
+        boolean res = userService.reduceMoney(userDO.getId(), param.getPayAmount(), userDO.getVersion());
+        if (!res) {
+            return BaseResponse.fail(TipConsts.CREATE_ORDER_BALANCE_FAIL);
+        }
+        //购买会员成功
+        userService.updateUserVIP(payDO.getUserId(), payDO.getType());
+        logger.info("支付渠道:{} 用户id:{},创建支付订单成功,内部订单号:{}", "daraja", param.getUserId(), orderNo);
         return BaseResponse.success(payDO);
     }
 
