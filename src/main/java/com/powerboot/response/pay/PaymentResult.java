@@ -66,4 +66,16 @@ public class PaymentResult {
     public void setDescription(String description) {
         this.description = description;
     }
+
+    @Override
+    public String toString() {
+        return "PaymentResult{" +
+                "status=" + status +
+                ", ThirdOrderStatus='" + ThirdOrderStatus + '\'' +
+                ", ThirdOrderNo='" + ThirdOrderNo + '\'' +
+                ", ThirdPayUrl='" + ThirdPayUrl + '\'' +
+                ", ThirdOrderAmount=" + ThirdOrderAmount +
+                ", description='" + description + '\'' +
+                '}';
+    }
 }

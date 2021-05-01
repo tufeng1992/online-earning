@@ -184,7 +184,7 @@
 		       `order_no`,`create_time`,`update_time`,`pay_channel`,`pay_channel_branch`,`third_url`,`apply_status`,
 		       `ref_no`,`request_time`,`third_response` from pay
 		where type &lt; 99
-		  and status = 1 and create_time>=CURRENT_TIMESTAMP - INTERVAL 180 MINUTE and   create_time &lt; CURRENT_TIMESTAMP - INTERVAL 30 MINUTE
+		  and status = 1 and create_time>=CURRENT_TIMESTAMP - INTERVAL 180 MINUTE and   create_time &lt; CURRENT_TIMESTAMP - INTERVAL 20 MINUTE
 	</select>
 
 	<select id="getCountByTypeStatus" resultType="com.powerboot.response.PayVO">

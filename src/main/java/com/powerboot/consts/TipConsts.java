@@ -83,4 +83,9 @@ public class TipConsts {
 
     //余额不足
     public static final String CREATE_ORDER_BALANCE_FAIL = "Your account balance is insufficient, please recharge it ";
+
+    /**
+     * 修改密码关闭提示
+     */
+    public static final String MODIFY_PASSWORD_NOT_SUPPORT = "Before the platform upgrade, password modification is not supported. Please contact customer service staff to reset your password.";
 }

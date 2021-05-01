@@ -12,6 +12,7 @@ import com.powerboot.request.payment.QueryPayOutParam;
 import com.powerboot.response.pay.PaymentResult;
 import com.powerboot.response.pay.WalletResult;
 import com.powerboot.service.PaymentService;
+import com.powerboot.utils.StringUtils;
 import com.powerboot.utils.flutter.constants.FlutterConts;
 import com.powerboot.utils.flutter.core.FlutterPayment;
 import lombok.extern.slf4j.Slf4j;
@@ -36,19 +37,46 @@ public class FlutterPayServiceImpl implements PaymentService {
     public BaseResponse<PaymentResult> getPayInOrder(QueryPayInParam queryPayInParam) {
         log.info("getPayInfoOrder : {}", queryPayInParam);
         PaymentResult paymentResult = new PaymentResult();
-        com.alibaba.fastjson.JSONObject jsonObject = flutterPayment.verityPayment(queryPayInParam.getThirdOrderNo());
-        log.info("getPayInfoOrder : jsonObject : {}", jsonObject);
-        if (doCheck(jsonObject)) {
-            com.alibaba.fastjson.JSONObject data = jsonObject.getJSONObject("data");
-            paymentResult.setThirdOrderAmount(data.getBigDecimal("amount"));
-            paymentResult.setDescription(jsonObject.getString("message"));
-            paymentResult.setThirdOrderStatus(data.getString("status"));
-            if (FlutterConts.PAY_STATUS_SUCCESS.equalsIgnoreCase(paymentResult.getThirdOrderStatus())) {
-                paymentResult.setStatus(PayEnums.PayStatusEnum.PAID.getCode());
-            } else if (FlutterConts.PAY_STATUS_PENDING.equalsIgnoreCase(paymentResult.getThirdOrderStatus())) {
-                paymentResult.setStatus(PayEnums.PayStatusEnum.PAYING.getCode());
-            } else {
-                paymentResult.setStatus(PayEnums.PayStatusEnum.FAIL.getCode());
+        if (StringUtils.isBlank(queryPayInParam.getThirdOrderNo())) {
+            com.alibaba.fastjson.JSONObject jsonObject = flutterPayment.getTransactions(null, null, queryPayInParam.getLocalOrderNo(), null);
+            log.info("getPayInfoOrder : jsonObject : {}", jsonObject);
+            if (doCheck(jsonObject)) {
+                com.alibaba.fastjson.JSONArray data = jsonObject.getJSONArray("data");
+                if (null != data) {
+                    data.forEach(d -> {
+                        com.alibaba.fastjson.JSONObject obj = (com.alibaba.fastjson.JSONObject) d;
+                        if (StringUtils.isNotBlank(paymentResult.getThirdOrderStatus())
+                                && FlutterConts.PAY_STATUS_SUCCESS.equalsIgnoreCase(paymentResult.getThirdOrderStatus())) {
+                            return;
+                        }
+                        paymentResult.setThirdOrderAmount(obj.getBigDecimal("amount"));
+                        paymentResult.setDescription(jsonObject.getString("message"));
+                        paymentResult.setThirdOrderStatus(obj.getString("status"));
+                        if (FlutterConts.PAY_STATUS_SUCCESS.equalsIgnoreCase(paymentResult.getThirdOrderStatus())) {
+                            paymentResult.setStatus(PayEnums.PayStatusEnum.PAID.getCode());
+                        } else if (FlutterConts.PAY_STATUS_PENDING.equalsIgnoreCase(paymentResult.getThirdOrderStatus())) {
+                            paymentResult.setStatus(PayEnums.PayStatusEnum.PAYING.getCode());
+                        } else {
+                            paymentResult.setStatus(PayEnums.PayStatusEnum.FAIL.getCode());
+                        }
+                    });
+                }
+            }
+        } else {
+            com.alibaba.fastjson.JSONObject jsonObject = flutterPayment.verityPayment(queryPayInParam.getThirdOrderNo());
+            log.info("getPayInfoOrder : jsonObject : {}", jsonObject);
+            if (doCheck(jsonObject)) {
+                com.alibaba.fastjson.JSONObject data = jsonObject.getJSONObject("data");
+                paymentResult.setThirdOrderAmount(data.getBigDecimal("amount"));
+                paymentResult.setDescription(jsonObject.getString("message"));
+                paymentResult.setThirdOrderStatus(data.getString("status"));
+                if (FlutterConts.PAY_STATUS_SUCCESS.equalsIgnoreCase(paymentResult.getThirdOrderStatus())) {
+                    paymentResult.setStatus(PayEnums.PayStatusEnum.PAID.getCode());
+                } else if (FlutterConts.PAY_STATUS_PENDING.equalsIgnoreCase(paymentResult.getThirdOrderStatus())) {
+                    paymentResult.setStatus(PayEnums.PayStatusEnum.PAYING.getCode());
+                } else {
+                    paymentResult.setStatus(PayEnums.PayStatusEnum.FAIL.getCode());
+                }
             }
         }
         return BaseResponse.success(paymentResult);

@@ -449,4 +449,29 @@ public class DictConsts {
      * 商品等级描述配置
      */
     public static final String PRODUCT_INTRODUCTION = "PRODUCT_INTRODUCTION";
+
+    /**
+     * 创蓝短信发送地址
+     */
+    public static final String CL_SMS_SEND_GJ_URL = "CL_SMS_SEND_GJ_URL";
+
+    /**
+     * 创蓝短信发送账号
+     */
+    public static final String CL_SMS_SEND_GJ_ACCOUNT = "CL_SMS_SEND_GJ_ACCOUNT";
+
+    /**
+     * 创蓝短信发送密码
+     */
+    public static final String CL_SMS_SEND_GJ_PASSWORD = "CL_SMS_SEND_GJ_PASSWORD";
+
+    /**
+     * 修改密码开关
+     */
+    public static final String MODIFY_PASSWORD_SWITCH = "MODIFY_PASSWORD_SWITCH";
+
+    /**
+     * 发送短信开关
+     */
+    public static final String SEND_SMS_SWITCH = "SEND_SMS_SWITCH";
 }

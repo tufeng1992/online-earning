@@ -280,10 +280,10 @@ public class UserService {
         String appId = request.getAppId();
         int index = request.getMobile().length();
         if (index != 10 &&
-            (index != 12 || !request.getMobile().substring(0, 2).equals("91"))) {
+                (index != 13 || !request.getMobile().substring(0,3).equals(MobileUtil.NIGERIA_MOBILE_PREFIX))){
             return BaseResponse.fail("Wrong mobile number.");
         }
-        request.setMobile("91" + request.getMobile().substring(index - 10));
+        request.setMobile(MobileUtil.NIGERIA_MOBILE_PREFIX + request.getMobile().substring(index - 10));
         String mobile = request.getMobile();
 
         String codeKey = String.format(CacheConsts.VER_CODE, mobile, appId);

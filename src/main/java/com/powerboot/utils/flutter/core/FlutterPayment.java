@@ -99,6 +99,21 @@ public class FlutterPayment {
     }
 
     /**
+     * 获取事务列表
+     * @param from
+     * @param to
+     * @param reference
+     * @param page
+     * @return
+     */
+    public JSONObject getTransactions(String from, String to, String reference, Integer page) {
+        String url = getBaseUrl() + "/v3/transactions";
+        Map<String, String> param = Maps.newHashMap();
+        param.put("tx_ref", reference);
+        return HttpUtil.get4JsonObj(url, param, getHeader()).orElseThrow(() -> new RuntimeException("请求响应为空"));
+    }
+
+    /**
      * 创建转账
      * @param reference
      * @param amount

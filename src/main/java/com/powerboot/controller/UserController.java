@@ -109,7 +109,7 @@ public class UserController extends BaseController {
         vip1.setAmount(BigDecimal.ZERO);
         vip1.setOrderTimes(vip1List.get(3));
         vip1.setVip("VIP1");
-        vip1.setPicUrl("http://aaa.com/image/vip1.png");
+        vip1.setPicUrl("http://api.task-plan.net/vipImages/vip1.png");
         list.add(vip1);
 
         //vip2
@@ -125,7 +125,7 @@ public class UserController extends BaseController {
         vip2.setOrderTimes(vip2List.get(3));
         vip2.setType(2);
         vip2.setVip("VIP2");
-        vip2.setPicUrl("http://aaa.com/image/vip2.png");
+        vip2.setPicUrl("http://api.task-plan.net/vipImages/vip2.png");
         vip2.setVipDesc("Prerequisites for unlocking the LV2 task area");
         list.add(vip2);
 
@@ -142,7 +142,7 @@ public class UserController extends BaseController {
         vip3.setOrderTimes(vip3List.get(3));
         vip3.setType(3);
         vip3.setVip("VIP3");
-        vip3.setPicUrl("http://aaa.com/image/vip3.png");
+        vip3.setPicUrl("http://api.task-plan.net/vipImages/vip3.png");
         vip3.setVipDesc("Prerequisites for unlocking the LV3 task area");
         list.add(vip3);
 
@@ -160,7 +160,7 @@ public class UserController extends BaseController {
         vip4.setOrderTimes(vip4List.get(3));
         vip4.setType(4);
         vip4.setVip("VIP4");
-        vip4.setPicUrl("http://aaa.com/image/vip4.png");
+        vip4.setPicUrl("http://api.task-plan.net/vipImages/vip4.png");
         vip4.setVipDesc("Prerequisites for unlocking the LV4 task area");
         list.add(vip4);
 
@@ -189,7 +189,7 @@ public class UserController extends BaseController {
         vip1.setAmount(BigDecimal.ZERO);
         vip1.setOrderTimes("The number of orders can be swiped is" + vip1List.get(3));
         vip1.setVip("VIP1");
-        vip1.setPicUrl("https://api.task-plan.net/vipImages/vip1.png");
+        vip1.setPicUrl("http://api.task-plan.net/vipImages/vip1.png");
         list.add(vip1);
 
         //vip2
@@ -207,7 +207,7 @@ public class UserController extends BaseController {
         vip2.setOrderTimes("The number of orders can be swiped is" + vip2List.get(3));
         vip2.setType(2);
         vip2.setVip("VIP2");
-        vip2.setPicUrl("https://api.task-plan.net/vipImages/vip2.png");
+        vip2.setPicUrl("http://api.task-plan.net/vipImages/vip2.png");
         vip2.setVipDesc("Prerequisites for unlocking the LV2 task area");
         list.add(vip2);
 
@@ -226,7 +226,7 @@ public class UserController extends BaseController {
         vip3.setOrderTimes("The number of orders can be swiped is" + vip3List.get(3));
         vip3.setType(3);
         vip3.setVip("VIP3");
-        vip3.setPicUrl("https://api.task-plan.net/vipImages/vip3.png");
+        vip3.setPicUrl("http://api.task-plan.net/vipImages/vip3.png");
         vip3.setVipDesc("Prerequisites for unlocking the LV3 task area");
         list.add(vip3);
 
@@ -246,7 +246,7 @@ public class UserController extends BaseController {
         vip4.setOrderTimes("The number of orders can be swiped is" + vip4List.get(3));
         vip4.setType(4);
         vip4.setVip("VIP4");
-        vip4.setPicUrl("https://api.task-plan.net/vipImages/vip4.png");
+        vip4.setPicUrl("http://api.task-plan.net/vipImages/vip4.png");
         vip4.setVipDesc("Prerequisites for unlocking the LV4 task area");
         list.add(vip4);
 

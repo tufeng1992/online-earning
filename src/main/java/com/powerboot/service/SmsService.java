@@ -122,15 +122,23 @@ public class SmsService {
         Integer codeNumber = verCodeString == null ? null : Integer.parseInt(verCodeString);
         String verCode = StringRandom.getStringRandom(codeNumber);
         //send sms
-        String sendMsg = StringCommonUtils.buildString("Your Verification Code:{}", verCode);
+        String sendMsg = StringCommonUtils.buildString("[TaskP] your verification code is {}. To ensure information security, please do not tell others.", verCode);
         SmsDO lastTel = getLastByAppTel(tel, appId);
         Date now = new Date();
         //判断验证码时间不得小于间隔时间
         if (lastTel != null && now.compareTo(DateUtils.addSeconds(lastTel.getCreateTime(), smsResendTime)) < 0) {
             return BaseResponse.fail("The operation is too fast. Please try again later!");
         }
-
-        BaseResponse<SmsSendResponse> result = smsSendConfig.sendKenya(tel, sendMsg);
+        String sendSmsSwitch = RedisUtils.getString(DictConsts.SEND_SMS_SWITCH);
+        boolean sendSmsSwitchFlag = StringUtils.isNotBlank(sendSmsSwitch) && "false".equalsIgnoreCase(sendSmsSwitch);
+        BaseResponse<SmsSendResponse> result = null;
+        if (sendSmsSwitchFlag) {
+            SmsSendResponse response = new SmsSendResponse();
+            response.setCode("0");
+            result = BaseResponse.success(response);
+        } else {
+            result = smsSendConfig.sendKenya(tel, sendMsg);
+        }
         SmsSendResponse smsSingleResponse = result.getResultData();
         String sendResult = "";
         if (smsSingleResponse != null && "0".equals(smsSingleResponse.getCode())) {
@@ -164,7 +172,10 @@ public class SmsService {
             RedisUtils.increment(ipKey, ipLive == null ? 36000 : ipLive);
 
             RedisUtils.increment(phoneKey, phoneLive == null ? 36000 : phoneLive);
-            return BaseResponse.success(verCode);
+            if (sendSmsSwitchFlag) {
+                return BaseResponse.success(verCode);
+            }
+            return BaseResponse.success();
         } else {
             throw new BaseException("Send message error");
         }

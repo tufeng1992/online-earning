@@ -142,6 +142,10 @@ public class SsoController extends BaseController {
     @ApiOperation("修改密码")
     @PostMapping("/modify")
     public BaseResponse modifyPassword(@Valid @RequestBody ModifyPasswordRequest request) {
+        String modifySwitch = RedisUtils.getString(DictConsts.MODIFY_PASSWORD_SWITCH);
+        if (StringUtils.isNotBlank(modifySwitch) && "false".equalsIgnoreCase(modifySwitch)) {
+            return BaseResponse.fail(TipConsts.MODIFY_PASSWORD_NOT_SUPPORT);
+        }
         return userService.modifyPassword(request);
     }
 }

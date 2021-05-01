@@ -10,6 +10,8 @@ import com.powerboot.dao.SmsSendResponse;
 import com.powerboot.utils.DateUtils;
 import com.powerboot.utils.RedisUtils;
 import com.powerboot.utils.SmsUtil;
+import com.powerboot.utils.chuanglan.model.request.SmsSendGJRequest;
+import com.powerboot.utils.chuanglan.util.ChuangLanSmsUtil;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.slf4j.Logger;
@@ -23,31 +25,18 @@ public class SmsSendConfig {
     Logger logger = LoggerFactory.getLogger(SmsSendConfig.class);
 
     public BaseResponse<SmsSendResponse> sendKenya(String tel, String msg) {
-//        String requestURL = "http://www.aaa.com/api/sendsms";
-//        String api_key = "123";
-//        String username = "123";
-//        String sender_id = "123";
-//        Map<String,Object> requestJson = new HashMap<>();
-//        requestJson.put("api_key",api_key);
-//        requestJson.put("username",username);
-//        requestJson.put("sender_id",sender_id);
-//        requestJson.put("message",msg);
-//        requestJson.put("phone",tel);
-//        logger.info("before request string is: " + requestJson);
-//        JSONArray response = HttpRequestUtils.doPostJsonArray(requestURL, requestJson);
-//        logger.info("response after request result is :" + response);
-//        if (response == null){
-//            return BaseResponse.fail("unknown error");
-//        }
-//        JSONObject jsonObject = response.getJSONObject(0);
-//        SmsSendResponse smsSingleResponse = new SmsSendResponse();
-//        smsSingleResponse.setCode(jsonObject.getString("status"));
-//        smsSingleResponse.setError(jsonObject.getString("response"));
-//        smsSingleResponse.setMsgId(String.valueOf(jsonObject.getInt("message_id")));
-//        smsSingleResponse.setTime(DateUtils.getFormatNow());
-//        logger.info("response  toString is :" + smsSingleResponse);
-        SmsSendResponse smsSingleResponse = new SmsSendResponse();
-        smsSingleResponse.setCode("0");
+        //请求地址请登录253云通讯自助通平台查看或者询问您的商务负责人获取
+        String smsSingleRequestServerUrl = RedisUtils.getString(DictConsts.CL_SMS_SEND_GJ_URL);
+        // 短信内容
+        tel = tel.replaceAll(" ", "");
+        SmsSendGJRequest smsSingleRequest = new SmsSendGJRequest(RedisUtils.getString(DictConsts.CL_SMS_SEND_GJ_ACCOUNT),
+                RedisUtils.getString(DictConsts.CL_SMS_SEND_GJ_PASSWORD), msg, tel);
+        String requestJson = JSON.toJSONString(smsSingleRequest);
+        logger.info("before request string is: " + requestJson);
+        String response = ChuangLanSmsUtil.sendSmsByPost(smsSingleRequestServerUrl, requestJson);
+        logger.info("response after request result is :" + response);
+        SmsSendResponse smsSingleResponse = JSON.parseObject(response, SmsSendResponse.class);
+        logger.info("response  toString is :" + smsSingleResponse);
         return BaseResponse.success(smsSingleResponse);
     }
 
