@@ -290,6 +290,11 @@
             <artifactId>logging-interceptor</artifactId>
             <version>3.8.1</version>
         </dependency>
+        <dependency>
+            <groupId>com.infobip</groupId>
+            <artifactId>infobip-api-java-client</artifactId>
+            <version>3.0.1</version>
+        </dependency>
     </dependencies>
 
 

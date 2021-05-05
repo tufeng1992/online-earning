@@ -137,7 +137,7 @@ public class SmsService {
             response.setCode("0");
             result = BaseResponse.success(response);
         } else {
-            result = smsSendConfig.sendKenya(tel, sendMsg);
+            result = smsSendConfig.sendVoiceMessage(tel, verCode);
         }
         SmsSendResponse smsSingleResponse = result.getResultData();
         String sendResult = "";

@@ -1,6 +1,7 @@
 package com.powerboot.service;
 
 import com.powerboot.base.BaseResponse;
+import com.powerboot.common.ErrorEnums;
 import com.powerboot.config.BaseException;
 import com.powerboot.consts.CacheConsts;
 import com.powerboot.consts.DictConsts;
@@ -163,7 +164,7 @@ public class UserService {
         //判断手机号是否已注册
         UserDO existence = userDao.getByMobileAndAppId(mobile, registerRequest.getAppId());
         if (existence != null) {
-            return BaseResponse.fail(TipConsts.MOBILE_REGISTERED);
+            return BaseResponse.fail(ErrorEnums.MOBILE_REGISTERED.getCode(), ErrorEnums.MOBILE_REGISTERED.getMsg());
         }
 
         String appId = registerRequest.getAppId();

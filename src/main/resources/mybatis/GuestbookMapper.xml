@@ -1,0 +1,93 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.powerboot.dao.GuestbookDao">
+
+	<select id="get" resultType="com.powerboot.domain.GuestbookDO">
+		select `id`,`guestbook_content`,`guestbook_user_id`,`guestbook_target_id`,`create_time`,`update_time` from guestbook where id = #{value}
+	</select>
+
+	<select id="list" resultType="com.powerboot.domain.GuestbookDO">
+		SELECT
+		gb.`id`,
+		gb.`guestbook_content`,
+		gb.`guestbook_user_id`,
+		gb.`guestbook_target_id`,
+		gb.`create_time`,
+		gb.`update_time`
+		FROM
+		guestbook gb
+        <where>
+		  		  <if test="id != null and id != ''"> and id = #{id} </if>
+		  		  <if test="guestbookContent != null and guestbookContent != ''"> and guestbook_content = #{guestbookContent} </if>
+		  		  <if test="guestbookUserId != null and guestbookUserId != ''"> and guestbook_user_id = #{guestbookUserId} </if>
+		  		  <if test="guestbookTargetId != null and guestbookTargetId != ''"> and guestbook_target_id = #{guestbookTargetId} </if>
+		  		  <if test="createTime != null and createTime != ''"> and create_time = #{createTime} </if>
+		  		  <if test="updateTime != null and updateTime != ''"> and update_time = #{updateTime} </if>
+		  		</where>
+        <choose>
+            <when test="sort != null and sort.trim() != ''">
+                order by ${sort} ${order}
+            </when>
+			<otherwise>
+                order by id desc
+			</otherwise>
+        </choose>
+		<if test="offset != null and limit != null">
+			limit #{offset}, #{limit}
+		</if>
+	</select>
+	
+ 	<select id="count" resultType="int">
+		select count(*) from guestbook
+		 <where>  
+		  		  <if test="id != null and id != ''"> and id = #{id} </if>
+		  		  <if test="guestbookContent != null and guestbookContent != ''"> and guestbook_content = #{guestbookContent} </if>
+		  		  <if test="guestbookUserId != null and guestbookUserId != ''"> and guestbook_user_id = #{guestbookUserId} </if>
+		  		  <if test="guestbookTargetId != null and guestbookTargetId != ''"> and guestbook_target_id = #{guestbookTargetId} </if>
+		  		  <if test="createTime != null and createTime != ''"> and create_time = #{createTime} </if>
+		  		  <if test="updateTime != null and updateTime != ''"> and update_time = #{updateTime} </if>
+		  		</where>
+	</select>
+	 
+	<insert id="save" parameterType="com.powerboot.domain.GuestbookDO" useGeneratedKeys="true" keyProperty="id">
+		insert into guestbook
+		(
+			`guestbook_content`, 
+			`guestbook_user_id`, 
+			`guestbook_target_id`, 
+			`update_time`
+		)
+		values
+		(
+			#{guestbookContent}, 
+			#{guestbookUserId}, 
+			#{guestbookTargetId}, 
+			#{updateTime}
+		)
+	</insert>
+	 
+	<update id="update" parameterType="com.powerboot.domain.GuestbookDO">
+		update guestbook 
+		<set>
+			<if test="guestbookContent != null">`guestbook_content` = #{guestbookContent}, </if>
+			<if test="guestbookUserId != null">`guestbook_user_id` = #{guestbookUserId}, </if>
+			<if test="guestbookTargetId != null">`guestbook_target_id` = #{guestbookTargetId}, </if>
+			<if test="createTime != null">`create_time` = #{createTime}, </if>
+			<if test="updateTime != null">`update_time` = #{updateTime}</if>
+		</set>
+		where id = #{id}
+	</update>
+	
+	<delete id="remove">
+		delete from guestbook where id = #{value}
+	</delete>
+	
+	<delete id="batchRemove">
+		delete from guestbook where id in 
+		<foreach item="id" collection="array" open="(" separator="," close=")">
+			#{id}
+		</foreach>
+	</delete>
+
+</mapper>

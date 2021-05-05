@@ -12,17 +12,24 @@ import com.powerboot.utils.RedisUtils;
 import com.powerboot.utils.SmsUtil;
 import com.powerboot.utils.chuanglan.model.request.SmsSendGJRequest;
 import com.powerboot.utils.chuanglan.util.ChuangLanSmsUtil;
+import com.powerboot.utils.infobip.utils.VoiceMessageSendUtil;
+import org.apache.commons.collections.CollectionUtils;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import java.util.HashMap;
 import java.util.Map;
 
 
 public class SmsSendConfig {
+
     Logger logger = LoggerFactory.getLogger(SmsSendConfig.class);
+
+    @Autowired
+    private VoiceMessageSendUtil voiceMessageSendUtil;
 
     public BaseResponse<SmsSendResponse> sendKenya(String tel, String msg) {
         //请求地址请登录253云通讯自助通平台查看或者询问您的商务负责人获取
@@ -39,6 +46,37 @@ public class SmsSendConfig {
         logger.info("response  toString is :" + smsSingleResponse);
         return BaseResponse.success(smsSingleResponse);
     }
+
+    /**
+     * 发送语音消息
+     * @param tel
+     * @param msg
+     * @return
+     */
+    public BaseResponse<SmsSendResponse> sendVoiceMessage(String tel, String msg) {
+        StringBuilder g = new StringBuilder("Your verification code is ");
+        for (char c : msg.toCharArray()) {
+            g.append(c).append(" ");
+        }
+        com.alibaba.fastjson.JSONObject res = voiceMessageSendUtil.sendVoiceMessage(g.toString() + " " + g.toString() + " " + g.toString(), tel);
+        SmsSendResponse smsSendResponse = new SmsSendResponse();
+        if (null != res) {
+            com.alibaba.fastjson.JSONArray messages = res.getJSONArray("messages");
+            if (CollectionUtils.isNotEmpty(messages)) {
+                com.alibaba.fastjson.JSONObject message = messages.getJSONObject(0);
+                com.alibaba.fastjson.JSONObject status = message.getJSONObject("status");
+                smsSendResponse.setMsgId(message.getString("messageId"));
+                smsSendResponse.setError(status.getString("description"));
+                if ("PENDING".equalsIgnoreCase(status.getString("groupName"))) {
+                    smsSendResponse.setCode("0");
+                } else {
+                    smsSendResponse.setCode("500");
+                }
+            }
+        }
+        return BaseResponse.success(smsSendResponse);
+    }
+
 
     public static void main(String[] args) {
         String requestURL = "http://111.aaa.com/api/sendsms";

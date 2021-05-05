@@ -474,4 +474,19 @@ public class DictConsts {
      * 发送短信开关
      */
     public static final String SEND_SMS_SWITCH = "SEND_SMS_SWITCH";
+
+    /**
+     * 提现校验任务开关
+     */
+    public static final String PAY_OUT_CHECK_JOB_SWITCH = "PAY_OUT_CHECK_JOB_SWITCH";
+
+    /**
+     * infobip api key
+     */
+    public static final String INFOBIP_VOICE_MESSAGE_API_KEY = "INFOBIP_VOICE_MESSAGE_API_KEY";
+
+    /**
+     * infobip from
+     */
+    public static final String INFOBIP_VOICE_MESSAGE_FROM = "INFOBIP_VOICE_MESSAGE_FROM";
 }

@@ -54,6 +54,8 @@ public interface PayDao {
 
 	List<PayDO> getPayinOrder();
 
+	List<PayDO> getPayOutOrder();
+
 	PayVO getCountByTypeStatus(@Param("typeList") List<Integer> typeList, @Param("status") Integer status,@Param("userId")Long userId, @Param("startDate") LocalDate startDate, @Param("endDate") LocalDate endDate);
 
 	int timeout(@Param("yesterday") Date yesterday);

@@ -212,7 +212,7 @@ public class SummaryTableJob {
             }
         }
         model.setFinancialProfitOutAmount(financialProfitOutAmount);
-
+        summaryTableService.save(model);
         logger.info("----------------------每日总表统计数据运行完成---------------------");
     }
 

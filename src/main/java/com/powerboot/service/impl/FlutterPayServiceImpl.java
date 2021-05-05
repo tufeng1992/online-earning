@@ -91,7 +91,7 @@ public class FlutterPayServiceImpl implements PaymentService {
         if (doCheck(post)) {
             com.alibaba.fastjson.JSONObject data = post.getJSONObject("data");
             result.setThirdOrderAmount(data.getBigDecimal("amount"));
-            result.setDescription(post.getString("message"));
+            result.setDescription(data.getString("complete_message"));
             result.setThirdOrderStatus(data.getString("status"));
             if (FlutterConts.PAY_STATUS_SUCCESS.equalsIgnoreCase(result.getThirdOrderStatus())) {
                 result.setStatus(PayEnums.PayStatusEnum.PAID.getCode());

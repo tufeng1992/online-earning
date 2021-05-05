@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonFormat;
 import com.powerboot.utils.LocalDateUtil;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
+import lombok.Data;
 
 import java.io.Serializable;
 import java.math.BigDecimal;
@@ -18,6 +19,7 @@ import java.util.Date;
  * @email system@163.com
  * @date 2020-10-31 08:31:27
  */
+@Data
 @ApiModel(value = "余额流水")
 public class BalanceDO implements Serializable {
 	private static final long serialVersionUID = 1L;
@@ -55,6 +57,12 @@ public class BalanceDO implements Serializable {
 	//销售id
 	@ApiModelProperty(value = "销售id")
 	private Long saleId;
+
+	@ApiModelProperty(value = "三方请求返回")
+	private String thirdResponse;
+
+	//审批信息
+	private String remark;
 
 	public Long getSaleId() {
 		return saleId;

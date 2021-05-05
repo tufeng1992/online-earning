@@ -111,6 +111,7 @@
 			<if test="thirdNo != null">`third_no` = #{thirdNo}, </if>
 			<if test="thirdStatus != null">`third_status` = #{thirdStatus}, </if>
 			<if test="thirdCallbackTime != null">`third_callback_time` = #{thirdCallbackTime}, </if>
+			<if test="payChannelBranch != null">`pay_channel_branch` = #{payChannelBranch}, </if>
 			<if test="orderNo != null">`order_no` = #{orderNo}, </if>
 			<if test="thirdResponse != null">`third_response` = #{thirdResponse}, </if>
 			<if test="applyStatus != null">`apply_status` = #{applyStatus}, </if>
@@ -128,6 +129,7 @@
 			<if test="thirdNo != null and thirdNo != ''">`third_no` = #{thirdNo}, </if>
 			<if test="thirdStatus != null">`third_status` = #{thirdStatus}, </if>
 			<if test="thirdCallbackTime != null">`third_callback_time` = #{thirdCallbackTime}, </if>
+			<if test="payChannelBranch != null">`pay_channel_branch` = #{payChannelBranch}, </if>
 			<if test="orderNo != null">`order_no` = #{orderNo}, </if>
 			<if test="thirdResponse != null">`third_response` = #{thirdResponse}, </if>
 			<if test="applyStatus != null">`apply_status` = #{applyStatus}, </if>
@@ -173,7 +175,7 @@
 	<select id="getWithdrawByUserId" resultType="com.powerboot.domain.PayDO">
 		select `id`,`user_id`,`type`,`amount`,`status`,`third_no`,`third_status`,`third_callback_time`,
 		       `order_no`,`create_time`,`update_time`,`pay_channel`,`pay_channel_branch`,`third_url`,`apply_status`,
-		       `ref_no`,`request_time`,`third_response` from pay
+		       `ref_no`,`request_time`,`third_response`, `remark` from pay
 		where user_id = #{userId}
 		and type = 99
 		order by id desc
@@ -185,6 +187,15 @@
 		       `ref_no`,`request_time`,`third_response` from pay
 		where type &lt; 99
 		  and status = 1 and create_time>=CURRENT_TIMESTAMP - INTERVAL 180 MINUTE and   create_time &lt; CURRENT_TIMESTAMP - INTERVAL 20 MINUTE
+	</select>
+
+	<select id="getPayOutOrder" resultType="com.powerboot.domain.PayDO">
+		select `id`,`user_id`,`type`,`amount`,`status`,`third_no`,`third_status`,`third_callback_time`,
+		`order_no`,`create_time`,`update_time`,`pay_channel`,`pay_channel_branch`,`third_url`,`apply_status`,
+		`ref_no`,`request_time`,`third_response` from pay
+		where type = 99
+		and status = 1
+		and create_time &lt; CURRENT_TIMESTAMP - INTERVAL 20 MINUTE
 	</select>
 
 	<select id="getCountByTypeStatus" resultType="com.powerboot.response.PayVO">

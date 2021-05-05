@@ -72,6 +72,10 @@ public class PayService {
         return payDao.getPayinOrder();
     }
 
+    public List<PayDO> getPayOutOrder() {
+        return payDao.getPayOutOrder();
+    }
+
     public int count(Map<String, Object> map) {
         return payDao.count(map);
     }
@@ -143,6 +147,9 @@ public class PayService {
     public BaseResponse<PayDO> getByOrderNo(String orderNo) {
         logger.info("获取第三方支付状态,param:{}", orderNo);
         PayDO payDO = payDao.getByOrderNo(orderNo);
+        if (PayEnums.PayTypeEnum.WITHDRAW.getCode().equals(payDO.getType())) {
+            return getByPayOutOrder(orderNo);
+        }
         String payFailDesc = "";
         int success = 0;
         if (payDO == null) {
@@ -438,10 +445,49 @@ public class PayService {
             case DARAJA:
                 orderNo = jsonObject.getJSONObject("data").getString("unique_request_number");
                 break;
+            case FLUTTER_WAVE:
+                orderNo = jsonObject.getString("thirdNo");
             default:
                 break;
         }
         return orderNo;
+    }
+
+    /**
+     * 提现订单状态同步
+     * @param orderNo
+     * @return
+     */
+    public BaseResponse<PayDO> getByPayOutOrder(String orderNo) {
+        PayDO payDO = payDao.getByOrderNo(orderNo);
+        if (payDO == null) {
+            return BaseResponse.success();
+        }
+        //获取支付bean
+        String payBeanName = PaymentServiceEnum.getBeanNameByCode(payDO.getPayChannelBranch());
+        //找到支付实现
+        PaymentService paymentService = (PaymentService) SpringContextUtils.getBean(payBeanName);
+        QueryPayOutParam queryPayOutParam = new QueryPayOutParam();
+        queryPayOutParam.setLocalOrderNo(orderNo);
+        queryPayOutParam.setThirdOrderNo(payDO.getThirdNo());
+        BaseResponse<PaymentResult> payoutOrder = paymentService.getPayoutOrder(queryPayOutParam);
+        if (payoutOrder == null || payoutOrder.getResultData() == null) {
+            return BaseResponse.success();
+        }
+        PaymentResult resultData = payoutOrder.getResultData();
+        payDO.setThirdResponse(resultData.getDescription());
+        if (PayEnums.PayStatusEnum.PAID.getCode().equals(resultData.getStatus())) {
+            //取现成功
+            payDO.setStatus(PayEnums.PayStatusEnum.PAID.getCode());
+            payService.payoutSuccess(payDO, payBeanName);
+        } else if (PayEnums.PayStatusEnum.PAYING.getCode().equals(resultData.getStatus())
+                && System.currentTimeMillis() - payDO.getCreateTime().getTime() < 86400000) {
+            // do nothing
+        } else {
+            payDO.setStatus(PayEnums.PayStatusEnum.FAIL.getCode());
+            payService.payoutFail(payDO, payBeanName);
+        }
+        return BaseResponse.success(payDO);
     }
 
     public BaseResponse callBackPayoutSuccessHandel(Map<String, Object> requestJson) {

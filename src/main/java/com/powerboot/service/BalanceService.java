@@ -91,6 +91,8 @@ public class BalanceService {
                 balanceDO.setWithdrawAmount(BigDecimal.ZERO.subtract(payDo.getAmount()));
                 balanceDO.setAmount(balanceDO.getWithdrawAmount().divide(new BigDecimal("0.82")));
                 balanceDO.setServiceFee(balanceDO.getAmount().multiply(new BigDecimal("0.18")));
+                balanceDO.setRemark(payDo.getRemark());
+                balanceDO.setThirdResponse(payDo.getThirdResponse());
                 balanceDOS.add(balanceDO);
             }
         }
@@ -98,6 +100,9 @@ public class BalanceService {
         if (CollectionUtils.isNotEmpty(balanceDOS)) {
             balanceDOS.forEach(o -> {
                 o.setStatusDesc(StatusTypeEnum.getENDescByCode(o.getStatus()));
+                PayDO p = payDOList.stream().filter( i -> o.getOrderNo().equalsIgnoreCase(i.getOrderNo())).findFirst().orElse(null);
+                o.setRemark(p.getRemark());
+                o.setThirdResponse(p.getThirdResponse());
             });
         }
 
