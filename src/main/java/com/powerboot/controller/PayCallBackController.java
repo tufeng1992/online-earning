@@ -14,6 +14,17 @@ import com.powerboot.service.PayService;
 import com.powerboot.utils.RedisUtils;
 import com.powerboot.utils.ServletUtils;
 import com.powerboot.utils.flutter.constants.FlutterConts;
+import com.powerboot.utils.gms.constants.GMSConst;
+import com.powerboot.utils.gms.model.GmsPayInNotify;
+import com.powerboot.utils.gms.model.GmsPayOutNotify;
+import com.powerboot.utils.grecash.contants.GrecashConst;
+import com.powerboot.utils.grecash.model.GrecashPayInCallBack;
+import com.powerboot.utils.grecash.model.PayOutNotifyReq;
+import com.powerboot.utils.wallyt.constants.WallytConst;
+import com.powerboot.utils.wallyt.domain.dto.CreateTransferNotifyReq;
+import com.powerboot.utils.wallyt.domain.dto.WallyBaseResponseObject;
+import com.powerboot.utils.wallyt.domain.dto.WallytCallbackReq;
+import com.powerboot.utils.wallyt.domain.dto.WallytResponse;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import org.apache.commons.lang3.StringUtils;
@@ -25,6 +36,7 @@ import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.validation.Valid;
+import java.util.List;
 import java.util.Map;
 
 @RestController
@@ -179,6 +191,135 @@ public class PayCallBackController extends BaseController{
             throw new BaseException("transcation not successful");
         }
         return "FAIL";
+    }
+
+    @ApiOperation("wallyt 提现回调")
+    @PostMapping("/wallyt/payOut")
+    public String wallytPayoutCallBack(@RequestBody Map<String, Object> requestJson) {
+        logger.info("wallyt 提现回调：" + requestJson);
+        String jsonStr = com.alibaba.fastjson.JSONObject.toJSONString(requestJson);
+        WallytCallbackReq wallytCallbackReq = com.alibaba.fastjson.JSONObject.parseObject(jsonStr, WallytCallbackReq.class);
+        List list = wallytCallbackReq.getRequest();
+        com.alibaba.fastjson.JSONObject jsonObject = com.alibaba.fastjson.JSONObject.parseObject(list.get(0).toString());
+        CreateTransferNotifyReq createTransferNotifyReq = jsonObject.toJavaObject(CreateTransferNotifyReq.class);
+        com.alibaba.fastjson.JSONObject result = new com.alibaba.fastjson.JSONObject();
+        WallyBaseResponseObject wallyBaseResponseObject = new WallyBaseResponseObject();
+        result.put("response", wallyBaseResponseObject);
+        String orderNo = createTransferNotifyReq.getOriginalMsgId();
+        PayDO payDO = payService.getOrderNo(orderNo);
+        if (payDO == null){
+            wallyBaseResponseObject.setCode("500");
+            wallyBaseResponseObject.setMessage("order is not exist");
+            return result.toJSONString();
+        }
+        logger.info("wallyt 提现回调,用户ID--{}：{}" ,payDO.getUserId(), createTransferNotifyReq);
+        payDO.setThirdStatus(createTransferNotifyReq.getTrxStatus());
+        payDO.setThirdNo(orderNo);
+        if (WallytConst.TRANSFER_SUCCESS.equalsIgnoreCase(createTransferNotifyReq.getTrxStatus())){
+            //成功
+            payDO.setStatus(PayEnums.PayStatusEnum.PAID.getCode());
+            payService.payoutSuccess(payDO, PaymentServiceEnum.WALLYT.getBeanName());
+        }  else if (WallytConst.TRANSFER_INIT.equalsIgnoreCase(createTransferNotifyReq.getTrxStatus())
+                || WallytConst.TRANSFER_PENDING.equalsIgnoreCase(createTransferNotifyReq.getTrxStatus())) {
+            //do noting
+        } else {
+            //失败
+            payDO.setStatus(PayEnums.PayStatusEnum.FAIL.getCode());
+            payService.payoutFail(payDO, PaymentServiceEnum.WALLYT.getBeanName());
+        }
+        wallyBaseResponseObject.setCode("200");
+        wallyBaseResponseObject.setMessage("Success");
+        return result.toJSONString();
+    }
+
+    @ApiOperation("grecash 支付回调")
+    @PostMapping("/grecash/payIn")
+    @Transactional(rollbackFor = Exception.class)
+    public String grecashPayInCallBack(@RequestBody GrecashPayInCallBack grecashPayInCallBack) {
+        logger.info("grecash 支付回调：grecashPayInCallBack : {}", grecashPayInCallBack);
+        PayDO payDO = payService.getOrderNo(grecashPayInCallBack.getMerchantOrderId());
+        if (null != payDO) {
+            payDO.setThirdNo(grecashPayInCallBack.getPayorderId());
+            payDO.setThirdStatus(grecashPayInCallBack.getStatus() + "");
+            payService.update(payDO);
+            payService.getByOrderNo(payDO.getOrderNo());
+            return "SUCCESS";
+        }
+        return "FAIL";
+    }
+
+    @ApiOperation("grecash 提现回调")
+    @PostMapping("/grecash/payOut")
+    public String grecashPayoutCallBack(@RequestBody Map<String, Object> requestJson) {
+        logger.info("grecash 提现回调：" + requestJson);
+        String jsonStr = com.alibaba.fastjson.JSONObject.toJSONString(requestJson);
+        PayOutNotifyReq payOutNotifyReq = com.alibaba.fastjson.JSONObject.parseObject(jsonStr, PayOutNotifyReq.class);
+        PayDO payDO = payService.getOrderNo(payOutNotifyReq.getMerchantPayoutId());
+        if (payDO == null){
+            return "order is not exist";
+        }
+        logger.info("grecash 提现回调,用户ID--{}：{}" ,payDO.getUserId(), payOutNotifyReq);
+        payDO.setThirdStatus(payOutNotifyReq.getStatus());
+        payDO.setThirdNo(payOutNotifyReq.getId());
+        if (GrecashConst.PAY_OUT_NOTIFY_STATUS_1.equalsIgnoreCase(payOutNotifyReq.getStatus())){
+            //成功
+            payDO.setStatus(PayEnums.PayStatusEnum.PAID.getCode());
+            payService.payoutSuccess(payDO, PaymentServiceEnum.WALLYT.getBeanName());
+        }  else if (GrecashConst.PAY_OUT_NOTIFY_STATUS_0.equalsIgnoreCase(payOutNotifyReq.getStatus())) {
+            //do noting
+        } else {
+            //失败
+            payDO.setStatus(PayEnums.PayStatusEnum.FAIL.getCode());
+            payService.payoutFail(payDO, PaymentServiceEnum.WALLYT.getBeanName());
+        }
+        return "Success";
+    }
+
+    @ApiOperation("gms 支付回调")
+    @PostMapping("/gms/payIn")
+    @Transactional(rollbackFor = Exception.class)
+    public String gmsPayInCallBack(GmsPayInNotify gmsPayInNotify) {
+        logger.info("gms 支付回调：gmsPayInCallBack : {}", gmsPayInNotify);
+        PayDO payDO = payService.getOrderNo(gmsPayInNotify.getMchOrderNo());
+        if (null != payDO) {
+            payDO.setThirdNo(gmsPayInNotify.getOrderNo());
+            payDO.setThirdStatus(gmsPayInNotify.getTradeResult());
+            if (GMSConst.TRADE_RES_1.equalsIgnoreCase(gmsPayInNotify.getTradeResult())) {
+                payDO.setStatus(PayEnums.PayStatusEnum.PAID.getCode());
+            } else {
+                payDO.setStatus(PayEnums.PayStatusEnum.FAIL.getCode());
+            }
+            payService.update(payDO);
+            payService.payInComplete(payDO);
+            return "success";
+        }
+        return "FAIL";
+    }
+
+    @ApiOperation("gms 提现回调")
+    @PostMapping("/gms/payOut")
+    public String gmsPayoutCallBack(GmsPayOutNotify gmsPayOutNotify) {
+        logger.info("gms 提现回调：{}", gmsPayOutNotify);
+        PayDO payDO = payService.getOrderNo(gmsPayOutNotify.getMerTransferId());
+        if (payDO == null){
+            return "order is not exist";
+        }
+        logger.info("gms 提现回调,用户ID--{}：{}" ,payDO.getUserId(), gmsPayOutNotify);
+        payDO.setThirdStatus(gmsPayOutNotify.getTradeResult());
+        payDO.setThirdNo(gmsPayOutNotify.getTradeNo());
+        if (GMSConst.TRADE_RES_1.equalsIgnoreCase(gmsPayOutNotify.getTradeResult())){
+            //成功
+            payDO.setStatus(PayEnums.PayStatusEnum.PAID.getCode());
+            payService.payoutSuccess(payDO, PaymentServiceEnum.GMS.getBeanName());
+        }  else if (GMSConst.TRADE_RES_0.equalsIgnoreCase(gmsPayOutNotify.getTradeResult())
+                || GMSConst.TRADE_RES_4.equalsIgnoreCase(gmsPayOutNotify.getTradeResult())) {
+            //do noting
+        } else {
+            //失败
+            payDO.setStatus(PayEnums.PayStatusEnum.FAIL.getCode());
+            payService.payoutFail(payDO, PaymentServiceEnum.GMS.getBeanName());
+        }
+        return "success";
     }
 
 }

@@ -30,6 +30,11 @@ public class GuestbookDO implements Serializable {
 	private Date updateTime;
 
 	/**
+	 * 是否已读
+	 */
+	private Boolean readed;
+
+	/**
 	 * 设置：主键
 	 */
 	public void setId(Long id) {

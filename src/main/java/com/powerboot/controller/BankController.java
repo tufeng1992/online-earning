@@ -46,4 +46,141 @@ public class BankController extends BaseController {
                 DictConsts.DICT_CACHE_LIVE_TIME, PayStackBank.class);
         return BaseResponse.success(res);
     }
+
+    public static void main(String[] args) {
+        String json = "\n" +
+                "  [    \n" +
+                "    {\n" +
+                "      \"code\": \"KBANK\",\n" +
+                "      \"name\": \"KASIKORNBANK PCL\"\n" +
+                "    },\n" +
+                "    {\n" +
+                "      \"code\": \"BBL\",\n" +
+                "      \"name\": \"BANGKOK BANK PUBLIC COMPANY LTD.\"\n" +
+                "    },\n" +
+                "    {\n" +
+                "      \"code\": \"BAAC\",\n" +
+                "      \"name\": \"BANK FOR AGRICULTURE AND AGRICULTURAL CO-OPERATIVES\"\n" +
+                "    },\n" +
+                "    {\n" +
+                "      \"code\": \"BOA\",\n" +
+                "      \"name\": \"BANK OF AMERICA NT&SA\"\n" +
+                "    },\n" +
+                "    {\n" +
+                "      \"code\": \"BAY\",\n" +
+                "      \"name\": \"BANK OF AYUDHAYA PUBLIC COMPANY LTD.\"\n" +
+                "    },\n" +
+                "    {\n" +
+                "      \"code\": \"BOC\",\n" +
+                "      \"name\": \"Bank of China (Thai) PCL\"\n" +
+                "    },\n" +
+                "    {\n" +
+                "      \"code\": \"BNPP\",\n" +
+                "      \"name\": \"BNP PARIBAS BANGKOK BRANCH\"\n" +
+                "    },\n" +
+                "    {\n" +
+                "      \"code\": \"CIMB\",\n" +
+                "      \"name\": \"CIMB THAI BANK PUBLIC COMPANY LTD.\"\n" +
+                "    },\n" +
+                "    {\n" +
+                "      \"code\": \"CITI\",\n" +
+                "      \"name\": \"CITI BANK N.A.\"\n" +
+                "    },\n" +
+                "    {\n" +
+                "      \"code\": \"DB\",\n" +
+                "      \"name\": \"Deutsche Bank AG\"\n" +
+                "    },\n" +
+                "    {\n" +
+                "      \"code\": \"GHB\",\n" +
+                "      \"name\": \"GOVERNMENT HOUSING BANK\"\n" +
+                "    },\n" +
+                "    {\n" +
+                "      \"code\": \"ICBC\",\n" +
+                "      \"name\": \"INDUSTRIAL AND COMMERCIAL BANK OF CHINA (THAI) PCL\"\n" +
+                "    },\n" +
+                "    {\n" +
+                "      \"code\": \"TIBT\",\n" +
+                "      \"name\": \"ISLAMIC BANK OF THAILAND\"\n" +
+                "    },\n" +
+                "    {\n" +
+                "      \"code\": \"CHAS\",\n" +
+                "      \"name\": \"JPMorgan Chase Bank, Bangkok Branch\"\n" +
+                "    },\n" +
+                "    {\n" +
+                "      \"code\": \"KKB\",\n" +
+                "      \"name\": \"KIATNAKIN BANK PCL\"\n" +
+                "    },\n" +
+                "    {\n" +
+                "      \"code\": \"KTB\",\n" +
+                "      \"name\": \"KRUNG THAI BANK PUBLIC COMPANY LTD.\"\n" +
+                "    },\n" +
+                "    {\n" +
+                "      \"code\": \"LHBA\",\n" +
+                "      \"name\": \"Land and Houses Bank\"\n" +
+                "    },\n" +
+                "    {\n" +
+                "      \"code\": \"MEGA\",\n" +
+                "      \"name\": \"MEGA INTERNATIONAL COMMERCIAL BANK\"\n" +
+                "    },\n" +
+                "    {\n" +
+                "      \"code\": \"MHCB\",\n" +
+                "      \"name\": \"MIZUHO CORPORATE BANK\"\n" +
+                "    },\n" +
+                "    {\n" +
+                "      \"code\": \"SCBT\",\n" +
+                "      \"name\": \"STANDARD CHARTERED BANK THAI PCL.\"\n" +
+                "    },\n" +
+                "    {\n" +
+                "      \"code\": \"SMTB\",\n" +
+                "      \"name\": \"Sumitomo Mitsui Trust Bank (Thai) PCL.\"\n" +
+                "    },\n" +
+                "    {\n" +
+                "      \"code\": \"TBNK\",\n" +
+                "      \"name\": \"Thanachart Bank Public Company Limited\"\n" +
+                "    },\n" +
+                "    {\n" +
+                "      \"code\": \"GSB\",\n" +
+                "      \"name\": \"THE GOVERNMENT SAVING BANK\"\n" +
+                "    },\n" +
+                "    {\n" +
+                "      \"code\": \"HSBC\",\n" +
+                "      \"name\": \"THE HONGKONG & SHANGHAI CORPORATION LTD.\"\n" +
+                "    },\n" +
+                "    {\n" +
+                "      \"code\": \"SCB\",\n" +
+                "      \"name\": \"THE SIAM COMMERCIAL BANK PUBLIC COMPANY\"\n" +
+                "    },\n" +
+                "    {\n" +
+                "      \"code\": \"SMBC\",\n" +
+                "      \"name\": \"THE SUMITOMO MITSU BANKING CORPORATION\"\n" +
+                "    },\n" +
+                "    {\n" +
+                "      \"code\": \"TCRB\",\n" +
+                "      \"name\": \"THE THAI CREDIT RETAIL BANK\"\n" +
+                "    },\n" +
+                "    {\n" +
+                "      \"code\": \"TISCO\",\n" +
+                "      \"name\": \"TISCO Bank PCL\"\n" +
+                "    },\n" +
+                "    {\n" +
+                "      \"code\": \"TMB\",\n" +
+                "      \"name\": \"TMB BANK PUBLIC COMPANY LTD.\"\n" +
+                "    },\n" +
+                "    {\n" +
+                "      \"code\": \"UOB\",\n" +
+                "      \"name\": \"UNITED OVERSEAS BANK (THAI) PUBLIC COMPANY LTD.\"\n" +
+                "    },\n" +
+                "    {\n" +
+                "      \"code\": \"EXIM\",\n" +
+                "      \"name\": \"EXPORT–IMPORT BANK OF THAILAND\"\n" +
+                "    },\n" +
+                "    {\n" +
+                "      \"code\": \"BOT\",\n" +
+                "      \"name\": \"BANK OF THAILAND\"\n" +
+                "    }\n" +
+                "  ]\n";
+        JSONArray j = JSONArray.parseArray(json);
+        System.out.println(j.toJavaList(PayStackBank.class));
+        System.out.println(j.toJSONString());
+    }
 }

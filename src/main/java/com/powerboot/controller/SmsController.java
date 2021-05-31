@@ -3,6 +3,8 @@ package com.powerboot.controller;
 import com.powerboot.base.BaseResponse;
 import com.powerboot.consts.BlackHelper;
 import com.powerboot.consts.DictConsts;
+import com.powerboot.consts.I18nEnum;
+import com.powerboot.consts.TipConsts;
 import com.powerboot.domain.SmsDO;
 import com.powerboot.request.BackSmsRequest;
 import com.powerboot.request.SendSmsRequest;
@@ -44,14 +46,10 @@ public class SmsController extends BaseController {
 	@PostMapping
 	public BaseResponse<String> sendVerCode(HttpServletRequest request,@RequestBody @Valid SendSmsRequest param){
 		int index = param.getTel().length();
-		if (index != 10 &&
-			(index != 13 || !param.getTel().substring(0,3).equals(MobileUtil.NIGERIA_MOBILE_PREFIX))){
-			return BaseResponse.fail("Wrong mobile number.");
+		if (!MobileUtil.isValidMobile(param.getTel())){
+			return BaseResponse.fail(I18nEnum.MOBILE_NUMBER_FAIL.getMsg());
 		}
-		param.setTel(MobileUtil.NIGERIA_MOBILE_PREFIX + param.getTel().substring(index-10));
-		if (!MobileUtil.isNigeriaMobile(param.getTel())){
-			return BaseResponse.fail("Wrong mobile number.");
-		}
+		param.setTel(MobileUtil.THAILAND_MOBILE_PREFIX + param.getTel().substring(index-10));
 		String ip = getIp(request);
 
 		//风控

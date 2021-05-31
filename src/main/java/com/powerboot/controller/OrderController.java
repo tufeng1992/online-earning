@@ -1,7 +1,12 @@
 package com.powerboot.controller;
 
+import com.google.common.collect.Maps;
 import com.powerboot.base.BaseResponse;
 import com.powerboot.common.JsonUtils;
+import com.powerboot.consts.DictAccount;
+import com.powerboot.consts.DictConsts;
+import com.powerboot.consts.I18nEnum;
+import com.powerboot.consts.TipConsts;
 import com.powerboot.domain.BalanceDO;
 import com.powerboot.domain.OrderDO;
 import com.powerboot.domain.ProductDO;
@@ -17,6 +22,7 @@ import com.powerboot.utils.DateUtils;
 import com.powerboot.utils.RedisUtils;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
+import org.apache.commons.collections.CollectionUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
@@ -24,10 +30,7 @@ import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
 import java.math.BigDecimal;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.List;
+import java.util.*;
 
 
 @RestController
@@ -37,14 +40,20 @@ public class OrderController extends BaseController {
 
     @Autowired
     private OrderService orderService;
+
     @Autowired
     private UserService userService;
+
     @Autowired
     private ProductService productService;
+
     @Autowired
     private EhcacheService ehcacheService;
+
     @Autowired
     private BalanceService balanceService;
+
+
     private final BigDecimal hundred = new BigDecimal(100);
     private final BigDecimal four_hundred = new BigDecimal(400);
     private final long registerDay = 5L;
@@ -61,9 +70,9 @@ public class OrderController extends BaseController {
         orderGrabbingDto.setOrderNumber(DateUtils.generateNumber());
         orderGrabbingDto.setCapTureTime(new Date());
 
-        HashMap<Integer, List<Integer>> hashMapBalance = ehcacheService.getBalanceInfo();
+        String[] balanceArr = productDO.getBalanceInfo().split(",");
 
-        orderGrabbingDto.setRatio(new BigDecimal(hashMapBalance.get(productDO.getLevel()).get(3)).divide(new BigDecimal(100)));
+        orderGrabbingDto.setRatio(new BigDecimal(balanceArr[3]).divide(new BigDecimal(100)));
 
         response.setResultData(orderGrabbingDto);
         return response;
@@ -133,23 +142,32 @@ public class OrderController extends BaseController {
         String OrderNumber = RedisUtils.getValue(param.getOrderNumber(), String.class);
         if (!StringUtils.isEmpty(OrderNumber)) {
             logger.error("重复刷单userid:" + userId + " OrderNumber:" + OrderNumber);
-            response = BaseResponse.fail("error OrderNumber");
+            response = BaseResponse.fail(I18nEnum.PARAMS_FAIL.getMsg());
             return response;
         }
         UserDO userDO = userService.get(userId);
 
         //刷单开关 0为关闭，不可刷单
         if (userDO.getSdSwitch() == 0) {
-            response = BaseResponse.fail("The account has been restricted,please contact Customer Service");
+            response = BaseResponse.fail(I18nEnum.ACCOUNT_RESTRICTED_FAIL.getMsg());
             return response;
         }
         List<OrderDO> todayList = orderService.getTodayList(userId);
         HashMap<Integer, List<Integer>> vipInfo = ehcacheService.getVipInfo();
 
         if (todayList.size() >= vipInfo.get(userDO.getMemberLevel()).get(3)) {
-            response = BaseResponse.fail("The order quantity has reached the upper limit.");
+            response = BaseResponse.fail(I18nEnum.ORDER_UPPER_LIMIT_FAIL.getMsg());
             return response;
         }
+        String createOrderChildLimitSwitch = RedisUtils.getString(DictConsts.CREATE_ORDER_PURCHASE_CHILD_LIMIT_SWITCH);
+        if (org.apache.commons.lang3.StringUtils.isNotBlank(createOrderChildLimitSwitch)
+                && "true".equalsIgnoreCase(createOrderChildLimitSwitch)) {
+            //判断用户是否可以刷单
+            if (!canOrderPurchase(userDO, param.getProductId())) {
+                return BaseResponse.fail(RedisUtils.getString(DictConsts.ORDER_PURCHASE_LIMIT_FAIL));
+            }
+        }
+
         OrderDO orderDO = new OrderDO();
         orderDO.setOrderNumber(param.getOrderNumber());
         orderDO.setUserId(userId);
@@ -169,7 +187,7 @@ public class OrderController extends BaseController {
 
         if (priceStr == null || returnFundStr == null) {
             logger.error("需要刷新userid:" + userId);
-            response = BaseResponse.fail("Please go back to the home page and refresh again.");
+            response = BaseResponse.fail(I18nEnum.GO_HOME_REFRESH.getMsg());
             return response;
         }
 
@@ -180,14 +198,14 @@ public class OrderController extends BaseController {
                 returnFund.subtract(param.getExpectedReturn()).abs().divide(returnFund, 2, BigDecimal.ROUND_DOWN).compareTo(new BigDecimal("0.15")) > 0) {
             logger.error("缓存金额:" + price + "缓存返利:" + returnFund);
             logger.error("实际金额:" + param.getTotalOrderAmount() + "实际返利:" + param.getExpectedReturn());
-            response = BaseResponse.fail("error amount");
+            response = BaseResponse.fail(I18nEnum.AMOUNT_FAIL.getMsg());
             return response;
         }
 
         //原始金额利率校验
         if (param.getExpectedReturn().subtract(param.getTotalOrderAmount()).abs().divide(price, 4, BigDecimal.ROUND_DOWN).compareTo(new BigDecimal("0.0095")) > 0) {
             logger.error("原始实际金额:" + param.getTotalOrderAmount() + "原始实际返利:" + param.getExpectedReturn());
-            response = BaseResponse.fail("error rate");
+            response = BaseResponse.fail(I18nEnum.RATE_FAIL.getMsg());
             return response;
         }
 
@@ -201,7 +219,7 @@ public class OrderController extends BaseController {
         //缓存金额利率校验
         if (param.getExpectedReturn().subtract(param.getTotalOrderAmount()).abs().divide(price, 4, BigDecimal.ROUND_DOWN).compareTo(new BigDecimal("0.0095")) > 0) {
             logger.error("缓存实际金额:" + param.getTotalOrderAmount() + "缓存实际返利:" + param.getExpectedReturn());
-            response = BaseResponse.fail("error rate");
+            response = BaseResponse.fail(I18nEnum.RATE_FAIL.getMsg());
             return response;
         }
 
@@ -301,6 +319,57 @@ public class OrderController extends BaseController {
         RedisUtils.setValue(param.getOrderNumber(), param.getOrderNumber(), 600);
         return response;
     }
+
+    /**
+     * 判断用户是否可以刷单
+     * @param userDO
+     * @param productId
+     * @return
+     */
+    private boolean canOrderPurchase(UserDO userDO, Long productId) {
+        ProductDO productDO = productService.get(productId);
+        if (null == productDO) {
+            return false;
+        }
+        Map<String, Object> params = Maps.newHashMap();
+        params.put("userId", userDO.getId());
+        params.put("productId", productId);
+        int count = orderService.count(params);
+        List<UserDO> userDOList = userService.getUserByParentId(userDO.getId());
+        //完成首充的子集用户数量
+        int childFirstRechargedCount = userDOList.size();
+        int limitCount = getOrderLimitByProduct(productDO, childFirstRechargedCount);
+        return count < limitCount;
+    }
+
+    /**
+     * 获取商品可以刷单数量
+     * @param productDO
+     * @param childFirstRechargedCount
+     * @return
+     */
+    private int getOrderLimitByProduct(ProductDO productDO, int childFirstRechargedCount) {
+        //刷单商品限制基数
+        int productLimit = 0;
+        if (1 == productDO.getLevel()) {
+            productLimit += 300;
+            productLimit += childFirstRechargedCount * 300;
+        } else if (2 == productDO.getLevel()) {
+            productLimit += 200;
+            productLimit += (childFirstRechargedCount / 2) * 200;
+        } else if (3 == productDO.getLevel()) {
+            productLimit += 120;
+            productLimit += (childFirstRechargedCount / 3) * 120;
+        } else if (4 == productDO.getLevel()) {
+            productLimit += 100;
+            productLimit += (childFirstRechargedCount / 4) * 100;
+        } else if (5 == productDO.getLevel()) {
+            productLimit += 80;
+            productLimit += (childFirstRechargedCount / 5) * 80;
+        }
+        return productLimit;
+    }
+
 
 
     //注册天数

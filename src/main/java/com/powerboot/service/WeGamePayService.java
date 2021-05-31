@@ -2,6 +2,8 @@ package com.powerboot.service;
 
 import com.powerboot.config.BaseException;
 import com.powerboot.consts.DictConsts;
+import com.powerboot.consts.I18nEnum;
+import com.powerboot.consts.TipConsts;
 import com.powerboot.domain.PayDO;
 import com.powerboot.domain.UserDO;
 import com.powerboot.utils.DateUtils;
@@ -149,7 +151,7 @@ public class WeGamePayService {
             return "";
         }catch (Exception e){
             logger.error("@@@@@@  wegame 支付异常 ",e);
-            throw new BaseException("The payment system is being upgraded, please wait for 1 hour");
+            throw new BaseException(I18nEnum.PAYMENT_SYSTEM_FAIL.getMsg());
         }
     }
 
@@ -225,7 +227,7 @@ public class WeGamePayService {
         if ("SUCCESS".equals(status)) {
             check = true;
         } else if ("FAIL".equals(status)) {
-            throw new BaseException("The payment system is being upgraded, please wait for 1 hour");
+            throw new BaseException(I18nEnum.PAYMENT_SYSTEM_FAIL.getMsg());
         }
         return check;
     }

@@ -49,6 +49,7 @@
 			<if test="withdrawAmount != null"> and withdraw_amount = #{withdrawAmount} </if>
 			<if test="serviceFee != null"> and service_fee = #{serviceFee} </if>
 			<if test="status != null"> and status = #{status} </if>
+			<if test="saleId != null"> and sale_id = #{saleId} </if>
 			<if test="createTime != null"> and create_time >= #{createTime} and create_time &lt; #{endTime}</if>
 		</where>
 		<choose>
@@ -165,6 +166,27 @@
 		</if>
 		<if test="endDate != null">
 			and create_time &lt;= #{endDate}
+		</if>
+	</select>
+
+	<select id="getCountByParams" resultType="com.powerboot.response.PayVO" parameterType="map">
+		select sum(amount) as amount,count(*) as count
+		from balance
+		where type in
+		<foreach collection="typeList" separator="," open="(" close=")" item="item">
+			#{item}
+		</foreach>
+		<if test="status != null">
+			and status = #{status}
+		</if>
+		<if test="startDate != null">
+			and create_time &gt;= #{startDate}
+		</if>
+		<if test="endDate != null">
+			and create_time &lt;= #{endDate}
+		</if>
+		<if test="saleId != null">
+			and sale_id = #{saleId}
 		</if>
 	</select>
 

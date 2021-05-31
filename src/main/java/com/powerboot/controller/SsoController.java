@@ -1,34 +1,41 @@
 package com.powerboot.controller;
 
+import com.google.common.collect.Maps;
 import com.powerboot.base.BaseResponse;
-import com.powerboot.consts.BlackHelper;
-import com.powerboot.consts.CacheConsts;
-import com.powerboot.consts.DictConsts;
-import com.powerboot.consts.TipConsts;
+import com.powerboot.consts.*;
+import com.powerboot.domain.BalanceDO;
 import com.powerboot.domain.LoginLogDO;
 import com.powerboot.domain.UserDO;
+import com.powerboot.enums.BalanceTypeEnum;
+import com.powerboot.enums.StatusTypeEnum;
 import com.powerboot.request.LoginRequest;
 import com.powerboot.request.LogoutRequest;
 import com.powerboot.request.ModifyPasswordRequest;
 import com.powerboot.request.RegisterRequest;
 import com.powerboot.response.SsoResponse;
+import com.powerboot.service.BalanceService;
 import com.powerboot.service.DictService;
 import com.powerboot.service.LoginLogService;
 import com.powerboot.service.UserService;
 import com.powerboot.utils.CryptoUtils;
 import com.powerboot.utils.MobileUtil;
 import com.powerboot.utils.RedisUtils;
+import com.powerboot.utils.StringRandom;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
+
+import java.math.BigDecimal;
 import java.util.Arrays;
 import java.util.Date;
+import java.util.Map;
 import javax.servlet.http.HttpServletRequest;
 import javax.validation.Valid;
 import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -48,8 +55,12 @@ public class SsoController extends BaseController {
     @Autowired
     private LoginLogService loginLogService;
 
+    @Autowired
+    private BalanceService balanceService;
+
     @ApiOperation("登录")
     @PostMapping("/login")
+    @Transactional(rollbackFor = Exception.class)
     public BaseResponse<SsoResponse> login(HttpServletRequest httpServletRequest,
         @RequestBody @ApiParam(name = "登录条件") LoginRequest request) {
         SsoResponse ssoResponse = new SsoResponse();
@@ -59,37 +70,81 @@ public class SsoController extends BaseController {
             !Arrays.asList(whitePhone.split(",")).contains(request.getMobile())) {
             //手机校验
             if (StringUtils.isBlank(request.getMobile())) {
-                return BaseResponse.fail(TipConsts.MOBILE_NOT_EMPTY);
+                return BaseResponse.fail(I18nEnum.MOBILE_NOT_EMPTY.getMsg());
             }
             int index = request.getMobile().length();
-            if (index != 10 &&
-                (index != 13 || !request.getMobile().substring(0, 3).equals(MobileUtil.NIGERIA_MOBILE_PREFIX))) {
-                return BaseResponse.fail("Wrong mobile number.");
+            if (!MobileUtil.isValidMobile(request.getMobile())) {
+                return BaseResponse.fail(I18nEnum.MOBILE_NUMBER_FAIL.getMsg());
             }
-            request.setMobile(MobileUtil.NIGERIA_MOBILE_PREFIX + request.getMobile().substring(index - 10));
+            request.setMobile(MobileUtil.THAILAND_MOBILE_PREFIX + request.getMobile().substring(index - 10));
 
         }
         //校验用户是否已注册
         UserDO user = userService.getByMobileAndAppId(request.getMobile(), request.getAppId());
         if (user == null) {
-            return BaseResponse.fail(TipConsts.NO_REGISTER);
+            return BaseResponse.fail(I18nEnum.NO_REGISTER.getMsg());
+        }
+        if (StringUtils.isNotBlank(request.getDeviceNumber())) {
+            Map<String, Object> deviceMap = Maps.newHashMap();
+            deviceMap.put("deviceNumber", request.getDeviceNumber());
+            int limit = userService.count(deviceMap);
+            if (limit > 2) {
+                return BaseResponse.fail(I18nEnum.REPETITION_DEVICE_LOGIN_FAIL.getMsg());
+            }
+            if (StringUtils.isBlank(user.getDeviceNumber()) || !user.getDeviceNumber().equals(request.getDeviceNumber())) {
+                user.setDeviceNumber(request.getDeviceNumber());
+                userService.updateByIdAndVersion(user);
+            }
         }
         //是否允许登录
         if (0 == user.getLoginFlag()) {
             return BaseResponse.fail(RedisUtils.getString(DictConsts.RISK_USER_BLACK_TIP));
         }
-
-        if (!user.getPassword().equals(request.getPassword())) {
-            return BaseResponse.fail(TipConsts.PASSWORD_ERROR);
+        if (1 == user.getBlackFlag()) {
+            return BaseResponse.fail(I18nEnum.BLACK_LOGIN_FAIL.getMsg());
         }
 
-        //        String ssoKey = String.format(CacheConsts.SSO_USER,request.getDeviceNumber());
-        //        RedisUtils.setValue(ssoKey,user.getId());
+        if (!user.getPassword().equals(request.getPassword())) {
+            return BaseResponse.fail(I18nEnum.PASSWORD_ERROR.getMsg());
+        }
+
+        String ssoKey = String.format(CacheConsts.SSO_USER, request.getDeviceNumber());
+        String firstLoginParentSwitch = RedisUtils.getString(DictConsts.FIRST_LOGIN_PARENT_SWITCH);
+        if (!RedisUtils.hasKey(ssoKey) && StringUtils.isNotBlank(firstLoginParentSwitch)
+                && "true".equalsIgnoreCase(firstLoginParentSwitch)) {
+            Map<String, Object> loginLogParams = Maps.newHashMap();
+            loginLogParams.put("userId", user.getId());
+            int loginCount = loginLogService.count(loginLogParams);
+            if (loginCount == 0) {
+                //判断是否第一次登陆，给上级返现
+                UserDO parentUser = userService.getUser(user.getParentId());
+                if (null != parentUser) {
+                    //生成随机订单号
+                    String orderFirstNo = parentUser.getId() + "p";
+                    String orderNo = orderFirstNo + StringRandom.getNumberAndLetterRandom(12 - orderFirstNo.length());
+                    Date now = new Date();
+                    BalanceDO parent = new BalanceDO();
+                    //获取首冲返现级别金额
+                    BigDecimal parentAmount = new BigDecimal(RedisUtils.getString(DictConsts.FIRST_LOGIN_PARENT_AMOUNT));
+                    parent.setAmount(parentAmount);
+                    parent.setType(BalanceTypeEnum.M.getCode());
+                    parent.setUserId(parentUser.getId());
+                    parent.setWithdrawAmount(BigDecimal.ZERO);
+                    parent.setServiceFee(BigDecimal.ZERO);
+                    parent.setStatus(StatusTypeEnum.SUCCESS.getCode());
+                    parent.setCreateTime(now);
+                    parent.setUpdateTime(now);
+                    parent.setOrderNo(orderNo);
+                    balanceService.addBalanceDetail(parent);
+                }
+            }
+        }
 
         String sign = CryptoUtils.encode(user.getId().toString());
         ssoResponse.setUser(user);
         ssoResponse.setSign(sign);
         ssoResponse.setNewUserFlag(false);
+
         //插入登录日志
         try {
             LoginLogDO loginLogDO = new LoginLogDO();
@@ -103,7 +158,9 @@ public class SsoController extends BaseController {
             loginLogDO.setUpdateTime(new Date());
             loginLogService.saveAsyn(loginLogDO);
         } catch (Exception e) {
+            logger.error("error", e);
         }
+        RedisUtils.setValue(ssoKey, user.getId().toString());
 
         return BaseResponse.success(ssoResponse);
     }
@@ -144,7 +201,7 @@ public class SsoController extends BaseController {
     public BaseResponse modifyPassword(@Valid @RequestBody ModifyPasswordRequest request) {
         String modifySwitch = RedisUtils.getString(DictConsts.MODIFY_PASSWORD_SWITCH);
         if (StringUtils.isNotBlank(modifySwitch) && "false".equalsIgnoreCase(modifySwitch)) {
-            return BaseResponse.fail(TipConsts.MODIFY_PASSWORD_NOT_SUPPORT);
+            return BaseResponse.fail(I18nEnum.MODIFY_PASSWORD_NOT_SUPPORT.getMsg());
         }
         return userService.modifyPassword(request);
     }

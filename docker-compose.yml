@@ -7,7 +7,7 @@ services:
       dockerfile: Dockerfile
     environment:
       SPRING_PROFILE:
-      TZ: "Africa/Lagos"
+      TZ: "Asia/Bangkok"
     container_name: online-earning
     ports:
       - 8080:8080
@@ -33,7 +33,7 @@ services:
     restart: always
     environment:
       MYSQL_ROOT_PASSWORD: adminvxadmin
-      TZ: Africa/Lagos
+      TZ: Asia/Bangkok
       MYSQL_DATABASE: online-earning
   redis:
     image: redis

@@ -1,5 +1,7 @@
 package com.powerboot.consts;
 
+import java.math.BigDecimal;
+
 /**
  * @description : 提示语
  * @date : Created in 2020/7/16 15:48
@@ -7,7 +9,7 @@ package com.powerboot.consts;
 public class TipConsts {
 
     //出错提示重试
-    public static final String TRY_AGAIN = "Please try again!";
+    public static final String TRY_AGAIN = "this fails, Please try again!";
 
     //手机号非空
     public static final String MOBILE_NOT_EMPTY = "Mobile number can't be empty!";
@@ -88,4 +90,168 @@ public class TipConsts {
      * 修改密码关闭提示
      */
     public static final String MODIFY_PASSWORD_NOT_SUPPORT = "Before the platform upgrade, password modification is not supported. Please contact customer service staff to reset your password.";
+
+    public static final String VIP_UPDATE_COUNT_FAIL = "Due to insufficient invitation: the valid user task you invited has not been completed and cannot be upgraded!";
+
+    public static final String BLACK_LOGIN_FAIL = "Due to your repeated registration, this account is blocked by us !";
+
+    /**
+     * 重复设备登陆错误
+     */
+    public static final String REPETITION_DEVICE_LOGIN_FAIL = "Please comply with the rules of the platform, do not repeat registration!";
+
+    /**
+     * 支付系统异常
+     */
+    public static final String PAYMENT_SYSTEM_FAIL = "The payment system is being upgraded, please wait for 1 hour";
+
+    /**
+     * 登录超时异常
+     */
+    public static final String LOGIN_TIMEOUT_FAIL = "login timeout, please login first";
+
+    /**
+     * 异常支付
+     */
+    public static final String UNKNOWN_PAY_FAIL = "Unknown Pay!!!";
+
+    /**
+     * 购买理财产品异常
+     */
+    public static final String CREATE_FINANCIAL_PRODUCT_FAIL = "The purchase failed, please try again ";
+
+    /**
+     * 订单不存在异常
+     */
+    public static final String ORDER_NOT_FOUND_FAIL = "This order not found";
+
+    /**
+     * 参数错误
+     */
+    public static final String PARAMS_FAIL = "error params";
+
+    /**
+     * 支付异常
+     */
+    public static final String PAYMENT_FAIL = "Unknown error : Your payment was fail,please try again later!";
+
+    /**
+     * 请求次数限制异常
+     */
+    public static final String REQUEST_LIMIT_FAIL = "Request over limits!";
+
+    /**
+     * 发送消息异常
+     */
+    public static final String SEND_MESSAGE_FAIL = "Send message error";
+
+    /**
+     * 手机号错误异常
+     */
+    public static final String MOBILE_NUMBER_FAIL = "Wrong mobile number.";
+
+    /**
+     * 注册异常
+     */
+    public static final String REGISTER_FAIL = "register fall,please try again!";
+
+    /**
+     * 修改密码异常
+     */
+    public static final String MODIFY_PASSWORD_FAIL = "modify password fall,please try again!";
+
+    /**
+     * 系统异常提醒重启
+     */
+    public static final String SYSTEM_FAIL_CLOSE_RETRY = "Your system error, Please close app , Try open again";
+
+    /**
+     * 起购金额提示
+     */
+    public static final String FINANCIAL_MORE_TIP = "A single purchase required more than ";
+
+    /**
+     * 单笔上限提示
+     */
+    public static final String FINANCIAL_LESS_TIP = "A single purchase required less than ";
+
+    /**
+     * 余额不足
+     */
+    public static final String BALANCE_INSUFFICIENT_FAIL = "Your balance is insufficient, Please recharge first";
+
+    /**
+     * 产品VIP等级不足错误
+     */
+    public static final String PRODUCT_VIP_MEMBER_LOWER_FAIL = "The product need Member VIP %s and higher, Please purchase Member VIP first";
+
+    /**
+     * 产品最大限购额错误
+     */
+    public static final String PRODUCT_TOTAL_PURCHASE_FAIL = " total purchase limit is %s, You have purchased %s, Please modify your input amount";
+
+    /**
+     * 账户被限额错误
+     */
+    public static final String ACCOUNT_RESTRICTED_FAIL = "The account has been restricted,please contact Customer Service";
+
+    /**
+     * 订单数量限制错误
+     */
+    public static final String ORDER_UPPER_LIMIT_FAIL = "The order quantity has reached the upper limit.";
+
+    /**
+     * 回到首页并刷新提示
+     */
+    public static final String GO_HOME_REFRESH = "Please go back to the home page and refresh again.";
+
+    /**
+     * 错误金额
+     */
+    public static final String AMOUNT_FAIL = "error amount";
+
+    /**
+     * 错误利率
+     */
+    public static final String RATE_FAIL = "error rate";
+
+    /**
+     * 充值最低金额提示
+     */
+    public static final String RECHARGE_LOW_FAIL = "Recharge can not low of 300!";
+
+    /**
+     * 当天充值限制
+     */
+    public static final String RECHARGE_LIMIT_DAY = "You can only recharge %s a day";
+
+    /**
+     * 系统异常
+     */
+    public static final String SYSTEM_FAIL = "System error";
+
+    /**
+     * 任务完成提示
+     */
+    public static final String ALL_TASK_COMPLETE = "All tasks have been completed today";
+
+    /**
+     * 购买会员卡标题
+     */
+    public static final String MEMBER_INFO_TITLE = "Players will be LV1 members by default after registering an account";
+
+    /**
+     * 修改失败
+     */
+    public static final String MODIFY_FAIL = "modify fall";
+
+    /**
+     * 提现金额不足
+     */
+    public static final String WITHDRAW_NOT_ENOUGH_FAIL = "The current account is not enough to withdraw cash, you have %s rupees being paid";
+
+    /**
+     * 提现提交失败
+     */
+    public static final String SUBMIT_WITHDRAW_FAIL = "submit withdraw error,please try again!";
 }

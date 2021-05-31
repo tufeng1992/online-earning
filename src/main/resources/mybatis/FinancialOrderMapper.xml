@@ -110,6 +110,7 @@
             <if test="param.userId != null">and user_id = #{param.userId} </if>
             <if test="param.productId != null">and product_id = #{param.productId} </if>
             <if test="param.orderStatus != null">and order_status = #{param.orderStatus} </if>
+            <if test="param.saleId != null">and sale_id = #{param.saleId} </if>
             <if test="param.orderStatusList != null and param.orderStatusList.size()>0">
                 and order_status in
                 <foreach collection="param.orderStatusList" separator="," open="(" close=")" item="orderStatus">
@@ -136,10 +137,11 @@
 
     <select id="getInAmountSum" resultType="java.math.BigDecimal">
         select sum(amount) from financial_order
-        where order_status = 1
         <where>
+            order_status = 1
             <if test="buyDateStart != null "> and buy_date <![CDATA[ >= ]]> #{buyDateStart} </if>
             <if test="buyDateEnd != null "> and buy_date <![CDATA[ <= ]]> #{buyDateEnd} </if>
+            <if test="saleId != null">and sale_id = #{saleId} </if>
         </where>
     </select>
 

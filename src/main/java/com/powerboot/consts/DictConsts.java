@@ -94,6 +94,9 @@ public class DictConsts {
     //首冲上级返现金额
     public static final String FIRST_RECHARGE_PARENT_AMOUNT_LEVEL3 = "FIRST_RECHARGE_PARENT_AMOUNT_LEVEL3";
 
+    //首次登陆成功返现
+    public static final String FIRST_LOGIN_PARENT_AMOUNT = "FIRST_LOGIN_PARENT_AMOUNT";
+
 
     //充值金额集合
     public static final String RECHARGE_AMOUNT_LIST = "RECHARGE_AMOUNT_LIST";
@@ -350,6 +353,106 @@ public class DictConsts {
      */
     public static final String FLUTTER_WEBHOOK_HASH = "FLUTTER_WEBHOOK_HASH";
 
+    /**
+     * wallyt网关地址
+     */
+    public static final String WALLYT_GATEWAY_URL = "WALLYT_GATEWAY_URL";
+
+    /**
+     * wallyt partnerId
+     */
+    public static final String WALLYT_PARTNER_ID = "WALLYT_PARTNER_ID";
+
+    /**
+     * wallyt 签名私钥
+     */
+    public static final String WALLYT_SIGN_PRIK = "WALLYT_SIGN_PRIK";
+
+    /**
+     * wallyt 签名公钥
+     */
+    public static final String WALLYT_SIGN_PUBK = "WALLYT_SIGN_PUBK";
+
+    /**
+     * wallyt 转账回调通知url
+     */
+    public static final String WALLYT_PAYOUT_NOTIFY_URL = "WALLYT_PAYOUT_NOTIFY_URL";
+
+    /**
+     * 商户id
+     */
+    public static final String GRECASH_MERCHANT_ID = "GRECASH_MERCHANT_ID";
+
+    /**
+     * grecash app id
+     */
+    public static final String GRECASH_APP_ID = "GRECASH_APP_ID";
+
+    /**
+     * grecash app secret
+     */
+    public static final String GRECASH_APP_SECRET = "GRECASH_APP_SECRET";
+
+    /**
+     * access token
+     */
+    public static final String GRECASH_ACCESS_TOKEN = "GRECASH_ACCESS_TOKEN";
+
+    /**
+     * 基础网关
+     */
+    public static final String GRECASH_BASE_URL = "GRECASH_BASE_URL";
+
+    /**
+     * 支付回调地址
+     */
+    public static final String GRECASH_PAY_NOTIFY_URL = "GRECASH_PAY_NOTIFY_URL";
+
+    /**
+     * 转账回调地址
+     */
+    public static final String GRECASH_PAY_OUT_NOTIFY_URL = "GRECASH_PAY_OUT_NOTIFY_URL";
+
+    /**
+     * 支付重定向地址
+     */
+    public static final String GRECASH_PAY_REDIRECT_URL = "GRECASH_PAY_REDIRECT_URL";
+
+    /**
+     * 商户id
+     */
+    public static final String GMS_MERCHANT_ID = "GMS_MERCHANT_ID";
+
+    /**
+     * 基础网关
+     */
+    public static final String GMS_BASE_URL = "GMS_BASE_URL";
+
+
+    /**
+     * 支付回调地址
+     */
+    public static final String GMS_PAY_NOTIFY_URL = "GMS_PAY_NOTIFY_URL";
+
+    /**
+     * 支付重定向地址
+     */
+    public static final String GMS_PAY_REDIRECT_URL = "GMS_PAY_REDIRECT_URL";
+
+    /**
+     * 支付回调地址
+     */
+    public static final String GMS_PAY_OUT_NOTIFY_URL = "GMS_PAY_OUT_NOTIFY_URL";
+
+    /**
+     * 支付key
+     */
+    public static final String GMS_PAY_IN_KEY = "GMS_PAY_IN_KEY";
+
+    /**
+     * 代付key
+     */
+    public static final String GMS_PAY_OUT_KEY = "GMS_PAY_OUT_KEY";
 
     //相同ip注册最大个数
     public static final String IP_REGISTER_MAX_COUNT = "IP_REGISTER_MAX_COUNT";
@@ -489,4 +592,34 @@ public class DictConsts {
      * infobip from
      */
     public static final String INFOBIP_VOICE_MESSAGE_FROM = "INFOBIP_VOICE_MESSAGE_FROM";
+
+    /**
+     * 不允许提现日  with week
+     */
+    public static final String UN_WITHDRAW_DAYS = "UN_WITHDRAW_DAYS";
+
+    /**
+     * 刷单限额错误
+     */
+    public static final String ORDER_PURCHASE_LIMIT_FAIL = "ORDER_PURCHASE_LIMIT_FAIL";
+
+    /**
+     * 购买vip子用户数量限制开关
+     */
+    public static final String CREATE_VIP_CHILD_LIMIT_SWITCH = "CREATE_VIP_CHILD_LIMIT_SWITCH";
+
+    /**
+     * 刷单子用户数量限制开关
+     */
+    public static final String CREATE_ORDER_PURCHASE_CHILD_LIMIT_SWITCH = "CREATE_ORDER_PURCHASE_CHILD_LIMIT_SWITCH";
+
+    /**
+     * 第一次登陆上级返现开关
+     */
+    public static final String FIRST_LOGIN_PARENT_SWITCH = "FIRST_LOGIN_PARENT_SWITCH";
+
+    /**
+     * 默认语言
+     */
+    public static final String DEFAULT_LANGUAGE = "DEFAULT_LANGUAGE";
 }

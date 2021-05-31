@@ -1,8 +1,8 @@
 FROM openjdk:8-alpine
 WORKDIR /work
 VOLUME ["/earning/logs","/earning/static"]
-RUN ln -sf /usr/share/zoneinfo/Africa/Lagos /etc/localtime
-RUN echo "Africa/Lagos" > /etc/timezone
+RUN ln -sf /usr/share/zoneinfo/Asia/Bangkok /etc/localtime
+RUN echo "Asia/Bangkok" > /etc/timezone
 RUN apk add --update ttf-dejavu fontconfig
 RUN apk add tini
 

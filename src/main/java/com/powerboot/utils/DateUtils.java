@@ -2,6 +2,7 @@ package com.powerboot.utils;
 
 import com.powerboot.base.BaseResponse;
 import com.powerboot.config.BaseException;
+import com.powerboot.consts.DictConsts;
 import org.apache.commons.lang.StringUtils;
 
 import java.math.BigInteger;
@@ -86,12 +87,22 @@ public class DateUtils extends org.apache.commons.lang.time.DateUtils{
     public static Boolean checkWeekend(){
         Calendar cal=Calendar.getInstance();
         cal.setTime(new Date());
-        if(cal.get(Calendar.DAY_OF_WEEK)==Calendar.SATURDAY || cal.get(Calendar.DAY_OF_WEEK)==Calendar.SUNDAY){
-            return true;
+        String days = RedisUtils.getString(DictConsts.UN_WITHDRAW_DAYS);
+        if (StringUtils.isNotBlank(days)) {
+            for (String day : days.split(",")) {
+                Integer dayOfWeek = Integer.valueOf(day);
+                if (dayOfWeek == 7) {
+                    dayOfWeek = 1;
+                } else {
+                    dayOfWeek++;
+                }
+                if(cal.get(Calendar.DAY_OF_WEEK) == dayOfWeek){
+                    return true;
+                }
+            }
         }
         return false;
     }
-
     /**
      * 获取现在时间
      * @return返回字符串格式yyyyMMddHHmmss
@@ -1622,6 +1633,8 @@ public class DateUtils extends org.apache.commons.lang.time.DateUtils{
     }
 
     public static void main(String[] args) {
-        System.out.println(DateUtils.parseDate("2021-01-11 00:00:01",DateUtils.DATE_TIME_PATTERN).compareTo(DateUtils.now()) > 0);
+        System.out.println(checkWeekend());
+
+//        System.out.println(DateUtils.parseDate("2021-01-11 00:00:01",DateUtils.DATE_TIME_PATTERN).compareTo(DateUtils.now()) > 0);
     }
 }

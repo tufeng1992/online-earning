@@ -20,10 +20,16 @@ import java.io.IOException;
 @Slf4j
 public class VoiceMessageSendUtil {
 
+    //轮询标记
+    private volatile Integer balanceIndex = 0;
+
     @SneakyThrows
     public JSONObject sendVoiceMessage(String sendMsg, String tel) {
-        String authorization = "App 45073603838c74ce00d53b29ca1005f2-297dfccb-04c4-4014-8b13-10e90e3d23c6";
-        String from = "2347080631326";
+//        String authorization = "App 45073603838c74ce00d53b29ca1005f2-297dfccb-04c4-4014-8b13-10e90e3d23c6";
+//        String from = "2347080631326";
+        String authorization = "App " + RedisUtils.getString(DictConsts.INFOBIP_VOICE_MESSAGE_API_KEY);
+        String from = getFromBalance();
+
         OkHttpClient client = new OkHttpClient().newBuilder()
                 .build();
         MediaType mediaType = MediaType.parse("application/json");
@@ -34,7 +40,7 @@ public class VoiceMessageSendUtil {
                 "\t\t\t\"to\": \"" + tel + "\"\n" +
                 "\t\t}],\n" +
                 "\t\t\"text\": \"" + sendMsg + "\",\n" +
-                "\t\t\"speechRate\": 0.6\n" +
+                "\t\t\"speechRate\": 0.5\n" +
                 "\n" +
                 "\t}]\n" +
                 "}";
@@ -63,34 +69,57 @@ public class VoiceMessageSendUtil {
         return JSONObject.parseObject(respBody);
     }
 
-    public static void main(String[] args) {
-        String sms = StringRandom.getStringRandom(6);
-        String tel = "2349065572116";
-        StringBuilder g = new StringBuilder("Your verification code is ");
-        for (char c : sms.toCharArray()) {
-            g.append(c).append(" ");
-        }
-        System.out.println(g.toString());
-        System.out.println(g.toString() + " " + g.toString());
-        VoiceMessageSendUtil voiceMessageSendUtil = new VoiceMessageSendUtil();
-        JSONObject jsonObject = voiceMessageSendUtil.sendVoiceMessage(g.toString() + " "
-                + g.toString() + " " + g.toString(), tel);
-        SmsSendResponse smsSendResponse = new SmsSendResponse();
-        if (null != jsonObject) {
-            JSONArray messages = jsonObject.getJSONArray("messages");
-            if (CollectionUtils.isNotEmpty(messages)) {
-                JSONObject message = messages.getJSONObject(0);
-                JSONObject status = message.getJSONObject("status");
-                smsSendResponse.setMsgId(message.getString("messageId"));
-                smsSendResponse.setError(status.getString("description"));
-                if ("PENDING".equalsIgnoreCase(status.getString("groupName"))) {
-                    smsSendResponse.setCode("0");
-                } else {
-                    smsSendResponse.setCode("500");
-                }
+    /**
+     * 轮询获取from
+     * @return
+     */
+    private String getFromBalance() {
+        String from = RedisUtils.getString(DictConsts.INFOBIP_VOICE_MESSAGE_FROM);
+        String[] fromArr = from.split(",");
+        synchronized (this) {
+            if (balanceIndex >= fromArr.length) {
+                balanceIndex = 0;
             }
+            return fromArr[balanceIndex++];
         }
-        System.out.println(smsSendResponse);
+    }
+
+    public static void main(String[] args) {
+        VoiceMessageSendUtil voiceMessageSendUtil = new VoiceMessageSendUtil();
+//
+//        String sms = StringRandom.getStringRandom(6);
+//        String tel = "2349065572116";
+//        StringBuilder g = new StringBuilder("Your verification code is ");
+//        StringBuilder s = new StringBuilder(" code is ");
+//        for (char c : sms.toCharArray()) {
+//            g.append(c).append("    ");
+//            s.append(c).append("    ");
+//        }
+//        System.out.println(g.toString());
+//        System.out.println(g.toString() + " " + g.toString());
+//
+//        JSONObject jsonObject = voiceMessageSendUtil.sendVoiceMessage(g.toString() + "        "
+//                + s.toString() + "        " + s.toString() + "        " + s.toString(), tel);
+//        SmsSendResponse smsSendResponse = new SmsSendResponse();
+//        if (null != jsonObject) {
+//            JSONArray messages = jsonObject.getJSONArray("messages");
+//            if (CollectionUtils.isNotEmpty(messages)) {
+//                JSONObject message = messages.getJSONObject(0);
+//                JSONObject status = message.getJSONObject("status");
+//                smsSendResponse.setMsgId(message.getString("messageId"));
+//                smsSendResponse.setError(status.getString("description"));
+//                if ("PENDING".equalsIgnoreCase(status.getString("groupName"))) {
+//                    smsSendResponse.setCode("0");
+//                } else {
+//                    smsSendResponse.setCode("500");
+//                }
+//            }
+//        }
+//        System.out.println(smsSendResponse);
+        for (int i = 0; i < 10; i++) {
+            System.out.println(voiceMessageSendUtil.getFromBalance());
+        }
+
     }
 
 }

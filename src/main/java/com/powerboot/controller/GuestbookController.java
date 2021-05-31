@@ -44,6 +44,7 @@ public class GuestbookController extends BaseController {
     @ApiOperation(value = "获取留言板列表")
     @PostMapping("/getGuestbookList")
     @ResponseBody
+    @Transactional(rollbackFor = Exception.class)
     public BaseResponse<List<GuestbookDTO>> getUserGuestbookList(@RequestBody @Valid BaseRequest param) {
         Long userId = getUserId(param);
         BaseResponse<List<GuestbookDTO>> response = BaseResponse.success();
@@ -60,7 +61,30 @@ public class GuestbookController extends BaseController {
             GuestbookDTO guestbookDTO = new GuestbookDTO();
             BeanUtils.copyProperties(o, guestbookDTO);
             response.getResultData().add(guestbookDTO);
+            if (!o.getReaded()) {
+                o.setReaded(true);
+                guestbookService.update(o);
+            }
         });
+        return response;
+    }
+
+    @ApiOperation(value = "获取未读数量")
+    @PostMapping("/getUnreadCount")
+    @ResponseBody
+    public BaseResponse<Integer> getUnreadCount(@RequestBody @Valid BaseRequest param) {
+        Long userId = getUserId(param);
+        BaseResponse<Integer> response = BaseResponse.success();
+        response.setResultData(0);
+        UserDO userDO = userService.get(userId);
+        if (null == userDO) {
+            return response;
+        }
+        HashMap<String, Object> map = new HashMap<>();
+        map.put("guestbookTargetId", userId);
+        map.put("readed", false);
+        Integer count = guestbookService.selectUnreadCount(map);
+        response.setResultData(count);
         return response;
     }
 

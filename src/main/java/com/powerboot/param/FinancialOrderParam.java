@@ -1,5 +1,7 @@
 package com.powerboot.param;
 
+import lombok.Data;
+
 import java.io.Serializable;
 import java.math.BigDecimal;
 import java.util.Date;
@@ -11,6 +13,7 @@ import java.util.List;
  * @author auto_generator
  * @date 2020-10-30 23:10:01
  */
+@Data
 public class FinancialOrderParam implements Serializable {
 	private static final long serialVersionUID = 1L;
 	
@@ -61,6 +64,8 @@ public class FinancialOrderParam implements Serializable {
 	private Date calledTimeStart;
 
 	private Date calledTimeEnd;
+
+	private Long saleId;
 
 	public Integer getMinUserId() {
 		return minUserId;

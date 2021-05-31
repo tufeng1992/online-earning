@@ -58,5 +58,7 @@ public interface PayDao {
 
 	PayVO getCountByTypeStatus(@Param("typeList") List<Integer> typeList, @Param("status") Integer status,@Param("userId")Long userId, @Param("startDate") LocalDate startDate, @Param("endDate") LocalDate endDate);
 
+	PayVO getCountByParams(Map<String, Object> params);
+
 	int timeout(@Param("yesterday") Date yesterday);
 }

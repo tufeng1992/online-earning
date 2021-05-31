@@ -4,11 +4,16 @@
 <mapper namespace="com.powerboot.dao.ProductDao">
 
 	<select id="get" resultType="com.powerboot.domain.ProductDO">
-		select `id`,`name`,`picture`,`price`,`describtion`,`comment`,`return_price`,`level`,`sort`,`type`,`status`,`create_time`,`update_time` from product where id = #{value}
+		select `id`,`name`,`picture`,`price`,`describtion`,`comment`,
+		`return_price`,`level`,`sort`,`type`,`status`,`introduction`,
+		`desc_amount`,`create_time`,`update_time`,
+		 `user_level_limit`, `balance_info`, `price_section`, `user_balance_limit` from product where id = #{value}
 	</select>
 
 	<select id="list" resultType="com.powerboot.domain.ProductDO">
-		select `id`,`name`,`picture`,`price`,`describtion`,`comment`,`return_price`,`level`,`sort`,`type`,`status`,`create_time`,`update_time` from product
+		select `id`,`name`,`picture`,`price`,`describtion`,`comment`,`return_price`,
+		`level`,`sort`,`type`,`status`,`introduction`,`desc_amount`,`create_time`,`update_time`,
+		`user_level_limit`, `balance_info`, `price_section`, `user_balance_limit` from product
         <where>  
 		  		  <if test="id != null and id != ''"> and id = #{id} </if>
 		  		  <if test="name != null and name != ''"> and name = #{name} </if>

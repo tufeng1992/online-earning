@@ -6,6 +6,8 @@ import com.powerboot.config.BaseException;
 import com.powerboot.config.SmsSendConfig;
 import com.powerboot.consts.CacheConsts;
 import com.powerboot.consts.DictConsts;
+import com.powerboot.consts.I18nEnum;
+import com.powerboot.consts.TipConsts;
 import com.powerboot.dao.SmsDao;
 import com.powerboot.dao.SmsSendResponse;
 import com.powerboot.domain.SmsDO;
@@ -109,13 +111,13 @@ public class SmsService {
         //验证相同ip短信发送次数
         Integer dictIpCount = ipCountString == null ? null : Integer.parseInt(ipCountString);
         if (dictIpCount != null && ipCount >= dictIpCount) {
-            throw new BaseException("Request over limits!");
+            throw new BaseException(I18nEnum.REQUEST_LIMIT_FAIL.getMsg());
         }
 
         //验证相同手机号短信发送次数
         Integer dictPhoneCount = phoneCountString == null ? null : Integer.parseInt(phoneCountString);
         if (dictPhoneCount != null && phoneCount >= dictPhoneCount) {
-            throw new BaseException("Request over limits!");
+            throw new BaseException(I18nEnum.REQUEST_LIMIT_FAIL.getMsg());
         }
 
         //验证码位数
@@ -127,7 +129,7 @@ public class SmsService {
         Date now = new Date();
         //判断验证码时间不得小于间隔时间
         if (lastTel != null && now.compareTo(DateUtils.addSeconds(lastTel.getCreateTime(), smsResendTime)) < 0) {
-            return BaseResponse.fail("The operation is too fast. Please try again later!");
+            return BaseResponse.fail(I18nEnum.OPERATION_FAST.getMsg());
         }
         String sendSmsSwitch = RedisUtils.getString(DictConsts.SEND_SMS_SWITCH);
         boolean sendSmsSwitchFlag = StringUtils.isNotBlank(sendSmsSwitch) && "false".equalsIgnoreCase(sendSmsSwitch);
@@ -177,7 +179,7 @@ public class SmsService {
             }
             return BaseResponse.success();
         } else {
-            throw new BaseException("Send message error");
+            throw new BaseException(I18nEnum.SEND_MESSAGE_FAIL.getMsg());
         }
     }
 }

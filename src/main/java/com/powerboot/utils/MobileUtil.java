@@ -19,12 +19,28 @@ public class MobileUtil {
      */
     public static final String NIGERIA_MOBILE_PREFIX = "234";
 
+    /**
+     * 泰国号码前缀
+     */
+    public static final String THAILAND_MOBILE_PREFIX = "66";
+
     public static boolean isNigeriaMobile(String mobile) {
         if (StringUtils.isBlank(mobile)) {
             return false;
         }
         int index = mobile.length();
         if (index == 10 || (index == 13 && mobile.substring(0, 3).equals(NIGERIA_MOBILE_PREFIX))) {
+            return true;
+        }
+        return false;
+    }
+
+    public static boolean isValidMobile(String mobile) {
+        if (StringUtils.isBlank(mobile)) {
+            return false;
+        }
+        int index = mobile.length();
+        if (index == 10 || (index == 12 && mobile.substring(0, 2).equals(THAILAND_MOBILE_PREFIX))) {
             return true;
         }
         return false;
@@ -46,7 +62,7 @@ public class MobileUtil {
         String e2 = getRandom(0,9);
         String e3 = getRandom(0,9);
         String e4 = getRandom(0,9);
-        return "234 7" +s1+ "****" + e1 + e2 + e3 ;
+        return "66 7" +s1+ "****" + e1 + e2 + e3 ;
     }
 
     public static String getRandom(int min, int max){
@@ -58,14 +74,14 @@ public class MobileUtil {
 
     public static void main(String[] args) {
         String phone = "0742872342";
-        if (phone != null && phone.length() == 10 && "0".equals(phone.subSequence(0,1))){
-            phone = phone.substring(1,phone.length());
+        if (phone != null && phone.length() == 10 && "66".equals(phone.subSequence(0,2))){
+            phone = phone.substring(2, phone.length());
         }
         int index = phone.length();
-        String tel =  "234"+phone;
+        String tel =  "66"+phone;
         System.out.println(tel);
-        System.out.println(isNigeriaMobile(tel));
-        System.out.println(isNigeriaMobile(phone));
+        System.out.println(isValidMobile(tel));
+        System.out.println(isValidMobile(phone));
     }
 
 }

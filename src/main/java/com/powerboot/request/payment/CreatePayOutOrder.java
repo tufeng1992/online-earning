@@ -2,12 +2,14 @@ package com.powerboot.request.payment;
 
 import com.powerboot.domain.PayDO;
 import com.powerboot.domain.UserDO;
+import lombok.Data;
 
 import java.math.BigDecimal;
 
 /**
  * Create  2021 - 01 - 08 11:25 上午
  */
+@Data
 public class CreatePayOutOrder {
     //本地订单号
     private String orderNo;

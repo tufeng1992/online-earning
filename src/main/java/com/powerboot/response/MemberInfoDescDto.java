@@ -2,10 +2,12 @@ package com.powerboot.response;
 
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
+import lombok.Data;
 
 import java.math.BigDecimal;
 
 @ApiModel
+@Data
 public class MemberInfoDescDto {
     @ApiModelProperty("限额金额数文案 第一行展示")
     private String limitAmount;
@@ -25,6 +27,8 @@ public class MemberInfoDescDto {
     private String picUrl;
     @ApiModelProperty("等级描述")
     private String vipDesc;
+    @ApiModelProperty("购买vip条件描述")
+    private String buyVipCondition;
 
     public String getLimitAmount() {
         return limitAmount;

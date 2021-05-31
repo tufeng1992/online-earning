@@ -38,4 +38,6 @@ public interface BalanceDao {
 	List<BalanceDO> listByTypeAndUserId(@Param("userId")Long userId,@Param("type")Long type);
 
 	PayVO getCountByTypeStatus(@Param("typeList") List<Integer> typeList, @Param("status") Integer status, @Param("startDate") LocalDate startDate, @Param("endDate") LocalDate endDate);
+
+	PayVO getCountByParams(Map<String, Object> params);
 }

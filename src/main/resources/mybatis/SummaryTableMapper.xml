@@ -26,7 +26,8 @@
 		`financial_profit_in_amount`,
 		`financial_profit_out_amount`,
 		`create_time`,
-		`update_time`
+		`update_time`,
+		`sale_id`
 	</sql>
 
     <select id="list" resultType="com.powerboot.domain.SummaryTableDO">
@@ -62,7 +63,8 @@
 		`financial_profit_out_amount`,
 		`financial_profit_count_amount`,
 		`user_referral`,
-		`sale_referral`
+		`sale_referral`,
+		`sale_id`
 		)
 		VALUES
 		(
@@ -89,7 +91,8 @@
 		#{financialProfitOutAmount},
 		#{financialProfitCountAmount},
 		#{userReferral},
-		#{saleReferral}
+		#{saleReferral},
+		#{saleId}
 		);
 	</insert>
 

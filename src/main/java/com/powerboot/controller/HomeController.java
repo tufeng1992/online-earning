@@ -87,8 +87,8 @@ public class HomeController extends BaseController {
         List<String> msgList = new ArrayList<>();
         List<String> mobileList = MobileUtil.getIndiaMobileList(applyCount);
         for (int i = 0; i < applyCount; i++) {
-            msgList.add(mobileList.get(i) + " : aaa Revenue " + MobileUtil
-                .getRandom(applyAmountMin, applyAmountMax) + " ");
+            msgList.add(mobileList.get(i) + " : ec-aww Revenue " + MobileUtil
+                .getRandom(applyAmountMin, applyAmountMax) + "฿ ");
         }
         homeResponse.setSuccessMessageList(msgList);
         homeResponse.setColor(RedisUtils.getString(DictConsts.HOME_TEXT_COLOR));

@@ -1,11 +1,14 @@
 package com.powerboot.domain;
 
+import lombok.Data;
+
 import java.io.Serializable;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 
 /**
  */
+@Data
 public class SummaryTableDO implements Serializable {
     //id
     private Integer id;
@@ -57,6 +60,9 @@ public class SummaryTableDO implements Serializable {
     private Integer userReferral;
     //客服推广
     private Integer saleReferral;
+
+    //销售人员id
+    private Long saleId;
 
     public Integer getUserReferral() {
         return userReferral;

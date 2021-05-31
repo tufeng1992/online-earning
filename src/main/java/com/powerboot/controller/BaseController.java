@@ -1,6 +1,8 @@
 package com.powerboot.controller;
 
 import com.powerboot.config.BaseException;
+import com.powerboot.consts.I18nEnum;
+import com.powerboot.consts.TipConsts;
 import com.powerboot.request.BaseRequest;
 import com.powerboot.utils.CryptoUtils;
 import java.lang.reflect.Field;
@@ -85,16 +87,16 @@ public class BaseController {
                 if(field.getName().equals("sign")){
                     String value = (String) field.get(obj);
                     if (value == null){
-                        throw new BaseException("-1","Login timeout, please login again!");
+                        throw new BaseException(I18nEnum.LOGIN_TIMEOUT_FAIL.getMsg());
                     }
                     return Long.parseLong(CryptoUtils.decode(value));
                 }
             }
         } catch (Exception e) {
             logger.error("获取用户id失败", e);
-            throw new BaseException("-1","Login timeout, please login again!");
+            throw new BaseException(I18nEnum.LOGIN_TIMEOUT_FAIL.getMsg());
         }
-        throw new BaseException("-1","Login timeout, please login again!");
+        throw new BaseException(I18nEnum.LOGIN_TIMEOUT_FAIL.getMsg());
     }
 
     public static void main(String[] args) {

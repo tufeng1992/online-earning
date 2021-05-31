@@ -1,5 +1,8 @@
 package com.powerboot.domain;
 
+import io.swagger.annotations.ApiModelProperty;
+import lombok.Data;
+
 import java.io.Serializable;
 import java.math.BigDecimal;
 import java.util.Date;
@@ -13,6 +16,7 @@ import java.util.Date;
  * @email system@163.com
  * @date 2020-10-31 11:42:23
  */
+@Data
 public class ProductDO implements Serializable {
 	private static final long serialVersionUID = 1L;
 	
@@ -40,6 +44,33 @@ public class ProductDO implements Serializable {
 	private Integer type;
 	//状态 0、无效  1、有效
 	private Integer status;
+	//图片简介
+	private String introduction;
+	/**
+	 * 展示金额
+	 */
+	private BigDecimal descAmount;
+
+	/**
+	 * 余额等级信息
+	 */
+	private String balanceInfo;
+
+	/**
+	 * 价格区间
+	 */
+	private String priceSection;
+
+	/**
+	 * 购买用户vip等级要求
+	 */
+	private Integer userLevelLimit;
+
+	/**
+	 * 购买用户余额要求
+	 */
+	private BigDecimal userBalanceLimit;
+
 	//创建时间
 	private Date createTime;
 	//更新时间

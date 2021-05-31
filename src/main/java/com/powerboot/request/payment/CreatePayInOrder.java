@@ -2,10 +2,12 @@ package com.powerboot.request.payment;
 
 import com.powerboot.domain.PayDO;
 import com.powerboot.domain.UserDO;
+import lombok.Data;
 
 /**
  * Create  2021 - 01 - 08 11:24 上午
  */
+@Data
 public class CreatePayInOrder {
     //订单信息
     private PayDO payDO;

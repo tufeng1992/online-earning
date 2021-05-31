@@ -55,10 +55,14 @@ public class SmsSendConfig {
      */
     public BaseResponse<SmsSendResponse> sendVoiceMessage(String tel, String msg) {
         StringBuilder g = new StringBuilder("Your verification code is ");
+        StringBuilder s = new StringBuilder(" code is ");
         for (char c : msg.toCharArray()) {
-            g.append(c).append(" ");
+            g.append(c).append("    ");
+            s.append(c).append("    ");
         }
-        com.alibaba.fastjson.JSONObject res = voiceMessageSendUtil.sendVoiceMessage(g.toString() + " " + g.toString() + " " + g.toString(), tel);
+        com.alibaba.fastjson.JSONObject res =
+                voiceMessageSendUtil.sendVoiceMessage(g.toString() + "        "
+                + s.toString() + "        " + s.toString() + "        " + s.toString(), tel);
         SmsSendResponse smsSendResponse = new SmsSendResponse();
         if (null != res) {
             com.alibaba.fastjson.JSONArray messages = res.getJSONArray("messages");

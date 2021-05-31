@@ -1,6 +1,7 @@
 package com.powerboot.service;
 
 import com.powerboot.config.BaseException;
+import com.powerboot.consts.I18nEnum;
 import com.powerboot.consts.TipConsts;
 import com.powerboot.dao.WithdrawalRecordDao;
 import com.powerboot.domain.WithdrawalRecordDO;
@@ -69,7 +70,7 @@ public class WithdrawalRecordService {
         if (withdrawalRecordDao.changeAmount(withdrawalRecordDO) > 0) {
             return 1;
         } else {
-            throw new BaseException(TipConsts.OPERATION_FAST);
+            throw new BaseException(I18nEnum.OPERATION_FAST.getMsg());
         }
     }
 
@@ -84,7 +85,7 @@ public class WithdrawalRecordService {
         if (withdrawalRecordDao.initSysData(withdrawalRecordDO) > 0) {
             return 1;
         } else {
-            throw new BaseException(TipConsts.OPERATION_FAST);
+            throw new BaseException(I18nEnum.OPERATION_FAST.getMsg());
         }
     }
 
@@ -99,7 +100,7 @@ public class WithdrawalRecordService {
         if (withdrawalRecordDao.initUserData(withdrawalRecordDO) > 0) {
             return 1;
         } else {
-            throw new BaseException(TipConsts.OPERATION_FAST);
+            throw new BaseException(I18nEnum.OPERATION_FAST.getMsg());
         }
     }
 

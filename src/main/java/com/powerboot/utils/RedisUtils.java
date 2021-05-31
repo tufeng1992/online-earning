@@ -8,6 +8,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.function.Supplier;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.poi.ss.formula.functions.T;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.data.redis.core.StringRedisTemplate;
@@ -101,13 +102,15 @@ public class RedisUtils {
     }
 
     public static Long increment(String key, Integer timeout) {
-        stringRedisTemplate.expire(key, timeout, TimeUnit.SECONDS);
-        return stringRedisTemplate.opsForValue().increment(key, 1L);
+        return increment(key, 1L, timeout);
     }
 
     public static Long increment(String key, Long value, Integer expireTime) {
-        stringRedisTemplate.expire(key, expireTime, TimeUnit.SECONDS);
-        return stringRedisTemplate.opsForValue().increment(key, value);
+        try {
+            return stringRedisTemplate.opsForValue().increment(key, value);
+        } finally {
+            stringRedisTemplate.expire(key, expireTime, TimeUnit.SECONDS);
+        }
     }
 
     public static <T> T setIfNotExists(String key, Supplier<T> supplier, Integer timeOut, Class<T> clazz) {

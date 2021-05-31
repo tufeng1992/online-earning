@@ -5,10 +5,10 @@ package com.powerboot.enums;
  */
 public enum StatusTypeEnum {
 
-    TIMEOUT(-1,"超时"),
-    WAIT(1,"等待"),
-    SUCCESS(2,"成功"),
-    FAIL(3,"失败");
+    TIMEOUT(-1,"หมดเวลา"),
+    WAIT(1,"เดี๋ยวก่อน"),
+    SUCCESS(2,"สำเร็จ"),
+    FAIL(3,"ล้มเหลว");
 
     private final Integer code;
     private final String msg;
@@ -29,7 +29,7 @@ public enum StatusTypeEnum {
     public static String getENDescByCode(Integer code){
         for (StatusTypeEnum singleEnum: values()) {
             if (singleEnum.code.equals(code)){
-                return singleEnum.name();
+                return singleEnum.msg;
             }
         }
         return "";

@@ -32,4 +32,10 @@ public class GuestbookDTO implements Serializable {
     @ApiModelProperty("更新时间")
     private Date updateTime;
 
+    /**
+     * 是否已读
+     */
+    @ApiModelProperty("是否已读")
+    private Boolean readed;
+
 }

@@ -219,6 +219,30 @@
 		</if>
 	</select>
 
+	<select id="getCountByParams" resultType="com.powerboot.response.PayVO" parameterType="map">
+		select sum(amount) as amount,count(*) as count
+		from pay
+		where type in
+		<foreach collection="typeList" separator="," open="(" close=")" item="item">
+			#{item}
+		</foreach>
+		<if test="status != null">
+			and status = #{status}
+		</if>
+		<if test="userId != null">
+			and user_id = #{userId}
+		</if>
+		<if test="saleId != null">
+			and sale_id = #{saleId}
+		</if>
+		<if test="startDate != null">
+			and create_time &gt;= #{startDate}
+		</if>
+		<if test="endDate != null">
+			and create_time &lt;= #{endDate}
+		</if>
+	</select>
+
 	<update id="timeout">
 		update pay
 		set status = -1

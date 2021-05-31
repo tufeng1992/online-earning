@@ -3,10 +3,7 @@ package com.powerboot.controller;
 import com.powerboot.base.BaseResponse;
 import com.powerboot.common.StringCommonUtils;
 import com.powerboot.config.BaseException;
-import com.powerboot.consts.CacheConsts;
-import com.powerboot.consts.DictAccount;
-import com.powerboot.consts.DictConsts;
-import com.powerboot.consts.TipConsts;
+import com.powerboot.consts.*;
 import com.powerboot.domain.BalanceDO;
 import com.powerboot.domain.PayDO;
 import com.powerboot.domain.UserDO;
@@ -109,7 +106,7 @@ public class UserController extends BaseController {
         vip1.setAmount(BigDecimal.ZERO);
         vip1.setOrderTimes(vip1List.get(3));
         vip1.setVip("VIP1");
-        vip1.setPicUrl("http://api.task-plan.net/vipImages/vip1.png");
+        vip1.setPicUrl("http://www.ec-aww.com/vipImages/vip1.png");
         list.add(vip1);
 
         //vip2
@@ -125,7 +122,7 @@ public class UserController extends BaseController {
         vip2.setOrderTimes(vip2List.get(3));
         vip2.setType(2);
         vip2.setVip("VIP2");
-        vip2.setPicUrl("http://api.task-plan.net/vipImages/vip2.png");
+        vip2.setPicUrl("http://www.ec-aww.com/vipImages/vip2.png");
         vip2.setVipDesc("Prerequisites for unlocking the LV2 task area");
         list.add(vip2);
 
@@ -142,7 +139,7 @@ public class UserController extends BaseController {
         vip3.setOrderTimes(vip3List.get(3));
         vip3.setType(3);
         vip3.setVip("VIP3");
-        vip3.setPicUrl("http://api.task-plan.net/vipImages/vip3.png");
+        vip3.setPicUrl("http://www.ec-aww.com/vipImages/vip3.png");
         vip3.setVipDesc("Prerequisites for unlocking the LV3 task area");
         list.add(vip3);
 
@@ -160,7 +157,7 @@ public class UserController extends BaseController {
         vip4.setOrderTimes(vip4List.get(3));
         vip4.setType(4);
         vip4.setVip("VIP4");
-        vip4.setPicUrl("http://api.task-plan.net/vipImages/vip4.png");
+        vip4.setPicUrl("http://www.ec-aww.com/vipImages/vip4.png");
         vip4.setVipDesc("Prerequisites for unlocking the LV4 task area");
         list.add(vip4);
 
@@ -172,83 +169,98 @@ public class UserController extends BaseController {
     @ApiOperation(value = "购买会员卡页面-新")
     public BuyMemberInfoResponse<List<MemberInfoDescDto>> memberInfoNew(@RequestBody @Valid BaseRequest request) {
         BuyMemberInfoResponse<List<MemberInfoDescDto>> response = new BuyMemberInfoResponse();
+        Long userId = getUserId(request);
+        List<UserDO> userDOList = userService.getUserByParentId(userId);
+        //完成首充的子集用户数量
+        int childFirstRechargedCount = 0;
+        if (CollectionUtils.isNotEmpty(userDOList)){
+            for (UserDO aDo : userDOList) {
+                if (1 == aDo.getFirstRecharge()) {
+                    childFirstRechargedCount++;
+                }
+            }
+        }
         List<MemberInfoDescDto> list = new ArrayList<>();
-        response.setTitle("Players will be LV1 members by default after registering an account");
+        response.setTitle(I18nEnum.MEMBER_INFO_TITLE.getMsg());
+        String limitAmount = "ขีดจำกัดในการถอนเงินต่อครั้งคือ";
+        String withdrawTimes = "ถอนเงินวันละ %s ครั้ง";
+        String freeStr = "ส่วนลดจากการส่งเสริมการขายคือ %s%%/ %s%%/ %s%%";
+        String orderTimes = "จำนวนคำสั่งซื้อที่สามารถรับได้คือ ";
+        String buyVipCondition = "คุณจะต้องเชิญผู้ใช้ลงทะเบียน ";
+        String vipDesc = "ปลดล็อกข้อกำหนดเบื้องต้นสำหรับพื้นที่งาน ";
+
         //vip1
         MemberInfoDescDto vip1 = new MemberInfoDescDto();
         vip1.setLimitAmount(
-            "Each withdraw limit is " + RedisUtils.getValue(DictConsts.VIP1_SINGLE_MAX_WITHDRAW_QUOTA, String.class));
-        vip1.setWithdrawTimes(
-            "Withdraw cash " + RedisUtils.getValue(DictConsts.VIP1_TODAY_MAX_WITHDRAW_COUNT, String.class)
-                + " times a day");
+            limitAmount + RedisUtils.getValue(DictConsts.VIP1_SINGLE_MAX_WITHDRAW_QUOTA, String.class));
+        vip1.setWithdrawTimes(String.format(withdrawTimes, RedisUtils.getValue(DictConsts.VIP1_TODAY_MAX_WITHDRAW_COUNT, String.class)));
 
         HashMap<Integer, List<Integer>> vipInfo = ehcacheService.getVipInfo();
         List<Integer> vip1List = vipInfo.get(1);
-        vip1.setFeeStr(
-            "The promotion rebate is " + vip1List.get(0) + "%/" + vip1List.get(1) + "%/" + vip1List.get(2) + "%");
+        vip1.setFeeStr(String.format(freeStr, vip1List.get(0), vip1List.get(1), vip1List.get(2)));
         vip1.setAmount(BigDecimal.ZERO);
-        vip1.setOrderTimes("The number of orders can be swiped is" + vip1List.get(3));
+        vip1.setOrderTimes(orderTimes + vip1List.get(3));
         vip1.setVip("VIP1");
-        vip1.setPicUrl("http://api.task-plan.net/vipImages/vip1.png");
+        vip1.setPicUrl("http://www.ec-aww.com/vipImages/vip1.png");
         list.add(vip1);
 
         //vip2
         MemberInfoDescDto vip2 = new MemberInfoDescDto();
         vip2.setLimitAmount(
-            "Each withdraw limit is " + RedisUtils.getValue(DictConsts.VIP2_SINGLE_MAX_WITHDRAW_QUOTA, String.class));
-        vip2.setWithdrawTimes(
-            "Withdraw cash " + RedisUtils.getValue(DictConsts.VIP2_TODAY_MAX_WITHDRAW_COUNT, String.class)
-                + " times a day");
+            limitAmount + RedisUtils.getValue(DictConsts.VIP2_SINGLE_MAX_WITHDRAW_QUOTA, String.class));
+        vip2.setWithdrawTimes(String.format(withdrawTimes, RedisUtils.getValue(DictConsts.VIP2_TODAY_MAX_WITHDRAW_COUNT, String.class)));
 
         List<Integer> vip2List = vipInfo.get(2);
-        vip2.setFeeStr(
-            "The promotion rebate is " + vip2List.get(0) + "%/" + vip2List.get(1) + "%/" + vip2List.get(2) + "%");
+        vip2.setFeeStr(String.format(freeStr, vip2List.get(0), vip2List.get(1), vip2List.get(2)));
         vip2.setAmount(new BigDecimal(RedisUtils.getValue(DictAccount.VIP2_CHARGE, String.class)));
-        vip2.setOrderTimes("The number of orders can be swiped is" + vip2List.get(3));
+        vip2.setOrderTimes(orderTimes + vip2List.get(3));
         vip2.setType(2);
         vip2.setVip("VIP2");
-        vip2.setPicUrl("http://api.task-plan.net/vipImages/vip2.png");
-        vip2.setVipDesc("Prerequisites for unlocking the LV2 task area");
+        vip2.setPicUrl("http://www.ec-aww.com/vipImages/vip2.png");
+        vip2.setVipDesc(vipDesc + "LV2");
+        if (childFirstRechargedCount < 5) {
+            vip2.setBuyVipCondition(buyVipCondition + childFirstRechargedCount + "/5");
+        }
         list.add(vip2);
 
         //vip3
         MemberInfoDescDto vip3 = new MemberInfoDescDto();
         vip3.setLimitAmount(
-            "Each withdraw limit is " + RedisUtils.getValue(DictConsts.VIP3_SINGLE_MAX_WITHDRAW_QUOTA, String.class));
-        vip3.setWithdrawTimes(
-            "Withdraw cash " + RedisUtils.getValue(DictConsts.VIP3_TODAY_MAX_WITHDRAW_COUNT, String.class)
-                + " times a day");
+            limitAmount + RedisUtils.getValue(DictConsts.VIP3_SINGLE_MAX_WITHDRAW_QUOTA, String.class));
+        vip3.setWithdrawTimes(String.format(withdrawTimes, RedisUtils.getValue(DictConsts.VIP3_TODAY_MAX_WITHDRAW_COUNT, String.class)));
 
         List<Integer> vip3List = vipInfo.get(3);
-        vip3.setFeeStr(
-            "The promotion rebate is " + vip3List.get(0) + "%/" + vip3List.get(1) + "%/" + vip3List.get(2) + "%");
+        vip3.setFeeStr(String.format(freeStr, vip3List.get(0), vip3List.get(1), vip3List.get(2)));
         vip3.setAmount(new BigDecimal(RedisUtils.getValue(DictAccount.VIP3_CHARGE, String.class)));
-        vip3.setOrderTimes("The number of orders can be swiped is" + vip3List.get(3));
+        vip3.setOrderTimes(orderTimes + vip3List.get(3));
         vip3.setType(3);
         vip3.setVip("VIP3");
-        vip3.setPicUrl("http://api.task-plan.net/vipImages/vip3.png");
-        vip3.setVipDesc("Prerequisites for unlocking the LV3 task area");
+        vip3.setPicUrl("http://www.ec-aww.com/vipImages/vip3.png");
+        vip3.setVipDesc(vipDesc + "LV3");
+        if (childFirstRechargedCount < 10) {
+            vip3.setBuyVipCondition(buyVipCondition + childFirstRechargedCount + "/10");
+        }
         list.add(vip3);
 
         //vip4
         MemberInfoDescDto vip4 = new MemberInfoDescDto();
         vip4.setLimitAmount(
-            "Each withdraw limit is " + RedisUtils.getValue(DictConsts.VIP4_SINGLE_MAX_WITHDRAW_QUOTA, String.class));
-        vip4.setWithdrawTimes(
-            "Withdraw cash " + RedisUtils.getValue(DictConsts.VIP4_TODAY_MAX_WITHDRAW_COUNT, String.class)
-                + " times a day");
+            limitAmount + RedisUtils.getValue(DictConsts.VIP4_SINGLE_MAX_WITHDRAW_QUOTA, String.class));
+        vip4.setWithdrawTimes(String.format(withdrawTimes, RedisUtils.getValue(DictConsts.VIP4_TODAY_MAX_WITHDRAW_COUNT, String.class)));
 
         //vip4除了购买金额，其他与vip3保持一致
         List<Integer> vip4List = vipInfo.get(4);
-        vip4.setFeeStr(
-            "The promotion rebate is " + vip4List.get(0) + "%/" + vip4List.get(1) + "%/" + vip4List.get(2) + "%");
+        vip4.setFeeStr(String.format(freeStr, vip4List.get(0), vip4List.get(1), vip4List.get(2)));
         vip4.setAmount(new BigDecimal(RedisUtils.getValue(DictAccount.VIP4_CHARGE, String.class)));
-        vip4.setOrderTimes("The number of orders can be swiped is" + vip4List.get(3));
+        vip4.setOrderTimes(orderTimes + vip4List.get(3));
         vip4.setType(4);
         vip4.setVip("VIP4");
-        vip4.setPicUrl("http://api.task-plan.net/vipImages/vip4.png");
-        vip4.setVipDesc("Prerequisites for unlocking the LV4 task area");
-        list.add(vip4);
+        vip4.setPicUrl("http://www.ec-aww.com/vipImages/vip4.png");
+        vip4.setVipDesc(vipDesc + "LV4");
+        if (childFirstRechargedCount < 15) {
+            vip4.setBuyVipCondition(buyVipCondition + childFirstRechargedCount + "/15");
+        }
+//        list.add(vip4);
 
         response.setSuccess(true);
         response.setResultData(list);
@@ -263,7 +275,7 @@ public class UserController extends BaseController {
         UserDO userDO = userService.get(userId);
 
         userDO.setNikeName(request.getNikeName());
-        return userService.updateByIdAndVersion(userDO) > 0 ? BaseResponse.success() : BaseResponse.fail("modify fall");
+        return userService.updateByIdAndVersion(userDO) > 0 ? BaseResponse.success() : BaseResponse.fail(I18nEnum.MODIFY_FAIL.getMsg());
     }
 
     @PostMapping("/invitation")
@@ -301,29 +313,29 @@ public class UserController extends BaseController {
     public BaseResponse<Boolean> bank(@RequestBody @Valid BankRequest request) {
         Long userId = this.getUserId(request);
         if (userId == null) {
-            return BaseResponse.fail(TipConsts.NO_LOGIN);
+            return BaseResponse.fail(I18nEnum.NO_LOGIN.getMsg());
         }
         //风控校验
         blackUserService.blackCheck(request.getMobile(), request.getName(), request.getEmail(), userId);
         UserDO user = userService.get(userId);
         if (user == null) {
-            return BaseResponse.fail(TipConsts.NO_LOGIN);
+            return BaseResponse.fail(I18nEnum.NO_LOGIN.getMsg());
         }
         user.setFirstName(StringUtils.trim(request.getFirstName()));
         user.setName(StringUtils.trim(request.getName()));
         user.setLastName(StringUtils.trim(request.getLastName()));
         String phone = StringUtils.replace(request.getMobile(), " ", "");
         //补全手机号
-        if (phone != null && phone.length() == 10 && "0".equals(phone.subSequence(0, 1))) {
-            phone = MobileUtil.NIGERIA_MOBILE_PREFIX + phone.substring(1, phone.length());
+        if (phone != null && phone.length() == 10 && "66".equals(phone.subSequence(0, 2))) {
+            phone = MobileUtil.THAILAND_MOBILE_PREFIX + phone.substring(2, phone.length());
         } else if (phone != null && phone.length() == 10) {
-            phone = MobileUtil.NIGERIA_MOBILE_PREFIX + phone;
+            phone = MobileUtil.THAILAND_MOBILE_PREFIX + phone;
         }
 
-        if (MobileUtil.isNigeriaMobile(phone)) {
+        if (MobileUtil.isValidMobile(phone)) {
             user.setAccountPhone(phone);
         } else {
-            return BaseResponse.fail("please check your enter msg!");
+            return BaseResponse.fail(I18nEnum.MOBILE_NUMBER_FAIL.getMsg());
         }
         user.setBindStatus(1);
         user.setBindTime(LocalDateTime.now());
@@ -342,9 +354,24 @@ public class UserController extends BaseController {
         user.setBankCode(request.getBankCode().trim());
         user.setAccountNumber(request.getAccountNumber().trim());
 
+        boolean checkBlack = false;
+        List<UserDO> userDOList = userService.selectByAccountNumber(user.getAccountNumber());
+        if (CollectionUtils.isNotEmpty(userDOList)) {
+            for (UserDO userDO : userDOList) {
+                if (!userDO.getId().equals(user.getId())) {
+                    checkBlack = true;
+                    user.setLoginFlag(0);
+                    user.setBlackFlag(1);
+                    break;
+                }
+            }
+        }
         int count = userService.updateByIdAndVersion(user);
         if (count == 0) {
-            return BaseResponse.fail(TipConsts.CONFIRM_ERROR);
+            return BaseResponse.fail(I18nEnum.CONFIRM_ERROR.getMsg());
+        }
+        if (checkBlack) {
+            return BaseResponse.fail(I18nEnum.BLACK_LOGIN_FAIL.getMsg());
         }
         return BaseResponse.success(true);
     }
@@ -356,12 +383,12 @@ public class UserController extends BaseController {
         //redis锁 单用户10秒才能请求一次
         Long userId = getUserId(request);
         if (!RedisUtils.setIfAbsent("payout" + userId, 10)) {
-            return BaseResponse.fail("Operation too fast,Please try again!");
+            return BaseResponse.fail(I18nEnum.OPERATION_FAST.getMsg());
         }
 
         UserDO userDO = userService.get(userId);
         if (userDO == null || StringUtils.isBlank(userDO.getAccountPhone())) {
-            return BaseResponse.fail("555", TipConsts.BANK_INFO_DEFECT);
+            return BaseResponse.fail("555", I18nEnum.BANK_INFO_DEFECT.getMsg());
         }
 
         //提现时间为工作日8~19点
@@ -377,7 +404,7 @@ public class UserController extends BaseController {
         if (SysWithdrawalCheckEnum.CLOSE.getCode().equals(sysWithdrawalCheck)) {
             String sysWithdrawalCheckTips = RedisUtils.getString(DictConsts.SYS_WITHDRAWAL_CHECK_TIPS);
             if (StringUtils.isBlank(sysWithdrawalCheckTips)) {
-                sysWithdrawalCheckTips = "The payment channel is being upgraded, please wait for one hour.";
+                sysWithdrawalCheckTips = I18nEnum.PAYMENT_SYSTEM_FAIL.getMsg();
             }
             return BaseResponse.fail(sysWithdrawalCheckTips);
         }
@@ -409,15 +436,13 @@ public class UserController extends BaseController {
             }
             if (stAmount.compareTo(BigDecimal.ZERO) > 0
                 && userDO.getBalance().compareTo(stAmount.add(withdrawAmount)) < 0) {
-                return BaseResponse.fail(
-                    "The current account is not enough to withdraw cash, you have " + stAmount.toString()
-                        + " rupees being paid");
+                return BaseResponse.fail(String.format(I18nEnum.WITHDRAW_NOT_ENOUGH_FAIL.getMsg(), stAmount.toString()));
             }
         }
 
         //当前余额 >= 提现金额
         if (userDO.getBalance().compareTo(withdrawAmount) < 0) {
-            return BaseResponse.fail(TipConsts.CREDIT_RUNNING_LOW);
+            return BaseResponse.fail(I18nEnum.CREDIT_RUNNING_LOW.getMsg());
         }
         //未充值账户余额用户（仅购买vip也算未充值余额用户），永远不可提现。
 //        if (userDO.getFirstRecharge().equals(0)) {
@@ -428,7 +453,7 @@ public class UserController extends BaseController {
         if (userDO.getLxSwitch() == 0) {
             PayVO withdrawPayVO = payService.getCountByTypeStatus(Arrays.asList(99), 2, userId, null, null);
             if (payVO.getAmount().compareTo(withdrawPayVO.getAmount().add(withdrawAmount)) < 0) {
-                return BaseResponse.fail(TipConsts.LX_SWITCH_CLOSE);
+                return BaseResponse.fail(I18nEnum.LX_SWITCH_CLOSE.getMsg());
             }
         }
         //用户单笔提现额度大于充值额度2倍，同时提现金额大于5000，触发预警
@@ -468,7 +493,7 @@ public class UserController extends BaseController {
                         Integer.class);
             }
         } else {
-            return BaseResponse.fail(TipConsts.WITHDRAWAL_COUNT_LOW);
+            return BaseResponse.fail(I18nEnum.WITHDRAWAL_COUNT_LOW.getMsg());
         }
 
         //初始化系统每日最大提现限额
@@ -498,29 +523,29 @@ public class UserController extends BaseController {
          */
         //提现金额 >= 提现最低限额
         if (singeLowWithdrawQuota.compareTo(withdrawAmount) > 0) {
-            return BaseResponse.fail(TipConsts.SINGLE_WITHDRAW_LOW_OF_AMOUNT + singeLowWithdrawQuota);
+            return BaseResponse.fail(I18nEnum.SINGLE_WITHDRAW_LOW_OF_AMOUNT.getMsg() + singeLowWithdrawQuota);
         }
 
         //VIP 单笔最大限额 >= 提现金额
         if (vipSingleMaxQuota.compareTo(withdrawAmount) < 0) {
-            return BaseResponse.fail(TipConsts.SINGLE_BALANCE_OUT_OF_LIMIT);
+            return BaseResponse.fail(I18nEnum.SINGLE_BALANCE_OUT_OF_LIMIT.getMsg());
         }
 
         //VIP每日最大提现次数 > 当日提现次数
         if (localDateUserInfo != null && vipSingleMaxCount.compareTo(localDateUserInfo.getCount()) == 0) {
-            return BaseResponse.fail(TipConsts.WITHDRAWAL_COUNT_LOW);
+            return BaseResponse.fail(I18nEnum.WITHDRAWAL_COUNT_LOW.getMsg());
         }
 
         //系统每日最大提现限额 >= 当前提现金额
         if (sysTodayMaxWithdrawQuota.compareTo(withdrawAmount) < 0) {
-            return BaseResponse.fail(TipConsts.SINGLE_BALANCE_OUT_OF_LIMIT);
+            return BaseResponse.fail(I18nEnum.SINGLE_BALANCE_OUT_OF_LIMIT.getMsg());
         }
 
         //当日系统提现资金池余额 >= 提现金额
         if (localDateSysInfo != null
             && localDateSysInfo.getTotalAmount().subtract(localDateSysInfo.getChangeAmount()).compareTo(withdrawAmount)
             < 0) {
-            return BaseResponse.fail(TipConsts.SYS_CREDIT_RUNNING_LOW);
+            return BaseResponse.fail(I18nEnum.SYS_CREDIT_RUNNING_LOW.getMsg());
         }
 
         /**
@@ -619,6 +644,9 @@ public class UserController extends BaseController {
             BaseResponse<PaymentResult> payout = paymentService.payout(createPayOutOrder);
             if (payout == null) {
                 throw new BaseException("submit withdraw error,please try again!");
+            }
+            if (!payout.isSuccess()) {
+                throw new BaseException(payout.getMsg());
             }
             payoutId = payout.getResultData().getThirdOrderNo();
         }
@@ -741,16 +769,25 @@ public class UserController extends BaseController {
 
         BaseResponse<PaymentResult> payout = paymentService.payout(createPayOutOrder);
         if (payout == null) {
-            throw new BaseException("submit withdraw error,please try again!");
+            throw new BaseException(I18nEnum.SUBMIT_WITHDRAW_FAIL.getMsg());
         }
-        String payoutId = payout.getResultData().getThirdOrderNo();
-        payDO.setThirdNo(payoutId);
-        //提现会话id
-        payDO.setThirdResponse(payoutId);
         payDO.setPayChannel(payChannel);
         payDO.setPayChannelBranch(payChannelBranch);
-        payDO.setApplyStatus(PayEnums.PayApplyStatusEnum.PASS.getCode());
-        payService.updatePay(payDO);
+        if (payout.isSuccess()) {
+            payDO.setThirdNo(payout.getResultData().getThirdOrderNo());
+            //提现会话id
+            payDO.setThirdResponse(payout.getResultData().getDescription());
+            payDO.setApplyStatus(PayEnums.PayApplyStatusEnum.PASS.getCode());
+            payService.updatePay(payDO);
+        } else {
+            payDO.setThirdResponse(payout.getMsg());
+            if (StringUtils.isNotBlank(payDO.getThirdResponse())) {
+                payDO.setRemark(payout.getMsg());
+            }
+            payDO.setApplyStatus(PayEnums.PayApplyStatusEnum.REJECT.getCode());
+            payDO.setStatus(PayEnums.PayStatusEnum.FAIL.getCode());
+            payService.payoutFail(payDO, payBeanName);
+        }
         return BaseResponse.success();
     }
 
@@ -780,4 +817,9 @@ public class UserController extends BaseController {
         return BaseResponse.success(withdrawAmountDoc);
     }
 
+
+    public static void main(String[] args) {
+        String freeStr = "ส่วนลดจากการส่งเสริมการขายคือ %s%%/ %s%%/ %s%%";
+        System.out.println(String.format(freeStr, "t1", "t2", "t3"));
+    }
 }

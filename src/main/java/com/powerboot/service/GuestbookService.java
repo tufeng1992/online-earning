@@ -24,6 +24,10 @@ public class GuestbookService {
 	public List<GuestbookDO> list(Map<String, Object> map){
 		return guestbookDao.list(map);
 	}
+
+	public Integer selectUnreadCount(Map<String, Object> map) {
+		return guestbookDao.selectUnreadCount(map);
+	}
 	
 	
 	public int count(Map<String, Object> map){

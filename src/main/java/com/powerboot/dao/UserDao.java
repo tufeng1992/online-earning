@@ -74,11 +74,25 @@ public interface UserDao {
      */
     List<UserDO> getAllVIP();
 
+    /**
+     * 根据saleId获取所有VIP
+     * @param map
+     * @return
+     */
+    List<UserDO> getAllVIPBySale(Map<String, Object> map);
+
+    /**
+     * 分组获取saleId
+     * @return
+     */
+    List<UserDO> getAllSaleId();
+
     Integer getUserCount(@Param("role") Integer role,
                          @Param("startDate") LocalDate startDate,
                          @Param("endDate") LocalDate endDate,
                          @Param("userReferral") Integer userReferral,
-                         @Param("saleReferral") Integer saleReferral);
+                         @Param("saleReferral") Integer saleReferral,
+                         @Param("saleId") Long saleId);
 
     Integer getRegisterIpCount(@Param("registerIp") String registerIp);
 
@@ -86,4 +100,5 @@ public interface UserDao {
 
     BigDecimal getUserRechargeAmount(Long id);
 
+     Integer count(Map<String, Object> params);
 }

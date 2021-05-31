@@ -3,6 +3,8 @@ package com.powerboot.service;
 import com.powerboot.base.BaseResponse;
 import com.powerboot.config.BaseException;
 import com.powerboot.consts.CacheConsts;
+import com.powerboot.consts.I18nEnum;
+import com.powerboot.consts.TipConsts;
 import com.powerboot.domain.BalanceDO;
 import com.powerboot.domain.PayDO;
 import com.powerboot.domain.UserDO;
@@ -49,7 +51,7 @@ public class CallBackService {
                 && !PayEnums.PayTypeEnum.PAY_VIP3.getCode().equals(payDO.getType())
                 && !PayEnums.PayTypeEnum.PAY_VIP4.getCode().equals(payDO.getType())
                 && !PayEnums.PayTypeEnum.PAY_VIP5.getCode().equals(payDO.getType())) {
-            throw new BaseException("Unknown Pay!!!");
+            throw new BaseException(I18nEnum.UNKNOWN_PAY_FAIL.getMsg());
         }
         if (!PayEnums.PayStatusEnum.PAYING.getCode().equals(payDO.getStatus()) && !PayEnums.PayStatusEnum.TIMEOUT.getCode().equals(payDO.getStatus())) {
             return BaseResponse.success();
@@ -106,7 +108,7 @@ public class CallBackService {
                 //购买会员成功
                 userService.updateUserVIP(payDO.getUserId(), payDO.getType());
             } else {
-                throw new BaseException("未知支付");
+                throw new BaseException(I18nEnum.UNKNOWN_PAY_FAIL.getMsg());
             }
             logger.info("**** {}支付{} ****  用户id:{},支付{} {},金额: ₹ {}   {}", payBeanName, PayEnums.PayStatusEnum.getDescByCode(payDO.getStatus()), payDO.getUserId(), PayEnums.PayStatusEnum.getDescByCode(payDO.getStatus()), PayEnums.PayTypeEnum.getDescByCode(payDO.getType()), relPayAmount,payFailDesc);
         } else {
@@ -125,7 +127,7 @@ public class CallBackService {
                 && !PayEnums.PayTypeEnum.PAY_VIP3.getCode().equals(payDO.getType())
                 && !PayEnums.PayTypeEnum.PAY_VIP4.getCode().equals(payDO.getType())
                 && !PayEnums.PayTypeEnum.PAY_VIP5.getCode().equals(payDO.getType())) {
-            throw new BaseException("Unknown Pay!!!");
+            throw new BaseException(I18nEnum.UNKNOWN_PAY_FAIL.getMsg());
         }
         if (!PayEnums.PayStatusEnum.PAYING.getCode().equals(payDO.getStatus()) && !PayEnums.PayStatusEnum.TIMEOUT.getCode().equals(payDO.getStatus())) {
             return BaseResponse.success();

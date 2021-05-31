@@ -32,4 +32,13 @@ public class DictAccount {
     //邀请减半开关
     public static final String INVITE_FLAG_HALF = "INVITE_FLAG_HALF";
 
+    //VIP1等级信息
+    public static final int VIP1_LEVEL = 1;
+    //VIP2等级信息
+    public static final int VIP2_LEVEL = 2;
+    //VIP3等级信息
+    public static final int VIP3_LEVEL = 3;
+    //VIP4等级信息
+    public static final int VIP4_LEVEL = 4;
+
 }

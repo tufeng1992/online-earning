@@ -3,6 +3,8 @@ package com.powerboot.service;
 import com.powerboot.common.JsonUtils;
 import com.powerboot.config.BaseException;
 import com.powerboot.consts.AmountConsts;
+import com.powerboot.consts.I18nEnum;
+import com.powerboot.consts.TipConsts;
 import com.powerboot.consts.cache.FinancialCache;
 import com.powerboot.dao.FinancialProductDao;
 import com.powerboot.domain.BalanceDO;
@@ -97,7 +99,7 @@ public class FinancialProductService {
         int balanceCount = balanceService.addBalanceDetail(balance);
         if (balanceCount == 0) {
             logger.error("【购买理财】余额操作异常，request={}，userId={}", JsonUtils.toJSONString(request), userId);
-            throw new BaseException("The purchase failed, please try again ");
+            throw new BaseException(I18nEnum.CREATE_FINANCIAL_PRODUCT_FAIL.getMsg());
         }
         //生成理财订单
         FinancialOrderDO financialOrder = new FinancialOrderDO();
@@ -124,7 +126,7 @@ public class FinancialProductService {
         int count = financialOrderService.save(financialOrder);
         if (count == 0) {
             logger.error("【购买理财】添加理财订单失败，request={}，userId={}", JsonUtils.toJSONString(request), userId);
-            throw new BaseException("The purchase failed, please try again ");
+            throw new BaseException(I18nEnum.CREATE_FINANCIAL_PRODUCT_FAIL.getMsg());
         }
         return true;
     }
@@ -172,7 +174,7 @@ public class FinancialProductService {
         if (financialOrderDO == null || financialOrderDO.getOrderStatus()
             .equals(FinancialOrderStatusEnum.CALLED_AWAY.getCode()) || financialOrderDO.getOrderStatus()
             .equals(FinancialOrderStatusEnum.EXPIRED.getCode())) {
-            throw new BaseException("this fails, please try again ");
+            throw new BaseException(I18nEnum.TRY_AGAIN.getMsg());
         }
         TakeOutWarningResponse response = new TakeOutWarningResponse();
         response.setCalledAmount(financialOrderDO.getCalledAmount());
@@ -190,11 +192,11 @@ public class FinancialProductService {
         param.setUserId(userId);
         List<FinancialOrderDO> list = financialOrderService.getByParams(param);
         if (CollectionUtils.isEmpty(list)) {
-            throw new BaseException("this fails, please try again ");
+            throw new BaseException(I18nEnum.TRY_AGAIN.getMsg());
         }
         FinancialOrderDO financialOrderDO = list.get(0);
         if (!financialOrderDO.getOrderStatus().equals(FinancialOrderStatusEnum.UNEXPIRED.getCode())) {
-            throw new BaseException("this fails, please try again ");
+            throw new BaseException(I18nEnum.TRY_AGAIN.getMsg());
         }
         //更新订单为 提前赎回
         FinancialOrderDO entity = new FinancialOrderDO();
@@ -208,7 +210,7 @@ public class FinancialProductService {
         if (updateCount == 0) {
             logger.error("【提前赎回理财】更新理财订单操作异常，entity={},orderParam={}", JsonUtils.toJSONString(entity),
                 JsonUtils.toJSONString(orderParam));
-            throw new BaseException("this fails, please try again ");
+            throw new BaseException(I18nEnum.TRY_AGAIN.getMsg());
         }
         //增加余额 + 增加余额流水
         BalanceDO balance = new BalanceDO();
@@ -222,7 +224,7 @@ public class FinancialProductService {
         int balanceCount = balanceService.addBalanceDetail(balance);
         if (balanceCount == 0) {
             logger.error("【提前赎回理财】余额操作异常，balance={}", JsonUtils.toJSONString(balance));
-            throw new BaseException("this fails, please try again ");
+            throw new BaseException(I18nEnum.TRY_AGAIN.getMsg());
         }
         return true;
     }

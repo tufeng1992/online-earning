@@ -15,6 +15,9 @@ public enum  PaymentServiceEnum {
     PAY_STACK("11", "PayStack"),
     OPAY("12", "OPay"),
     FLUTTER_WAVE("13", "FlutterWave"),
+    WALLYT("14", "WallytPay"),
+    GRECASH("15", "GrecashPay"),
+    GMS("16", "GmsPay"),
     ;
 
     private final String code;

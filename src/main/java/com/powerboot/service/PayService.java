@@ -5,6 +5,7 @@ import com.powerboot.common.JsonUtils;
 import com.powerboot.config.BaseException;
 import com.powerboot.consts.CacheConsts;
 import com.powerboot.consts.DictConsts;
+import com.powerboot.consts.I18nEnum;
 import com.powerboot.consts.TipConsts;
 import com.powerboot.dao.PayDao;
 import com.powerboot.domain.*;
@@ -138,7 +139,7 @@ public class PayService {
     public PayDO getOrderNo(String orderNo) {
         PayDO payDO = payDao.getByOrderNo(orderNo);
         if (payDO == null) {
-            throw new BaseException("This order not found");
+            throw new BaseException(I18nEnum.ORDER_NOT_FOUND_FAIL.getMsg());
         }
         return payDO;
     }
@@ -161,13 +162,13 @@ public class PayService {
             && !PayEnums.PayTypeEnum.PAY_VIP4.getCode().equals(payDO.getType())
             && !PayEnums.PayTypeEnum.PAY_VIP5.getCode().equals(payDO.getType())
             && !PayEnums.PayTypeEnum.WITHDRAW.getCode().equals(payDO.getType())) {
-            return BaseResponse.fail("Unknown Pay!!!");
+            return BaseResponse.fail(I18nEnum.UNKNOWN_PAY_FAIL.getMsg());
         }
 
         //获取提现状态
         if (PayEnums.PayTypeEnum.WITHDRAW.getCode().equals(payDO.getType())) {
             //            payService.refreshPayout(payDO);
-            return BaseResponse.fail("Unknown Pay!!!");
+            return BaseResponse.fail(I18nEnum.UNKNOWN_PAY_FAIL.getMsg());
         }
 
         if (!PayEnums.PayStatusEnum.PAYING.getCode().equals(payDO.getStatus()) && !PayEnums.PayStatusEnum.TIMEOUT
@@ -184,7 +185,7 @@ public class PayService {
             queryPayInParam.setThirdOrderNo(payDO.getThirdNo());
             BaseResponse<PaymentResult> payInOrder = paymentService.getPayInOrder(queryPayInParam);
             if (payInOrder == null || payInOrder.getResultData() == null) {
-                return BaseResponse.fail("this order not found");
+                return BaseResponse.fail(I18nEnum.ORDER_NOT_FOUND_FAIL.getMsg());
             }
             PaymentResult resultData = payInOrder.getResultData();
             payDO.setThirdNo(resultData.getThirdOrderNo());
@@ -196,76 +197,83 @@ public class PayService {
         }
 
         if (success > 0) {
-            BigDecimal relPayAmount = payDO.getAmount() == null ? new BigDecimal("0.00") : payDO.getAmount();
-            //支付成功
-            if (payDO.getStatus().equals(PayEnums.PayStatusEnum.PAID.getCode())) {
-                //调用更新用户支付成功状态
-                if (PayEnums.PayTypeEnum.RECHARGE.getCode().equals(payDO.getType())) {
-                    logger.info("充值用户增加余额,userid:" + payDO.getUserId() + " 订单号:" + payDO.getOrderNo() + " 订单状态:" + payDO
+            payInComplete(payDO);
+            logger.info("**** {}-{} ****  用户id:{}, {} {},金额:  {}   {}", payBeanName,
+                    PayEnums.PayStatusEnum.getDescByCode(payDO.getStatus()), payDO.getUserId(),
+                    PayEnums.PayStatusEnum.getDescByCode(payDO.getStatus()),
+                    PayEnums.PayTypeEnum.getDescByCode(payDO.getType()), payDO.getAmount(), payFailDesc);
+        }
+        return BaseResponse.success(payDO);
+    }
+
+    /**
+     * 支付完成
+     * @param payDO
+     */
+    public void payInComplete(PayDO payDO) {
+        BigDecimal relPayAmount = payDO.getAmount() == null ? new BigDecimal("0.00") : payDO.getAmount();
+        //支付成功
+        if (payDO.getStatus().equals(PayEnums.PayStatusEnum.PAID.getCode())) {
+            //调用更新用户支付成功状态
+            if (PayEnums.PayTypeEnum.RECHARGE.getCode().equals(payDO.getType())) {
+                logger.info("充值用户增加余额,userid:" + payDO.getUserId() + " 订单号:" + payDO.getOrderNo() + " 订单状态:" + payDO
                         .getStatus() + " 新增余额:" + relPayAmount);
-                    //充值成功
-                    Date now = new Date();
-                    BalanceDO balanceDO = new BalanceDO();
-                    balanceDO.setAmount(relPayAmount);
-                    balanceDO.setType(BalanceTypeEnum.F.getCode());
-                    balanceDO.setUserId(payDO.getUserId());
-                    balanceDO.setWithdrawAmount(BigDecimal.ZERO);
-                    balanceDO.setServiceFee(BigDecimal.ZERO);
-                    balanceDO.setStatus(StatusTypeEnum.SUCCESS.getCode());
-                    balanceDO.setCreateTime(now);
-                    balanceDO.setUpdateTime(now);
-                    balanceDO.setOrderNo(payDO.getOrderNo());
-                    balanceService.addBalanceDetail(balanceDO);
-                    //判断是否首冲
-                    UserDO userDO = userService.get(payDO.getUserId());
-                    if (userDO != null && userDO.getFirstRecharge() == 0
+                //充值成功
+                Date now = new Date();
+                BalanceDO balanceDO = new BalanceDO();
+                balanceDO.setAmount(relPayAmount);
+                balanceDO.setType(BalanceTypeEnum.F.getCode());
+                balanceDO.setUserId(payDO.getUserId());
+                balanceDO.setWithdrawAmount(BigDecimal.ZERO);
+                balanceDO.setServiceFee(BigDecimal.ZERO);
+                balanceDO.setStatus(StatusTypeEnum.SUCCESS.getCode());
+                balanceDO.setCreateTime(now);
+                balanceDO.setUpdateTime(now);
+                balanceDO.setOrderNo(payDO.getOrderNo());
+                balanceService.addBalanceDetail(balanceDO);
+                //判断是否首冲
+                UserDO userDO = userService.get(payDO.getUserId());
+                if (userDO != null && userDO.getFirstRecharge() == 0
                         && relPayAmount.compareTo(new BigDecimal("300")) >= 0
                         && userDO.getParentId() != null) {
-                        //给上级返现
-                        addParentBalance(1, userDO, now, payDO.getOrderNo());
-                        //更新邀请记录
-                        commonExecutor.execute(()->{
-                            InviteLogDO inviteLog = new InviteLogDO();
-                            inviteLog.setNewUserId(payDO.getUserId().intValue());
-                            inviteLog.setFirstRechargeDate(now);
-                            inviteLog.setNewUserStatus(InviteUserStatusEnum.RECHARGE.getCode());
-                            BigDecimal parentAmount = new BigDecimal(RedisUtils.getString(DictConsts.FIRST_RECHARGE_PARENT_AMOUNT));
-                            inviteLog.setInviteAmount(parentAmount);
-                            inviteLogService.updateByNewUserId(inviteLog);
-                        });
-                    }
-                    userService.updateFirstRechargeById(userDO.getId());
+                    //给上级返现
+                    addParentBalance(1, userDO, now, payDO.getOrderNo());
+                    //更新邀请记录
+                    commonExecutor.execute(()->{
+                        InviteLogDO inviteLog = new InviteLogDO();
+                        inviteLog.setNewUserId(payDO.getUserId().intValue());
+                        inviteLog.setFirstRechargeDate(now);
+                        inviteLog.setNewUserStatus(InviteUserStatusEnum.RECHARGE.getCode());
+                        BigDecimal parentAmount = new BigDecimal(RedisUtils.getString(DictConsts.FIRST_RECHARGE_PARENT_AMOUNT));
+                        inviteLog.setInviteAmount(parentAmount);
+                        inviteLogService.updateByNewUserId(inviteLog);
+                    });
+                }
+                userService.updateFirstRechargeById(userDO.getId());
 
-                    Long timeOut = DateUtils.getEndOfDay(DateUtils.now()).getTime() - DateUtils.now().getTime();
-                    String rechargeKey = CacheConsts.getTodayRechargeKey(userDO.getId());
-                    RedisUtils.increment(rechargeKey, timeOut.intValue() / 1000);
-                } else if (PayEnums.PayTypeEnum.PAY_VIP2.getCode().equals(payDO.getType())
+                Long timeOut = DateUtils.getEndOfDay(DateUtils.now()).getTime() - DateUtils.now().getTime();
+                String rechargeKey = CacheConsts.getTodayRechargeKey(userDO.getId());
+                RedisUtils.increment(rechargeKey, timeOut.intValue() / 1000);
+            } else if (PayEnums.PayTypeEnum.PAY_VIP2.getCode().equals(payDO.getType())
                     || PayEnums.PayTypeEnum.PAY_VIP3.getCode().equals(payDO.getType())
                     || PayEnums.PayTypeEnum.PAY_VIP4.getCode().equals(payDO.getType())
                     || PayEnums.PayTypeEnum.PAY_VIP5.getCode().equals(payDO.getType())) {
-                    //购买会员成功
-                    userService.updateUserVIP(payDO.getUserId(), payDO.getType());
-                } else {
-                    throw new BaseException("未知支付");
-                }
-            } else if (payDO.getStatus().equals(PayEnums.PayStatusEnum.FAIL.getCode())) {
-                //支付失败
-                if (PayEnums.PayTypeEnum.RECHARGE.getCode().equals(payDO.getType())) {
-                    Long timeOut = DateUtils.getEndOfDay(DateUtils.now()).getTime() - DateUtils.now().getTime();
-                    String rechargeKey = CacheConsts.getTodayRechargeKey(payDO.getUserId());
-                    Integer rechargeCount = RedisUtils.getValue(rechargeKey, Integer.class);
-                    if (rechargeCount != null && rechargeCount > 0) {
-                        RedisUtils.increment(rechargeKey, -1L, timeOut.intValue() / 1000);
-                    }
+                //购买会员成功
+                userService.updateUserVIP(payDO.getUserId(), payDO.getType());
+            } else {
+                throw new BaseException("未知支付");
+            }
+        } else if (payDO.getStatus().equals(PayEnums.PayStatusEnum.FAIL.getCode())) {
+            //支付失败
+            if (PayEnums.PayTypeEnum.RECHARGE.getCode().equals(payDO.getType())) {
+                Long timeOut = DateUtils.getEndOfDay(DateUtils.now()).getTime() - DateUtils.now().getTime();
+                String rechargeKey = CacheConsts.getTodayRechargeKey(payDO.getUserId());
+                Integer rechargeCount = RedisUtils.getValue(rechargeKey, Integer.class);
+                if (rechargeCount != null && rechargeCount > 0) {
+                    RedisUtils.increment(rechargeKey, -1L, timeOut.intValue() / 1000);
                 }
             }
-            logger.info("**** {}-{} ****  用户id:{}, {} {},金额:  {}   {}", payBeanName,
-                PayEnums.PayStatusEnum.getDescByCode(payDO.getStatus()), payDO.getUserId(),
-                PayEnums.PayStatusEnum.getDescByCode(payDO.getStatus()),
-                PayEnums.PayTypeEnum.getDescByCode(payDO.getType()), relPayAmount, payFailDesc);
-
         }
-        return BaseResponse.success(payDO);
     }
 
     /**
@@ -316,7 +324,7 @@ public class PayService {
 
     public BaseResponse<PayDO> handelOrderStatus(Map<String, Object> requestJson) {
         if (requestJson == null) {
-            return BaseResponse.fail("error params");
+            return BaseResponse.fail(I18nEnum.PARAMS_FAIL.getMsg());
         }
         String orderNo = requestJson.get("orderNo").toString();
         String checkoutRequestID = requestJson.get("CheckoutRequestID").toString();
@@ -335,7 +343,7 @@ public class PayService {
         if (payDO != null && payDO.getStatus() != null) {
             return BaseResponse.success(payDO.getStatus());
         }
-        return BaseResponse.fail(orderNo + "---This order no found !");
+        return BaseResponse.fail(orderNo + "---" + I18nEnum.ORDER_NOT_FOUND_FAIL.getMsg());
     }
 
     //创建订单
@@ -369,7 +377,7 @@ public class PayService {
 
         int saveSuccess = save(payDO);
         if (saveSuccess <= 0) {
-            return BaseResponse.fail("Unknown error : Your payment was fail,please try again later!");
+            return BaseResponse.fail(I18nEnum.PAYMENT_FAIL.getMsg());
         }
         //获取支付bean
         String payBeanName = PaymentServiceEnum.getBeanNameByCode(payChannelBranch);
@@ -381,6 +389,7 @@ public class PayService {
         BaseResponse<PaymentResult> paymentResultResp = paymentService.payIn(createPayInOrder);
         PaymentResult paymentResult = paymentResultResp.getResultData();
         payDO.setThirdUrl(paymentResult.getThirdPayUrl());
+        payDO.setThirdNo(paymentResult.getThirdOrderNo());
         logger.info("支付渠道:{} 用户id:{},创建支付订单成功,内部订单号:{},第三方URL:{}", "daraja", param.getUserId(), orderNo,
             payDO.getThirdUrl());
         update(payDO);
@@ -417,17 +426,17 @@ public class PayService {
 
         int saveSuccess = save(payDO);
         if (saveSuccess <= 0) {
-            return BaseResponse.fail("Unknown error : Your payment was fail,please try again later!");
+            return BaseResponse.fail(I18nEnum.PAYMENT_FAIL.getMsg());
         }
         UserDO tempUserDO = userService.get(userDO.getId());
         BigDecimal subBalance = tempUserDO.getBalance().subtract(param.getPayAmount());
         if (subBalance.doubleValue() < 0) {
-            return BaseResponse.fail(TipConsts.CREATE_ORDER_BALANCE_FAIL);
+            return BaseResponse.fail(I18nEnum.CREATE_ORDER_BALANCE_FAIL.getMsg());
         }
         //扣减余额
         boolean res = userService.reduceMoney(userDO.getId(), param.getPayAmount(), userDO.getVersion());
         if (!res) {
-            return BaseResponse.fail(TipConsts.CREATE_ORDER_BALANCE_FAIL);
+            return BaseResponse.fail(I18nEnum.CREATE_ORDER_BALANCE_FAIL.getMsg());
         }
         //购买会员成功
         userService.updateUserVIP(payDO.getUserId(), payDO.getType());
@@ -476,6 +485,7 @@ public class PayService {
         }
         PaymentResult resultData = payoutOrder.getResultData();
         payDO.setThirdResponse(resultData.getDescription());
+        payDO.setThirdStatus(resultData.getThirdOrderStatus());
         if (PayEnums.PayStatusEnum.PAID.getCode().equals(resultData.getStatus())) {
             //取现成功
             payDO.setStatus(PayEnums.PayStatusEnum.PAID.getCode());
@@ -526,7 +536,7 @@ public class PayService {
 
     public BaseResponse callBackPayoutFailHandel(Map<String, Object> requestJson) {
         if (requestJson == null) {
-            throw new BaseException("error params");
+            throw new BaseException(I18nEnum.PARAMS_FAIL.getMsg());
         }
         String orderNo = getThirdPayCallBackOrderNo(requestJson);
         //四方提现失败回调
@@ -564,6 +574,14 @@ public class PayService {
     public PayVO getCountByTypeStatus(List<Integer> typeList, Integer status, Long userId, LocalDate startDate,
         LocalDate endDate) {
         PayVO payVO = payDao.getCountByTypeStatus(typeList, status, userId, startDate, endDate);
+        if (payVO == null) {
+            return new PayVO();
+        }
+        return payVO;
+    }
+
+    public PayVO getCountByParams(Map<String, Object> params) {
+        PayVO payVO = payDao.getCountByParams(params);
         if (payVO == null) {
             return new PayVO();
         }

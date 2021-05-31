@@ -4,7 +4,7 @@
 <mapper namespace="com.powerboot.dao.GuestbookDao">
 
 	<select id="get" resultType="com.powerboot.domain.GuestbookDO">
-		select `id`,`guestbook_content`,`guestbook_user_id`,`guestbook_target_id`,`create_time`,`update_time` from guestbook where id = #{value}
+		select `id`,`guestbook_content`,`guestbook_user_id`,`guestbook_target_id`,gb.`readed`,`create_time`,`update_time` from guestbook where id = #{value}
 	</select>
 
 	<select id="list" resultType="com.powerboot.domain.GuestbookDO">
@@ -13,6 +13,7 @@
 		gb.`guestbook_content`,
 		gb.`guestbook_user_id`,
 		gb.`guestbook_target_id`,
+		gb.`readed`,
 		gb.`create_time`,
 		gb.`update_time`
 		FROM
@@ -73,6 +74,7 @@
 			<if test="guestbookContent != null">`guestbook_content` = #{guestbookContent}, </if>
 			<if test="guestbookUserId != null">`guestbook_user_id` = #{guestbookUserId}, </if>
 			<if test="guestbookTargetId != null">`guestbook_target_id` = #{guestbookTargetId}, </if>
+			<if test="readed != null">`readed` = #{readed}, </if>
 			<if test="createTime != null">`create_time` = #{createTime}, </if>
 			<if test="updateTime != null">`update_time` = #{updateTime}</if>
 		</set>
@@ -89,5 +91,21 @@
 			#{id}
 		</foreach>
 	</delete>
+
+	<select id="selectUnreadCount" resultType="int">
+		SELECT
+		count(gb.`id`)
+		FROM
+		guestbook gb
+		<where>
+			<if test="id != null and id != ''"> and id = #{id} </if>
+			<if test="guestbookContent != null and guestbookContent != ''"> and guestbook_content = #{guestbookContent} </if>
+			<if test="guestbookUserId != null and guestbookUserId != ''"> and guestbook_user_id = #{guestbookUserId} </if>
+			<if test="guestbookTargetId != null and guestbookTargetId != ''"> and guestbook_target_id = #{guestbookTargetId} </if>
+			<if test="createTime != null and createTime != ''"> and create_time = #{createTime} </if>
+			<if test="updateTime != null and updateTime != ''"> and update_time = #{updateTime} </if>
+			<if test="readed != null"> and `readed` = #{readed} </if>
+		</where>
+	</select>
 
 </mapper>

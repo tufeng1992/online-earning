@@ -1,10 +1,7 @@
 package com.powerboot.controller;
 
 import com.powerboot.base.BaseResponse;
-import com.powerboot.consts.CacheConsts;
-import com.powerboot.consts.DictAccount;
-import com.powerboot.consts.DictConsts;
-import com.powerboot.consts.TipConsts;
+import com.powerboot.consts.*;
 import com.powerboot.domain.BalanceDO;
 import com.powerboot.domain.PayDO;
 import com.powerboot.domain.UserDO;
@@ -81,11 +78,11 @@ public class PayController extends BaseController {
         }
 
         if (param.getType() == null || BigDecimal.ZERO.compareTo(param.getPayAmount()) >= 0) {
-            return BaseResponse.fail("Recharge can not low of 300!");
+            return BaseResponse.fail(I18nEnum.RECHARGE_LOW_FAIL.getMsg());
         }
 
         if (param.getType() == 1 && new BigDecimal("300").compareTo(param.getPayAmount()) > 0) {
-            return BaseResponse.fail("Recharge can not low of 300!");
+            return BaseResponse.fail(I18nEnum.RECHARGE_LOW_FAIL.getMsg());
         }
         //校验充值规则
         if (param.getType() == 1) {
@@ -93,7 +90,7 @@ public class PayController extends BaseController {
             Integer rechargeCount = RedisUtils.getValue(CacheConsts.getTodayRechargeKey(userDO.getId()), Integer.class);
             Integer sysRechargeCount = RedisUtils.getValue(DictConsts.TODAY_MAX_RECHARGE_COUNT, Integer.class);
             if (rechargeCount != null && rechargeCount.compareTo(sysRechargeCount) >= 0) {
-                return BaseResponse.fail("You can only recharge "+sysRechargeCount+" a day");
+                return BaseResponse.fail(String.format(I18nEnum.RECHARGE_LIMIT_DAY.getMsg(), sysRechargeCount));
             }
             //校验充值金额限制
             /**
@@ -112,7 +109,7 @@ public class PayController extends BaseController {
     public BaseResponse<PayDO> createOrder(@RequestBody @Valid LoanDetailRequest param) {
         UserDO userDO = userService.get(getUserId(param));
         if (userDO == null) {
-            return BaseResponse.fail("error : vip amount!");
+            return BaseResponse.fail(I18nEnum.LOGIN_TIMEOUT_FAIL.getMsg());
         }
 
         //充值风控校验
@@ -122,20 +119,39 @@ public class PayController extends BaseController {
         }
 
         if (!param.getType().equals(1)) {
+            int childFirstRechargedCount = 9999;
+            String createVipChildLimitSwitch = RedisUtils.getString(DictConsts.CREATE_VIP_CHILD_LIMIT_SWITCH);
+            if (StringUtils.isNotBlank(createVipChildLimitSwitch) && "true".equalsIgnoreCase(createVipChildLimitSwitch)) {
+                List<UserDO> userDOList = userService.getUserByParentId(userDO.getId());
+                //开关打开的情况下限制数量
+                childFirstRechargedCount = userDOList.size();
+            }
             BigDecimal VIPAmount;
             if (param.getType().equals(2)) {
+                if (childFirstRechargedCount < 5) {
+                    return BaseResponse.fail(I18nEnum.VIP_UPDATE_COUNT_FAIL.getMsg());
+                }
                 VIPAmount = RedisUtils.getValue(DictAccount.VIP2_CHARGE, BigDecimal.class);
             } else if (param.getType().equals(3)) {
+                if (childFirstRechargedCount < 10) {
+                    return BaseResponse.fail(I18nEnum.VIP_UPDATE_COUNT_FAIL.getMsg());
+                }
                 VIPAmount = RedisUtils.getValue(DictAccount.VIP3_CHARGE, BigDecimal.class);
             } else if (param.getType().equals(4)) {
+                if (childFirstRechargedCount < 15) {
+                    return BaseResponse.fail(I18nEnum.VIP_UPDATE_COUNT_FAIL.getMsg());
+                }
                 VIPAmount = RedisUtils.getValue(DictAccount.VIP4_CHARGE, BigDecimal.class);
             } else if (param.getType().equals(5)) {
+                if (childFirstRechargedCount < 20) {
+                    return BaseResponse.fail(I18nEnum.VIP_UPDATE_COUNT_FAIL.getMsg());
+                }
                 VIPAmount = RedisUtils.getValue(DictAccount.VIP5_CHARGE, BigDecimal.class);
             } else {
-                return BaseResponse.fail("error amount!");
+                return BaseResponse.fail(I18nEnum.AMOUNT_FAIL.getMsg());
             }
             if (VIPAmount == null) {
-                return BaseResponse.fail("error : vip amount!");
+                return BaseResponse.fail(I18nEnum.AMOUNT_FAIL.getMsg());
             }
             param.setPayAmount(VIPAmount);
         }
@@ -148,7 +164,7 @@ public class PayController extends BaseController {
     public BaseResponse<PayDO> createOrderForBalance(@RequestBody @Valid LoanDetailRequest param) {
         UserDO userDO = userService.get(getUserId(param));
         if (userDO == null) {
-            return BaseResponse.fail("error : vip amount!");
+            return BaseResponse.fail(I18nEnum.LOGIN_TIMEOUT_FAIL.getMsg());
         }
 
         //充值风控校验
@@ -158,27 +174,46 @@ public class PayController extends BaseController {
         }
 
         if (!param.getType().equals(1)) {
+            int childFirstRechargedCount = 9999;
+            String createVipChildLimitSwitch = RedisUtils.getString(DictConsts.CREATE_VIP_CHILD_LIMIT_SWITCH);
+            if (StringUtils.isNotBlank(createVipChildLimitSwitch) && "true".equalsIgnoreCase(createVipChildLimitSwitch)) {
+                List<UserDO> userDOList = userService.getUserByParentId(userDO.getId());
+                //开关打开的情况下限制数量
+                childFirstRechargedCount = userDOList.size();
+            }
             BigDecimal VIPAmount;
             if (param.getType().equals(2)) {
+                if (childFirstRechargedCount < 5) {
+                    return BaseResponse.fail(I18nEnum.VIP_UPDATE_COUNT_FAIL.getMsg());
+                }
                 VIPAmount = RedisUtils.getValue(DictAccount.VIP2_CHARGE, BigDecimal.class);
             } else if (param.getType().equals(3)) {
+                if (childFirstRechargedCount < 10) {
+                    return BaseResponse.fail(I18nEnum.VIP_UPDATE_COUNT_FAIL.getMsg());
+                }
                 VIPAmount = RedisUtils.getValue(DictAccount.VIP3_CHARGE, BigDecimal.class);
             } else if (param.getType().equals(4)) {
+                if (childFirstRechargedCount < 15) {
+                    return BaseResponse.fail(I18nEnum.VIP_UPDATE_COUNT_FAIL.getMsg());
+                }
                 VIPAmount = RedisUtils.getValue(DictAccount.VIP4_CHARGE, BigDecimal.class);
             } else if (param.getType().equals(5)) {
+                if (childFirstRechargedCount < 20) {
+                    return BaseResponse.fail(I18nEnum.VIP_UPDATE_COUNT_FAIL.getMsg());
+                }
                 VIPAmount = RedisUtils.getValue(DictAccount.VIP5_CHARGE, BigDecimal.class);
             } else {
-                return BaseResponse.fail("error amount!");
+                return BaseResponse.fail(I18nEnum.AMOUNT_FAIL.getMsg());
             }
             if (VIPAmount == null) {
-                return BaseResponse.fail("error : vip amount!");
+                return BaseResponse.fail(I18nEnum.AMOUNT_FAIL.getMsg());
             }
             param.setPayAmount(VIPAmount);
         } else {
-            return BaseResponse.fail("System error");
+            return BaseResponse.fail(I18nEnum.SYSTEM_FAIL.getMsg());
         }
         if (userDO.getBalance().compareTo(param.getPayAmount()) < 0) {
-            return BaseResponse.fail(TipConsts.CREATE_ORDER_BALANCE_FAIL);
+            return BaseResponse.fail(I18nEnum.CREATE_ORDER_BALANCE_FAIL.getMsg());
         }
         param.setUserId(getUserId(param));
         return payService.createOrderForBalance(param, userDO);
@@ -231,7 +266,7 @@ public class PayController extends BaseController {
     @PostMapping("/rechargeSuccess")
     public BaseResponse getThirdOrder(@RequestBody Map<String, Object> requestJson) {
         if (MapUtils.isEmpty(requestJson)){
-            return BaseResponse.fail("Recharge FAIL!");
+            return BaseResponse.fail(I18nEnum.SYSTEM_FAIL.getMsg());
         }
         String orderNo = requestJson.get("orderNo").toString();
         String checkoutRequestID = requestJson.get("checkoutRequestID").toString();

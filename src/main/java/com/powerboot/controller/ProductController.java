@@ -3,6 +3,8 @@ package com.powerboot.controller;
 import com.powerboot.base.BaseResponse;
 import com.powerboot.consts.DictAccount;
 import com.powerboot.consts.DictConsts;
+import com.powerboot.consts.I18nEnum;
+import com.powerboot.consts.TipConsts;
 import com.powerboot.domain.OrderDO;
 import com.powerboot.domain.ProductDO;
 import com.powerboot.domain.UserDO;
@@ -58,8 +60,8 @@ public class ProductController extends BaseController {
         UserDO userDO = userService.get(userId);
         List<ProductDO> list = productService.list(map);
 
-        HashMap<Integer, List<Integer>> hashMapBalance = ehcacheService.getBalanceInfo();
-        HashMap<Integer, List<Integer>> priceSectionMap = ehcacheService.getPriceSection();
+//        HashMap<Integer, List<Integer>> hashMapBalance = ehcacheService.getBalanceInfo();
+//        HashMap<Integer, List<Integer>> priceSectionMap = ehcacheService.getPriceSection();
 
         List<ProductListDto> productListDtoList = new ArrayList<>();
 
@@ -71,60 +73,70 @@ public class ProductController extends BaseController {
 
         sortList.forEach(
                 o -> {
+                    String[] balanceArr = o.getBalanceInfo().split(",");
+                    String[] priceSectionArr = o.getPriceSection().split(",");
                     ProductListDto po = new ProductListDto();
                     po.setPicture(o.getPicture());
-                    BigDecimal levelLowPrice = new BigDecimal(hashMapBalance.get(o.getLevel()).get(0));
+                    BigDecimal levelLowPrice = new BigDecimal(balanceArr[0]);
                     //刷单商品计算随机金额
                     if (o.getType().equals(2)) {
                         //判断余额在哪个区间等级
-                        Integer low = priceSectionMap.get(o.getLevel()).get(0);
-                        Integer high = priceSectionMap.get(o.getLevel()).get(1);
+                        Integer low = Integer.valueOf(priceSectionArr[0]);
+                        Integer high = Integer.valueOf(priceSectionArr[1]);
                         BigDecimal resultAmount = BigDecimal.valueOf(Math.random() * (high - low) + low).setScale(2, BigDecimal.ROUND_DOWN);
                         o.setOriginPrice(levelLowPrice);
                         po.setPrice(resultAmount);
                         po.setReturnFund(resultAmount.add(resultAmount.multiply(
-                                new BigDecimal(hashMapBalance.get(o.getLevel())
-                                        .get(3)).divide(new BigDecimal(10000)))).setScale(2, BigDecimal.ROUND_DOWN));
+                                new BigDecimal(balanceArr[3]).divide(new BigDecimal(10000)))).setScale(2, BigDecimal.ROUND_DOWN));
                     }
 
                     //新增改造字段，赋值
-                    addNewInfo(po, o);
-
-                    if (o.getLevel() > 1) {
-                        po.setLevel(String.valueOf((o.getLevel() - 1)));
-                    } else {
-                        po.setLevel(String.valueOf(o.getLevel()));
-                    }
+                    po.setIntroduction(o.getIntroduction());
+                    po.setDescAmount(o.getDescAmount());
+                    po.setLevel(o.getLevel().toString());
+//                    if (o.getLevel() > 1) {
+//                        po.setLevel(String.valueOf((o.getLevel() - 1)));
+//                    } else {
+//                        po.setLevel(String.valueOf(o.getLevel()));
+//                    }
                     po.setProductId(o.getId());
-                    po.setRatio(new BigDecimal(hashMapBalance.get(o.getLevel()).get(3)).divide(new BigDecimal(100)));
+                    po.setRatio(new BigDecimal(balanceArr[3]).divide(new BigDecimal(100)));
                     po.setComment(o.getComment());
                     po.setDescribtion(o.getDescribtion());
 
-                    if (o.getLevel().equals(1)) {
+                    if (totalBalance.compareTo(o.getUserBalanceLimit()) >= 0
+                            && userDO.getMemberLevel() >= o.getUserLevelLimit()) {
                         po.setClickButton(true);
-                    } else if (o.getLevel().equals(2) && totalBalance.compareTo(levelLowPrice) >= 0) {
-                        po.setClickButton(true);
-                    } else if (o.getLevel().equals(3) && totalBalance.compareTo(levelLowPrice) >= 0) {
-                        if (userDO.getMemberLevel() + 1 >= o.getLevel()) {
-                            po.setClickButton(true);
-                        }else {
-                            po.setClickButton(false);
-                        }
-                    } else if (o.getLevel().equals(4) && totalBalance.compareTo(levelLowPrice) >= 0) {
-                        if (userDO.getMemberLevel() + 2 >= o.getLevel()) {
-                            po.setClickButton(true);
-                        }else {
-                            po.setClickButton(false);
-                        }
-                    } else if (o.getLevel().equals(5) && totalBalance.compareTo(levelLowPrice) >= 0) {
-                        if (userDO.getMemberLevel() + 1 >= o.getLevel()) {
-                            po.setClickButton(true);
-                        }else {
-                            po.setClickButton(false);
-                        }
                     } else {
                         po.setClickButton(false);
                     }
+
+
+//                    if (o.getLevel().equals(1)) {
+//                        po.setClickButton(true);
+//                    } else if (o.getLevel().equals(2) && totalBalance.compareTo(levelLowPrice) >= 0) {
+//                        po.setClickButton(true);
+//                    } else if (o.getLevel().equals(3) && totalBalance.compareTo(levelLowPrice) >= 0) {
+//                        if (userDO.getMemberLevel() >= o.getUserLevelLimit()) {
+//                            po.setClickButton(true);
+//                        }else {
+//                            po.setClickButton(false);
+//                        }
+//                    } else if (o.getLevel().equals(4) && totalBalance.compareTo(levelLowPrice) >= 0) {
+//                        if (userDO.getMemberLevel() >= o.getUserLevelLimit()) {
+//                            po.setClickButton(true);
+//                        }else {
+//                            po.setClickButton(false);
+//                        }
+//                    } else if (o.getLevel().equals(5) && totalBalance.compareTo(levelLowPrice) >= 0) {
+//                        if (userDO.getMemberLevel() >= o.getUserLevelLimit()) {
+//                            po.setClickButton(true);
+//                        }else {
+//                            po.setClickButton(false);
+//                        }
+//                    } else {
+//                        po.setClickButton(false);
+//                    }
 
                     long time = (new Date().getTime() - userDO.getCreateTime().getTime()) / 1000 / 3600 / 24;
 
@@ -173,33 +185,34 @@ public class ProductController extends BaseController {
         HashMap<Integer, List<Integer>> vipInfo = ehcacheService.getVipInfo();
 
         if (todayList.size() >= vipInfo.get(userDO.getMemberLevel()).get(3)) {
-            response = BaseResponse.fail("All tasks have been completed today");
+            response = BaseResponse.fail(I18nEnum.ALL_TASK_COMPLETE.getMsg());
             return response;
         }
 
         //刷单开关 0为关闭，不可刷单
         if (userDO.getSdSwitch() == 0) {
-            response = BaseResponse.fail("The account has been restricted,please contact Customer Service");
+            response = BaseResponse.fail(I18nEnum.ACCOUNT_RESTRICTED_FAIL.getMsg());
             return response;
         }
 
         ProductDO productDO = productService.get(param.getProductId());
-
-        HashMap<Integer, List<Integer>> hashMapBalance = ehcacheService.getBalanceInfo();
+        String[] balanceArr = productDO.getBalanceInfo().split(",");
+//        HashMap<Integer, List<Integer>> hashMapBalance = ehcacheService.getBalanceInfo();
 
         ProductDetailsDto productDetailsDto = new ProductDetailsDto();
         ProductListDto productListDto = new ProductListDto();
 
-        BigDecimal levelLowPrice = new BigDecimal(hashMapBalance.get(productDO.getLevel()).get(0));
+        BigDecimal levelLowPrice = new BigDecimal(balanceArr[0]);
         productListDto.setPicture(productDO.getPicture());
         productListDto.setPrice(levelLowPrice);
-        if (productDO.getLevel() > 1) {
-            productListDto.setLevel(String.valueOf(productDO.getLevel() - 1));
-        } else {
-            productListDto.setLevel(String.valueOf(productDO.getLevel()));
-        }
+//        if (productDO.getLevel() > 1) {
+//            productListDto.setLevel(String.valueOf(productDO.getLevel() - 1));
+//        } else {
+//            productListDto.setLevel(String.valueOf(productDO.getLevel()));
+//        }
+        productListDto.setLevel(productDO.getLevel().toString());
         productListDto.setProductId(productDO.getId());
-        productListDto.setRatio(new BigDecimal(hashMapBalance.get(productDO.getLevel()).get(3)).divide(new BigDecimal(100)));
+        productListDto.setRatio(new BigDecimal(balanceArr[3]).divide(new BigDecimal(100)));
         productListDto.setComment(productDO.getComment());
         productListDto.setDescribtion(productDO.getDescribtion());
 
@@ -212,32 +225,5 @@ public class ProductController extends BaseController {
         logger.info("刷详详情页总耗时" + (end - start));
 
         return response;
-    }
-
-    private void addNewInfo(ProductListDto po, ProductDO productDO) {
-        String a = RedisUtils.getString(DictConsts.PRODUCT_DESC_AMOUNT);
-        String[] amounts = a.split("\\|");
-        String i = RedisUtils.getString(DictConsts.PRODUCT_INTRODUCTION);
-        String[] introductions = i.split("\\|");
-        if (productDO.getLevel().equals(1)) {
-            po.setIntroduction(introductions[0]);
-            po.setDescAmount(new BigDecimal(amounts[0]));
-        }
-        if (productDO.getLevel().equals(2)) {
-            po.setIntroduction(introductions[1]);
-            po.setDescAmount(new BigDecimal(amounts[1]));
-        }
-        if (productDO.getLevel().equals(3)) {
-            po.setIntroduction(introductions[2]);
-            po.setDescAmount(new BigDecimal(amounts[2]));
-        }
-        if (productDO.getLevel().equals(4)) {
-            po.setIntroduction(introductions[3]);
-            po.setDescAmount(new BigDecimal(amounts[3]));
-        }
-        if (productDO.getLevel().equals(5)) {
-            po.setIntroduction(introductions[4]);
-            po.setDescAmount(new BigDecimal(amounts[4]));
-        }
     }
 }

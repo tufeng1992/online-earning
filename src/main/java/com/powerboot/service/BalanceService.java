@@ -1,6 +1,8 @@
 package com.powerboot.service;
 
 import com.powerboot.config.BaseException;
+import com.powerboot.consts.I18nEnum;
+import com.powerboot.consts.TipConsts;
 import com.powerboot.dao.BalanceDao;
 import com.powerboot.dao.UserDao;
 import com.powerboot.domain.BalanceDO;
@@ -35,7 +37,7 @@ public class BalanceService {
     public int addBalanceDetail(BalanceDO balance) {
         UserDO userDO = userDao.get(balance.getUserId());
         if(userDO==null){
-            throw new BaseException("login timeout, please login first");
+            throw new BaseException(I18nEnum.LOGIN_TIMEOUT_FAIL.getMsg());
         }
         balance.setSaleId(userDO.getSaleId()==null?1L:userDO.getSaleId());
 
@@ -62,13 +64,14 @@ public class BalanceService {
         return balanceDao.list(map);
     }
 
-    public List<BalanceDO> getLastDayList(BalanceTypeEnum type) {
+    public List<BalanceDO> getLastDayList(BalanceTypeEnum type, Long saleId) {
         Map<String, Object> map = new HashMap<>();
         Date lastDay = DateUtils.parseDate(DateUtils.addDays(new Date(), -1), DateUtils.SIMPLE_DATEFORMAT_YMD + " 00:00:00");
         Date endDay = DateUtils.parseDate(DateUtils.addDays(new Date(), 0), DateUtils.SIMPLE_DATEFORMAT_YMD + " 00:00:00");
         map.put("createTime", lastDay);
         map.put("endTime", endDay);
         map.put("type", type.getCode());
+        map.put("saleId", saleId);
         return balanceDao.listByDate(map);
     }
 
@@ -111,6 +114,14 @@ public class BalanceService {
 
     public PayVO getCountByTypeStatus(List<Integer> typeList, Integer status, LocalDate startDate, LocalDate endDate){
         PayVO result =  balanceDao.getCountByTypeStatus(typeList, status, startDate, endDate);
+        if (result == null){
+            return new PayVO();
+        }
+        return result;
+    }
+
+    public PayVO getCountByParams(Map<String, Object> params){
+        PayVO result =  balanceDao.getCountByParams(params);
         if (result == null){
             return new PayVO();
         }

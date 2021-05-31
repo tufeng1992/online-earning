@@ -142,6 +142,7 @@
 	<update id="update" parameterType="com.powerboot.domain.UserDO">
 		update user
 		<set>
+			<if test="deviceNumber != null"> `device_number` = #{deviceNumber},   </if>
 			<if test="nikeName != null"> `nike_name` = #{nikeName},   </if>
 			<if test="appId != null"> app_id = #{appId},   </if>
 			<if test="mobile != null">  mobile = #{mobile},  </if>
@@ -171,6 +172,8 @@
 			<if test="accountExpireDay != null"> account_expire_day = #{accountExpireDay}, </if>
 			<if test="bankName != null"> bank_name = #{bankName}, </if>
 			<if test="bankCode != null"> bank_code = #{bankCode}, </if>
+			<if test="loginFlag != null"> login_flag = #{loginFlag}, </if>
+			<if test="blackFlag != null"> black_flag = #{blackFlag}, </if>
 			version = version+1,
 		</set>
 		where id = #{id} and version  = #{version}
@@ -269,6 +272,16 @@
 		from user where role = 2
 	</select>
 
+	<select id="getAllVIPBySale" resultType="com.powerboot.domain.UserDO" parameterType="map">
+		select
+		member_level,balance,first_recharge
+		from user where role = 2 and sale_id = #{saleId}
+	</select>
+
+	<select id="getAllSaleId" resultType="com.powerboot.domain.UserDO" parameterType="map">
+		select DISTINCT sale_id from user where sale_id is not null GROUP BY sale_id
+	</select>
+
 	<select id="getUserCount" resultType="java.lang.Integer">
 		select count(*)
 		from `user`
@@ -289,12 +302,43 @@
 		<if test="saleReferral != null">
 			and parent_id is null
 		</if>
+		<if test="saleId != null">
+			and sale_id = #{saleId}
+		</if>
 	</select>
 
 	<select id="getRegisterIpCount" resultType="java.lang.Integer">
 		select count(*)
 		from `user`
 		where register_ip=#{registerIp}
+	</select>
+
+	<select id="count" resultType="java.lang.Integer">
+		select count(*)
+		from `user`
+		<where>
+			<if test="role != null">
+				and role = #{role}
+			</if>
+			<if test="startDate != null">
+				and create_time &gt;= #{startDate}
+			</if>
+			<if test="endDate != null">
+				and create_time &lt;= #{endDate}
+			</if>
+			<if test="userReferral != null">
+				and parent_id is not null
+			</if>
+			<if test="saleReferral != null">
+				and parent_id is null
+			</if>
+			<if test="saleId != null">
+				and sale_id = #{saleId}
+			</if>
+			<if test="deviceNumber != null">
+				and device_number = #{deviceNumber}
+			</if>
+		</where>
 	</select>
 
 	<select id="getUserByAccountNumber" resultType="com.powerboot.domain.UserDO">

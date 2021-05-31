@@ -28,4 +28,6 @@ public interface GuestbookDao {
 	int remove(Long id);
 	
 	int batchRemove(Long[] ids);
+
+    Integer selectUnreadCount(Map<String, Object> map);
 }

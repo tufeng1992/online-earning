@@ -3,6 +3,8 @@ package com.powerboot.controller;
 import com.powerboot.base.BaseResponse;
 import com.powerboot.common.JsonUtils;
 import com.powerboot.consts.AmountConsts;
+import com.powerboot.consts.I18nEnum;
+import com.powerboot.consts.TipConsts;
 import com.powerboot.domain.FinancialOrderDO;
 import com.powerboot.domain.FinancialProductDO;
 import com.powerboot.domain.UserDO;
@@ -99,7 +101,7 @@ public class FinancialController extends BaseController {
         FinancialProductResponse financialProductResponse = financialProductService.
             getFinancialProductResponseById(request.getProductId());
         if (financialProductResponse == null) {
-            response = BaseResponse.fail("Please select financial product");
+            response = BaseResponse.fail(I18nEnum.PARAMS_FAIL.getMsg());
             return response;
         }
         BigDecimal dayRate = financialProductResponse.getDayRate();
@@ -121,38 +123,35 @@ public class FinancialController extends BaseController {
         //未查询到理财产品
         if (financialProductDO == null) {
             //logger.error("【购买理财】未查询到理财产品，request={}，userId={}", JsonUtils.toJSONString(request), userId);
-            response = BaseResponse.fail("Your system error, Please close app , Try open again");
+            response = BaseResponse.fail(I18nEnum.SYSTEM_FAIL_CLOSE_RETRY.getMsg());
             return response;
         }
         //起购金额
         if (request.getAmount().compareTo(financialProductDO.getStartAmount()) < 0) {
             response = BaseResponse.fail(
-                "A single purchase required more than " + financialProductDO.getStartAmount().setScale(0, BigDecimal.ROUND_DOWN));
+                I18nEnum.FINANCIAL_MORE_TIP.getMsg() + financialProductDO.getStartAmount().setScale(0, BigDecimal.ROUND_DOWN));
             return response;
         }
         //单笔购买上限
         if (request.getAmount().compareTo(financialProductDO.getTopAmount()) > 0) {
             response = BaseResponse.fail(
-                "A single purchase required less than " + financialProductDO.getTopAmount().setScale(0, BigDecimal.ROUND_DOWN));
+                I18nEnum.FINANCIAL_LESS_TIP.getMsg() + financialProductDO.getTopAmount().setScale(0, BigDecimal.ROUND_DOWN));
             return response;
         }
         UserDO userDO = userService.get(userId);
         if(userDO==null){
             //logger.error("【购买理财】未查询到用户信息，request={}，userId={}", JsonUtils.toJSONString(request), userId);
-            response = BaseResponse.fail("Please login first");
+            response = BaseResponse.fail(I18nEnum.NO_LOGIN.getMsg());
             return response;
         }
         if(userDO.getBalance().compareTo(request.getAmount())<0){
             //logger.error("【购买理财】购买金额超出余额，request={}，user={}", JsonUtils.toJSONString(request), JsonUtils.toJSONString(userDO));
-            response = BaseResponse.fail("Your balance is insufficient, Please recharge first");
+            response = BaseResponse.fail(I18nEnum.BALANCE_INSUFFICIENT_FAIL.getMsg());
             return response;
         }
         //起购vip等级
         if(userDO.getMemberLevel()<financialProductDO.getStartVip()){
-            response = BaseResponse.fail("The product need Member VIP"
-                    +financialProductDO.getStartVip()
-                    +" and higher, Please purchase Member VIP first"
-            );
+            response = BaseResponse.fail(String.format(I18nEnum.PRODUCT_VIP_MEMBER_LOWER_FAIL.getMsg(), financialProductDO.getStartVip()));
             return response;
         }
         //产品最大限购额
@@ -165,13 +164,8 @@ public class FinancialController extends BaseController {
             BigDecimal totalAmount = orderDOList.stream().map(FinancialOrderDO::getAmount).reduce(BigDecimal.ZERO, BigDecimal::add);
             BigDecimal thisAmount = totalAmount.add(request.getAmount());
             if(thisAmount.compareTo(financialProductDO.getTotalAmount()) > 0){
-                response = BaseResponse.fail(
-                        financialProductDO.getName()
-                        + " total purchase limit is "
-                        + financialProductDO.getTotalAmount().setScale(0, BigDecimal.ROUND_DOWN)
-                        +", You have purchased "
-                        + totalAmount +
-                        ", Please modify your input amount");
+                response = BaseResponse.fail(financialProductDO.getName()
+                        + I18nEnum.PRODUCT_TOTAL_PURCHASE_FAIL.getMsg());
                 return response;
             }
         }

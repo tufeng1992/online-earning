@@ -3,6 +3,7 @@ package com.powerboot.filter;
 import com.powerboot.base.BaseResponse;
 import com.powerboot.common.JsonUtils;
 import com.powerboot.consts.DictConsts;
+import com.powerboot.consts.I18nEnum;
 import com.powerboot.consts.TipConsts;
 import com.powerboot.utils.RedisUtils;
 import java.io.IOException;
@@ -74,7 +75,7 @@ public class OnePieceFilter implements Filter {
             if (StringUtils.isNotBlank(ipBlackJson)) {
                 List<String> ipBlackList = Arrays.asList(ipBlackJson.split("[|]"));
                 if (ipBlackList.contains(userIp)) {
-                    this.outPrint(httpServletResponse, TipConsts.IP_BLACK_LIST_TIP);
+                    this.outPrint(httpServletResponse, I18nEnum.IP_BLACK_LIST_TIP.getMsg());
                     return;
                 }
             }
@@ -90,13 +91,13 @@ public class OnePieceFilter implements Filter {
                     List<String> ipList = Arrays.asList(swaggerIPList.split(","));
                     //是否在白名单中
                     if (!ipList.contains(userIp)) {
-                        this.outPrint(httpServletResponse, TipConsts.IP_BLACK_LIST_TIP);
+                        this.outPrint(httpServletResponse, I18nEnum.IP_BLACK_LIST_TIP.getMsg());
                     }
                 } else {
-                    this.outPrint(httpServletResponse, TipConsts.IP_BLACK_LIST_TIP);
+                    this.outPrint(httpServletResponse, I18nEnum.IP_BLACK_LIST_TIP.getMsg());
                 }
             } else {
-                this.outPrint(httpServletResponse, TipConsts.IP_BLACK_LIST_TIP);
+                this.outPrint(httpServletResponse, I18nEnum.IP_BLACK_LIST_TIP.getMsg());
             }
         }
 

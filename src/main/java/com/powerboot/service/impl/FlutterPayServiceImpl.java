@@ -2,6 +2,8 @@ package com.powerboot.service.impl;
 
 import com.powerboot.base.BaseResponse;
 import com.powerboot.config.BaseException;
+import com.powerboot.consts.I18nEnum;
+import com.powerboot.consts.TipConsts;
 import com.powerboot.domain.PayDO;
 import com.powerboot.domain.UserDO;
 import com.powerboot.enums.PayEnums;
@@ -142,7 +144,7 @@ public class FlutterPayServiceImpl implements PaymentService {
             return BaseResponse.success(paymentResult);
         } catch (Exception e) {
             logger.error("@@@@@@  flutter 支付异常 ",e);
-            throw new BaseException("The payment system is being upgraded, please wait for 1 hour");
+            throw new BaseException(I18nEnum.PAYMENT_SYSTEM_FAIL.getMsg());
         }
     }
 
@@ -162,7 +164,7 @@ public class FlutterPayServiceImpl implements PaymentService {
         if ("success".equalsIgnoreCase(status)) {
             check = true;
         } else {
-            throw new BaseException("The payment system is being upgraded, please wait for 1 hour");
+            throw new BaseException(I18nEnum.PAYMENT_SYSTEM_FAIL.getMsg());
         }
         return check;
     }

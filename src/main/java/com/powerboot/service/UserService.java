@@ -1,10 +1,13 @@
 package com.powerboot.service;
 
+import com.google.common.collect.Lists;
+import com.google.common.collect.Maps;
 import com.powerboot.base.BaseResponse;
 import com.powerboot.common.ErrorEnums;
 import com.powerboot.config.BaseException;
 import com.powerboot.consts.CacheConsts;
 import com.powerboot.consts.DictConsts;
+import com.powerboot.consts.I18nEnum;
 import com.powerboot.consts.TipConsts;
 import com.powerboot.dao.BalanceDao;
 import com.powerboot.dao.UserDao;
@@ -82,7 +85,7 @@ public class UserService {
     public UserDO get(Long id) {
         UserDO userDO = userDao.get(id);
         if (userDO == null) {
-            throw new BaseException("-1", "Login timeout, please login again!");
+            throw new BaseException(I18nEnum.LOGIN_TIMEOUT_FAIL.getMsg());
         }
         return userDO;
     }
@@ -143,23 +146,22 @@ public class UserService {
             ipRegisterMaxCount = 8;
         }
         if (ipRegisterMaxCount.compareTo(getRegisterIpCount(ip)) < 0) {
-            return BaseResponse.fail(TipConsts.IP_REGISTER_COUNT);
+            return BaseResponse.fail(I18nEnum.IP_REGISTER_COUNT.getMsg());
         }
         String verificationCode = registerRequest.getVerificationCode();
         //验证码校验
         if (org.apache.commons.lang.StringUtils.isBlank(registerRequest.getMobile())) {
-            return BaseResponse.fail(TipConsts.MOBILE_NOT_EMPTY);
+            return BaseResponse.fail(I18nEnum.MOBILE_NOT_EMPTY.getMsg());
         }
         int index = registerRequest.getMobile().length();
 
-        if (index != 10 &&
-            (index != 13 || !registerRequest.getMobile().substring(0, 3).equals(MobileUtil.NIGERIA_MOBILE_PREFIX))) {
-            return BaseResponse.fail("Wrong mobile number.");
+        if (!MobileUtil.isValidMobile(registerRequest.getMobile())) {
+            return BaseResponse.fail(I18nEnum.MOBILE_NUMBER_FAIL.getMsg());
         }
-        registerRequest.setMobile(MobileUtil.NIGERIA_MOBILE_PREFIX + registerRequest.getMobile().substring(index - 10));
+        registerRequest.setMobile(MobileUtil.THAILAND_MOBILE_PREFIX + registerRequest.getMobile().substring(index - 10));
         String mobile = registerRequest.getMobile();
-        if (!MobileUtil.isNigeriaMobile(mobile)) {
-            return BaseResponse.fail(TipConsts.MOBILE_ERROR);
+        if (!MobileUtil.isValidMobile(mobile)) {
+            return BaseResponse.fail(I18nEnum.MOBILE_ERROR.getMsg());
         }
         //判断手机号是否已注册
         UserDO existence = userDao.getByMobileAndAppId(mobile, registerRequest.getAppId());
@@ -172,7 +174,7 @@ public class UserService {
         String value = RedisUtils.getValue(codeKey, String.class);
         //校验验证码正确性
         if (!verificationCode.equals(value)) {
-            return BaseResponse.fail(TipConsts.OTP_MISMATCH);
+            return BaseResponse.fail(I18nEnum.OTP_MISMATCH.getMsg());
         }
 
         UserDO userDO = new UserDO();
@@ -235,7 +237,7 @@ public class UserService {
         }
         int saveSuccess = userDao.save(userDO);
         if (saveSuccess <= 0) {
-            return BaseResponse.fail("register fall,please try again!");
+            return BaseResponse.fail(I18nEnum.REGISTER_FAIL.getMsg());
         }
         commonExecutor.execute(()->{
             Date now = new Date();
@@ -280,25 +282,24 @@ public class UserService {
         String verificationCode = request.getVerificationCode();
         String appId = request.getAppId();
         int index = request.getMobile().length();
-        if (index != 10 &&
-                (index != 13 || !request.getMobile().substring(0,3).equals(MobileUtil.NIGERIA_MOBILE_PREFIX))){
-            return BaseResponse.fail("Wrong mobile number.");
+        if (!MobileUtil.isValidMobile(request.getMobile())){
+            return BaseResponse.fail(I18nEnum.MOBILE_NUMBER_FAIL.getMsg());
         }
-        request.setMobile(MobileUtil.NIGERIA_MOBILE_PREFIX + request.getMobile().substring(index - 10));
+        request.setMobile(MobileUtil.THAILAND_MOBILE_PREFIX + request.getMobile().substring(index - 10));
         String mobile = request.getMobile();
 
         String codeKey = String.format(CacheConsts.VER_CODE, mobile, appId);
         String value = RedisUtils.getValue(codeKey, String.class);
         if (!verificationCode.equals(value)) {
-            return BaseResponse.fail(TipConsts.OTP_MISMATCH);
+            return BaseResponse.fail(I18nEnum.OTP_MISMATCH.getMsg());
         }
         UserDO userDO = userDao.getByMobileAndAppId(mobile, appId);
         if (userDO == null) {
-            return BaseResponse.fail(TipConsts.OTP_MISMATCH);
+            return BaseResponse.fail(I18nEnum.OTP_MISMATCH.getMsg());
         }
         userDO.setPassword(request.getPassword());
         if (userDao.update(userDO) <= 0) {
-            return BaseResponse.fail("modify password fall,please try again!");
+            return BaseResponse.fail(I18nEnum.MODIFY_PASSWORD_FAIL.getMsg());
         }
         //验证码校验完删除缓存验证码
         RedisUtils.remove(codeKey);
@@ -362,16 +363,38 @@ public class UserService {
         return userDao.getAllVIP();
     }
 
-    public Integer getUserCount(Integer role, LocalDate startDate, LocalDate endDate) {
-        return userDao.getUserCount(role, startDate, endDate, null, null);
+    /**
+     * 根据saleId获取所有VIP
+     * @param map
+     * @return
+     */
+    public List<UserDO> getAllVIPBySale(Map<String, Object> map) {
+        return userDao.getAllVIPBySale(map);
     }
 
-    public Integer getUserReferral(Integer role, LocalDate startDate, LocalDate endDate) {
-        return userDao.getUserCount(role, startDate, endDate, 1, null);
+    /**
+     * 根据saleId获取所有VIP
+     * @return
+     */
+    public List<UserDO> getAllSaleId() {
+        return userDao.getAllSaleId();
     }
 
-    public Integer getSaleReferral(Integer role, LocalDate startDate, LocalDate endDate) {
-        return userDao.getUserCount(role, startDate, endDate, null, 1);
+
+    public Integer getUserCount(Integer role, LocalDate startDate, LocalDate endDate, Long saleId) {
+        return userDao.getUserCount(role, startDate, endDate, null, null, saleId);
+    }
+
+    public Integer count(Map<String, Object> params) {
+        return userDao.count(params);
+    }
+
+    public Integer getUserReferral(Integer role, LocalDate startDate, LocalDate endDate, Long saleId) {
+        return userDao.getUserCount(role, startDate, endDate, 1, null, saleId);
+    }
+
+    public Integer getSaleReferral(Integer role, LocalDate startDate, LocalDate endDate, Long saleId) {
+        return userDao.getUserCount(role, startDate, endDate, null, 1, saleId);
     }
 
     /**
@@ -413,4 +436,15 @@ public class UserService {
         return vipList.size();
     }
 
+    /**
+     * 根据银行账户查询
+     * @param accountNumber
+     * @return
+     */
+    public List<UserDO> selectByAccountNumber(String accountNumber) {
+        if (StringUtils.isEmpty(accountNumber)) {
+            return Lists.newArrayList();
+        }
+        return userDao.getUserByAccountNumber(accountNumber);
+    }
 }

@@ -11,6 +11,7 @@ import okhttp3.*;
 import okhttp3.logging.HttpLoggingInterceptor;
 import org.apache.tomcat.util.codec.binary.StringUtils;
 import org.springframework.util.CollectionUtils;
+import springfox.documentation.spring.web.json.Json;
 
 import java.io.IOException;
 import java.util.Map;
@@ -34,9 +35,9 @@ public final class HttpUtil {
                 if (HTTP_CLIENT == null) {
                     HttpLoggingInterceptor loggingInterceptor = newLoggingInterceptor();
                     HTTP_CLIENT = new OkHttpClient.Builder()
-                            .connectTimeout(5, TimeUnit.SECONDS)
-                            .readTimeout(5, TimeUnit.SECONDS)
-                            .writeTimeout(5, TimeUnit.SECONDS)
+                            .connectTimeout(60, TimeUnit.SECONDS)
+                            .readTimeout(60, TimeUnit.SECONDS)
+                            .writeTimeout(60, TimeUnit.SECONDS)
                             .addInterceptor(loggingInterceptor)
                             .build();
                 }
@@ -63,6 +64,21 @@ public final class HttpUtil {
 
     public static Request newPostRequest(String url, RequestBody body) {
         return newPostRequest(url, null, null, body);
+    }
+
+    public static Optional<JSONObject> invokePostRequest(String url, RequestBody body ) {
+//        try (Response response = invoke(newPostRequest(url, body))) {
+//            if (response.isSuccessful()) {
+//                byte[] bytes = response.body().bytes();
+//                if (bytes == null) {
+//                    return Optional.empty();
+//                }
+//                return Optional.ofNullable(mapper.apply(bytes));
+//            }
+//            return Optional.empty();
+//        }
+        Request request = newPostRequest(url, body);
+        return invoke4JsonObj(request);
     }
 
     public static Request newPostRequest(String url, Map<String, String> queryParams, RequestBody body) {
