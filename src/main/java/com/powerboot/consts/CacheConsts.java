@@ -33,6 +33,16 @@ public class CacheConsts {
     //封盘提现
     public static final String ST_WITHDRAWAL = "ST_WITHDRAWAL:%s";
 
+    /**
+     * 用户邀请数量
+     */
+    public static final String USER_INVITE_COUNT = "USER_INVITE_COUNT:%s";
+
+    /**
+     * 用户已获邀请奖励次数
+     */
+    public static final String USER_INVITE_REWARD_COUNT = "USER_INVITE_REWARD_COUNT:%s";
+
     //用户每日提现key
     public static String getTodayRechargeKey(Long userId){
         return DateUtils.format(new Date(),DateUtils.SIMPLE_DATEFORMAT_YMD) + userId;

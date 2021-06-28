@@ -1,5 +1,7 @@
 package com.powerboot.dao;
 
+import com.baomidou.mybatisplus.mapper.BaseMapper;
+import com.powerboot.domain.MemberInfoDO;
 import com.powerboot.domain.UserDO;
 
 import java.math.BigDecimal;
@@ -14,7 +16,7 @@ import org.apache.ibatis.annotations.Param;
  * 用户表
  */
 @Mapper
-public interface UserDao {
+public interface UserDao extends BaseMapper<UserDO> {
 
     UserDO get(Long id);
 
@@ -101,4 +103,6 @@ public interface UserDao {
     BigDecimal getUserRechargeAmount(Long id);
 
      Integer count(Map<String, Object> params);
+
+    List<UserDO> list(Map<String, Object> params);
 }

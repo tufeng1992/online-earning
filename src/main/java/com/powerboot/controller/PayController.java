@@ -2,7 +2,9 @@ package com.powerboot.controller;
 
 import com.powerboot.base.BaseResponse;
 import com.powerboot.consts.*;
+import com.powerboot.dao.MemberInfoDao;
 import com.powerboot.domain.BalanceDO;
+import com.powerboot.domain.MemberInfoDO;
 import com.powerboot.domain.PayDO;
 import com.powerboot.domain.UserDO;
 import com.powerboot.enums.BalanceTypeEnum;
@@ -48,6 +50,9 @@ public class PayController extends BaseController {
     @Autowired
     private UserService userService;
 
+    @Autowired
+    private MemberInfoDao memberInfoDao;
+
     private static StringBuilder rechargeDoc = new StringBuilder();
     static {
         rechargeDoc.append("");
@@ -76,13 +81,16 @@ public class PayController extends BaseController {
         if (RechargeCheckEnum.CLOSE.getCode().equals(userDO.getRechargeCheck())) {
             return BaseResponse.fail(RedisUtils.getString(DictConsts.PAY_CLOSE_USER_CONTENT));
         }
-
+        //充值金额列表
+        String rechargeAmountListStr = RedisUtils.getString(DictConsts.RECHARGE_AMOUNT_LIST);
+        String[] rechargeAmountArray = rechargeAmountListStr.split("-");
+        String minAmount = rechargeAmountArray[0];
         if (param.getType() == null || BigDecimal.ZERO.compareTo(param.getPayAmount()) >= 0) {
-            return BaseResponse.fail(I18nEnum.RECHARGE_LOW_FAIL.getMsg());
+            return BaseResponse.fail(String.format(I18nEnum.RECHARGE_LOW_FAIL.getMsg(), minAmount));
         }
 
-        if (param.getType() == 1 && new BigDecimal("300").compareTo(param.getPayAmount()) > 0) {
-            return BaseResponse.fail(I18nEnum.RECHARGE_LOW_FAIL.getMsg());
+        if (param.getType() == 1 && new BigDecimal(minAmount).compareTo(param.getPayAmount()) > 0) {
+            return BaseResponse.fail(String.format(I18nEnum.RECHARGE_LOW_FAIL.getMsg(), minAmount));
         }
         //校验充值规则
         if (param.getType() == 1) {
@@ -117,7 +125,14 @@ public class PayController extends BaseController {
         if (checkResult.isFail()){
             return checkResult;
         }
-
+        if (param.getType().equals(1)) {
+            if (StringUtils.isEmpty(userDO.getAccountNumber())) {
+                return BaseResponse.fail(I18nEnum.PAY_BIND_CARD_FAIL.getCode(), I18nEnum.PAY_BIND_CARD_FAIL.getMsg());
+            }
+            if (StringUtils.isEmpty(userDO.getName())) {
+                return BaseResponse.fail(I18nEnum.PAY_NAME_FAIL.getCode(), I18nEnum.PAY_NAME_FAIL.getMsg());
+            }
+        }
         if (!param.getType().equals(1)) {
             int childFirstRechargedCount = 9999;
             String createVipChildLimitSwitch = RedisUtils.getString(DictConsts.CREATE_VIP_CHILD_LIMIT_SWITCH);
@@ -127,29 +142,40 @@ public class PayController extends BaseController {
                 childFirstRechargedCount = userDOList.size();
             }
             BigDecimal VIPAmount;
-            if (param.getType().equals(2)) {
-                if (childFirstRechargedCount < 5) {
-                    return BaseResponse.fail(I18nEnum.VIP_UPDATE_COUNT_FAIL.getMsg());
-                }
-                VIPAmount = RedisUtils.getValue(DictAccount.VIP2_CHARGE, BigDecimal.class);
-            } else if (param.getType().equals(3)) {
-                if (childFirstRechargedCount < 10) {
-                    return BaseResponse.fail(I18nEnum.VIP_UPDATE_COUNT_FAIL.getMsg());
-                }
-                VIPAmount = RedisUtils.getValue(DictAccount.VIP3_CHARGE, BigDecimal.class);
-            } else if (param.getType().equals(4)) {
-                if (childFirstRechargedCount < 15) {
-                    return BaseResponse.fail(I18nEnum.VIP_UPDATE_COUNT_FAIL.getMsg());
-                }
-                VIPAmount = RedisUtils.getValue(DictAccount.VIP4_CHARGE, BigDecimal.class);
-            } else if (param.getType().equals(5)) {
-                if (childFirstRechargedCount < 20) {
-                    return BaseResponse.fail(I18nEnum.VIP_UPDATE_COUNT_FAIL.getMsg());
-                }
-                VIPAmount = RedisUtils.getValue(DictAccount.VIP5_CHARGE, BigDecimal.class);
-            } else {
+            MemberInfoDO m = new MemberInfoDO();
+            m.setType(param.getType());
+            MemberInfoDO memberInfoDO = memberInfoDao.selectOne(m);
+            if (memberInfoDO == null) {
                 return BaseResponse.fail(I18nEnum.AMOUNT_FAIL.getMsg());
             }
+            if (childFirstRechargedCount < memberInfoDO.getUpLimit()) {
+                return BaseResponse.fail(I18nEnum.VIP_UPDATE_COUNT_FAIL.getMsg());
+            }
+            VIPAmount = memberInfoDO.getAmount();
+
+//            if (param.getType().equals(2)) {
+//                if (childFirstRechargedCount < 5) {
+//                    return BaseResponse.fail(I18nEnum.VIP_UPDATE_COUNT_FAIL.getMsg());
+//                }
+//                VIPAmount = RedisUtils.getValue(DictAccount.VIP2_CHARGE, BigDecimal.class);
+//            } else if (param.getType().equals(3)) {
+//                if (childFirstRechargedCount < 10) {
+//                    return BaseResponse.fail(I18nEnum.VIP_UPDATE_COUNT_FAIL.getMsg());
+//                }
+//                VIPAmount = RedisUtils.getValue(DictAccount.VIP3_CHARGE, BigDecimal.class);
+//            } else if (param.getType().equals(4)) {
+//                if (childFirstRechargedCount < 15) {
+//                    return BaseResponse.fail(I18nEnum.VIP_UPDATE_COUNT_FAIL.getMsg());
+//                }
+//                VIPAmount = RedisUtils.getValue(DictAccount.VIP4_CHARGE, BigDecimal.class);
+//            } else if (param.getType().equals(5)) {
+//                if (childFirstRechargedCount < 20) {
+//                    return BaseResponse.fail(I18nEnum.VIP_UPDATE_COUNT_FAIL.getMsg());
+//                }
+//                VIPAmount = RedisUtils.getValue(DictAccount.VIP5_CHARGE, BigDecimal.class);
+//            } else {
+//                return BaseResponse.fail(I18nEnum.AMOUNT_FAIL.getMsg());
+//            }
             if (VIPAmount == null) {
                 return BaseResponse.fail(I18nEnum.AMOUNT_FAIL.getMsg());
             }
@@ -226,6 +252,13 @@ public class PayController extends BaseController {
         return BaseResponse.success(payService.getRechargeByUserId(userId));
     }
 
+    @ApiOperation("获取 充值 记录")
+    @PostMapping("/balance")
+    public BaseResponse<List<BalanceDO>> getBalance(@RequestBody @Valid BaseRequest request) {
+        Long userId = getUserId(request);
+        return BaseResponse.success(balanceService.listByTypeAndUserId(userId, BalanceTypeEnum.G.getCode()));
+    }
+
     @ApiOperation("获取 提现 记录")
     @PostMapping("/withdraw")
     public BaseResponse<List<BalanceDO>> getWithdraw(@RequestBody @Valid BaseRequest request) {
@@ -298,9 +331,10 @@ public class PayController extends BaseController {
             rechargeAmount.add(Integer.parseInt(amount));
             rechargeAmountText.add(amount);
         }
+        String rechargeInputText = I18nEnum.RECHARGE_INPUT_TEXT.getMsg();
         rechargeAmountDoc.setRechargeAmount(rechargeAmount);
         rechargeAmountDoc.setRechargeAmountText(rechargeAmountText);
-        rechargeAmountDoc.setRechargeInputText("Enter "+minAmount+" and above");
+        rechargeAmountDoc.setRechargeInputText(String.format(rechargeInputText, minAmount));
         rechargeAmountDoc.setRechargeInputTextColor(RedisUtils.getString(DictConsts.RECHARGE_AMOUNT_TEXT_COLOR));
         rechargeAmountDoc.setMinimumRechargeAmount(new BigDecimal(minAmount));
         rechargeAmountDoc.setTips(RedisUtils.getString(DictConsts.RECHARGE_AMOUNT_TIPS));

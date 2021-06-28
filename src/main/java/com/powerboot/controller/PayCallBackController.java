@@ -20,6 +20,13 @@ import com.powerboot.utils.gms.model.GmsPayOutNotify;
 import com.powerboot.utils.grecash.contants.GrecashConst;
 import com.powerboot.utils.grecash.model.GrecashPayInCallBack;
 import com.powerboot.utils.grecash.model.PayOutNotifyReq;
+import com.powerboot.utils.sepro.constants.SeproConst;
+import com.powerboot.utils.sepro.model.SeproPayInNotify;
+import com.powerboot.utils.sepro.model.SeproPayOutNotify;
+import com.powerboot.utils.thkingz.model.ThkingzBaseRes;
+import com.powerboot.utils.thkingz.model.ThkingzCreatePayOutRes;
+import com.powerboot.utils.thkingz.model.ThkingzPayInCallback;
+import com.powerboot.utils.thkingz.model.ThkingzPayOutCallback;
 import com.powerboot.utils.wallyt.constants.WallytConst;
 import com.powerboot.utils.wallyt.domain.dto.CreateTransferNotifyReq;
 import com.powerboot.utils.wallyt.domain.dto.WallyBaseResponseObject;
@@ -36,6 +43,7 @@ import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.validation.Valid;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
@@ -238,11 +246,18 @@ public class PayCallBackController extends BaseController{
     public String grecashPayInCallBack(@RequestBody GrecashPayInCallBack grecashPayInCallBack) {
         logger.info("grecash 支付回调：grecashPayInCallBack : {}", grecashPayInCallBack);
         PayDO payDO = payService.getOrderNo(grecashPayInCallBack.getMerchantOrderId());
-        if (null != payDO) {
+        if (null != payDO && !payDO.getStatus().equals(PayEnums.PayStatusEnum.PAID.getCode())) {
             payDO.setThirdNo(grecashPayInCallBack.getPayorderId());
-            payDO.setThirdStatus(grecashPayInCallBack.getStatus() + "");
+            payDO.setThirdStatus(grecashPayInCallBack.getStatus().toString());
+            if (GrecashConst.PAY_STATUS_1 == grecashPayInCallBack.getStatus()) {
+                payDO.setStatus(PayEnums.PayStatusEnum.PAID.getCode());
+            } else if (GrecashConst.PAY_STATUS_0 == grecashPayInCallBack.getStatus()) {
+                //do nothing
+            } else {
+                payDO.setStatus(PayEnums.PayStatusEnum.FAIL.getCode());
+            }
             payService.update(payDO);
-            payService.getByOrderNo(payDO.getOrderNo());
+            payService.payInComplete(payDO);
             return "SUCCESS";
         }
         return "FAIL";
@@ -319,6 +334,93 @@ public class PayCallBackController extends BaseController{
             payDO.setStatus(PayEnums.PayStatusEnum.FAIL.getCode());
             payService.payoutFail(payDO, PaymentServiceEnum.GMS.getBeanName());
         }
+        return "success";
+    }
+
+    @ApiOperation("sepro 支付回调")
+    @PostMapping("/sepro/payIn")
+    @Transactional(rollbackFor = Exception.class)
+    public String seproPayInCallBack(SeproPayInNotify seproPayInNotify) {
+        logger.info("sepro 支付回调：seproPayInCallBack : {}", seproPayInNotify);
+        PayDO payDO = payService.getOrderNo(seproPayInNotify.getMchOrderNo());
+        if (null != payDO) {
+            payDO.setThirdNo(seproPayInNotify.getOrderNo());
+            payDO.setThirdStatus(seproPayInNotify.getTradeResult());
+            if (SeproConst.TRADE_RES_1.equalsIgnoreCase(seproPayInNotify.getTradeResult())) {
+                payDO.setStatus(PayEnums.PayStatusEnum.PAID.getCode());
+            } else {
+                payDO.setStatus(PayEnums.PayStatusEnum.FAIL.getCode());
+            }
+            payService.update(payDO);
+            payService.payInComplete(payDO);
+            return "success";
+        }
+        return "FAIL";
+    }
+
+    @ApiOperation("sepro 提现回调")
+    @PostMapping("/sepro/payOut")
+    public String seproPayoutCallBack(SeproPayOutNotify seproPayOutNotify) {
+        logger.info("sepro 提现回调：{}", seproPayOutNotify);
+        PayDO payDO = payService.getOrderNo(seproPayOutNotify.getMerTransferId());
+        if (payDO == null){
+            return "order is not exist";
+        }
+        logger.info("sepro 提现回调,用户ID--{}：{}" ,payDO.getUserId(), seproPayOutNotify);
+        payDO.setThirdStatus(seproPayOutNotify.getTradeResult());
+        payDO.setThirdNo(seproPayOutNotify.getTradeNo());
+        if (SeproConst.TRADE_RES_1.equalsIgnoreCase(seproPayOutNotify.getTradeResult())){
+            //成功
+            payDO.setStatus(PayEnums.PayStatusEnum.PAID.getCode());
+            payService.payoutSuccess(payDO, PaymentServiceEnum.SEPRO.getBeanName());
+        }  else if (SeproConst.TRADE_RES_0.equalsIgnoreCase(seproPayOutNotify.getTradeResult())
+                || SeproConst.TRADE_RES_4.equalsIgnoreCase(seproPayOutNotify.getTradeResult())) {
+            //do noting
+        } else {
+            //失败
+            payDO.setStatus(PayEnums.PayStatusEnum.FAIL.getCode());
+            payService.payoutFail(payDO, PaymentServiceEnum.SEPRO.getBeanName());
+        }
+        return "success";
+    }
+
+
+    @ApiOperation("thkingz 支付回调")
+    @PostMapping("/thkingz/payIn")
+    @Transactional(rollbackFor = Exception.class)
+    public String thkingzPayInCallBack(ThkingzPayInCallback thkingzPayInCallback) {
+        logger.info("thkingz 支付回调：thkingzPayInCallBack : {}", thkingzPayInCallback);
+        PayDO payDO = payService.getOrderNo(thkingzPayInCallback.getOut_trade_no());
+        if (null != payDO) {
+            payService.getByOrderNo(payDO.getOrderNo());
+            return "SUCCESS";
+        }
+        return "FAIL";
+    }
+
+    @ApiOperation("thkingz 提现回调")
+    @PostMapping("/thkingz/payOut")
+    public String thkingzPayoutCallBack(HttpServletRequest request) {
+        request.getParameterMap().forEach((k, v) -> logger.info("k:" + k + ":" + Arrays.toString(v)));
+        ThkingzPayOutCallback thkingzBaseRes = new ThkingzPayOutCallback();
+        thkingzBaseRes.setCode(request.getParameter("code"));
+        thkingzBaseRes.setMsg(request.getParameter("msg"));
+
+        ThkingzCreatePayOutRes thkingzCreatePayOutRes = new ThkingzCreatePayOutRes();
+        thkingzCreatePayOutRes.setAppid(request.getParameter("data[appid]"));
+        thkingzCreatePayOutRes.setOrder_no(request.getParameter("data[order_no]"));
+        thkingzCreatePayOutRes.setOut_trade_no(request.getParameter("data[out_trade_no]"));
+        thkingzCreatePayOutRes.setAccount(request.getParameter("data[account]"));
+        thkingzCreatePayOutRes.setBank_type(request.getParameter("data[bank_type]"));
+        thkingzCreatePayOutRes.setMoney(request.getParameter("data[money]"));
+        thkingzBaseRes.setData(thkingzCreatePayOutRes);
+        logger.info("thkingz 提现回调：{}", thkingzBaseRes);
+        PayDO payDO = payService.getOrderNo(thkingzCreatePayOutRes.getOut_trade_no());
+        if (payDO == null){
+            return "order is not exist";
+        }
+        logger.info("thkingz 提现回调,用户ID--{}：{}" ,payDO.getUserId(), thkingzCreatePayOutRes);
+        payService.getByPayOutOrder(payDO.getOrderNo());
         return "success";
     }
 

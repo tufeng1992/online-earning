@@ -283,7 +283,8 @@ public class PayService {
      * @param now
      * @param orderNo
      */
-    private void addParentBalance(int parentLevel, UserDO userDO, Date now, String orderNo) {
+    public void addParentBalance(Integer parentLevel, UserDO userDO, Date now, String orderNo) {
+        logger.info("添加上级返现:parentLevel:{}, parentId:{}, orderNo:{}", parentLevel, userDO.getParentId(), orderNo);
         UserDO parentUser = userService.getUser(userDO.getParentId());
         if (null == parentUser || parentLevel == 4) {
             return;
@@ -294,6 +295,7 @@ public class PayService {
         parent.setAmount(parentAmount);
         parent.setType(BalanceTypeEnum.C.getCode());
         parent.setUserId(parentUser.getId());
+        parent.setRelationUserId(userDO.getId());
         parent.setWithdrawAmount(BigDecimal.ZERO);
         parent.setServiceFee(BigDecimal.ZERO);
         parent.setStatus(StatusTypeEnum.SUCCESS.getCode());
@@ -310,7 +312,7 @@ public class PayService {
      * @param parentLevel
      * @return
      */
-    private BigDecimal getParentAmount(int parentLevel) {
+    private BigDecimal getParentAmount(Integer parentLevel) {
         BigDecimal parentAmount = null;
         if (1 == parentLevel) {
             parentAmount = new BigDecimal(RedisUtils.getString(DictConsts.FIRST_RECHARGE_PARENT_AMOUNT));
@@ -475,7 +477,7 @@ public class PayService {
         //获取支付bean
         String payBeanName = PaymentServiceEnum.getBeanNameByCode(payDO.getPayChannelBranch());
         //找到支付实现
-        PaymentService paymentService = (PaymentService) SpringContextUtils.getBean(payBeanName);
+        PaymentService paymentService = SpringContextUtils.getBean(payBeanName);
         QueryPayOutParam queryPayOutParam = new QueryPayOutParam();
         queryPayOutParam.setLocalOrderNo(orderNo);
         queryPayOutParam.setThirdOrderNo(payDO.getThirdNo());

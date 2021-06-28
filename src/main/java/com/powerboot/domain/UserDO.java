@@ -1,5 +1,7 @@
 package com.powerboot.domain;
 
+import com.baomidou.mybatisplus.annotations.TableField;
+import com.baomidou.mybatisplus.annotations.TableName;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.powerboot.utils.LocalDateUtil;
@@ -18,6 +20,7 @@ import java.util.Date;
  */
 @Data
 @ApiModel(value = "用户基础信息")
+@TableName("user")
 public class UserDO implements Serializable {
 	private static final long serialVersionUID = 1L;
 	
@@ -86,6 +89,7 @@ public class UserDO implements Serializable {
 	@ApiModelProperty(value = "razorpay联系人id")
 	private String contactsId;
 	@ApiModelProperty(value = "razorpay联系人虚拟资金账户id")
+	@TableField("fundAccount_id")
 	private String fundAccountId;
 	@ApiModelProperty(value = "是否已完成首冲 0-未完成 1-已完成")
 	private Integer firstRecharge;
@@ -169,6 +173,21 @@ public class UserDO implements Serializable {
 	 */
 	@ApiModelProperty(value = "银行代码")
 	private String bankCode;
+
+	/**
+	 * 用户联系销售人员id
+	 */
+	private Long contactSaleId;
+
+	/**
+	 * 注册sdk类型
+	 */
+	private String sdkType;
+
+	/**
+	 * 是否已完成刷单 0-未完成 1-已完成
+	 */
+	private Integer firstTask;
 
 	public String getTeamFlag() {
 		return teamFlag;

@@ -32,6 +32,10 @@ public class PaymentTimeoutJob {
 
     @Scheduled(fixedRate = 600 * 1000, initialDelay = 10 * 1000)
     public void doGetOrderStatus() {
+        String checkSwitch = RedisUtils.getString(DictConsts.PAY_IN_CHECK_JOB_SWITCH);
+        if (StringUtils.isNotBlank(checkSwitch) && "false".equalsIgnoreCase(checkSwitch)) {
+            return;
+        }
         String ip = HostUtil.getHostIP();
         logger.info("订单支付批量处理");
         List<PayDO> list = payService.getPayinOrder();

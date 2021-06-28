@@ -246,6 +246,7 @@ public class OrderController extends BaseController {
                 balance1.setOrderNo(orderDO.getOrderNumber());
                 balance1.setType(BalanceTypeEnum.B.getCode());
                 balance1.setUserId(userDO1.getId());
+                balance1.setRelationUserId(userDO.getId());
                 balance1.setStatus(2);
                 balanceService.addBalanceDetail(balance1);
 
@@ -271,6 +272,7 @@ public class OrderController extends BaseController {
                         balance2.setOrderNo(orderDO.getOrderNumber());
                         balance2.setType(BalanceTypeEnum.B.getCode());
                         balance2.setUserId(userDO2.getId());
+                        balance2.setRelationUserId(userDO.getId());
                         balance2.setStatus(2);
                         balanceService.addBalanceDetail(balance2);
                     }
@@ -295,6 +297,7 @@ public class OrderController extends BaseController {
                             balance3.setOrderNo(orderDO.getOrderNumber());
                             balance3.setType(BalanceTypeEnum.B.getCode());
                             balance3.setUserId(userDO3.getId());
+                            balance3.setRelationUserId(userDO.getId());
                             balance3.setStatus(2);
                             balanceService.addBalanceDetail(balance3);
                         }
@@ -316,6 +319,10 @@ public class OrderController extends BaseController {
         orderDO.setUpdateTime(new Date());
         orderService.save(orderDO);
 
+        if (userDO.getFirstTask() == 0) {
+            userDO.setFirstTask(1);
+            userService.updateByIdAndVersion(userDO);
+        }
         RedisUtils.setValue(param.getOrderNumber(), param.getOrderNumber(), 600);
         return response;
     }

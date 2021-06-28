@@ -4,7 +4,8 @@ public enum InviteUserStatusEnum {
 
     //1-已注册 2-完成首充
     REG(1,"已注册"),
-    RECHARGE(2,"完成首充");
+    RECHARGE(2,"完成首充"),
+    LOGINED(3,"已登录");
 
     private final Integer code;
     private final String msg;

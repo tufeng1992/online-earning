@@ -104,8 +104,10 @@ public class BalanceService {
             balanceDOS.forEach(o -> {
                 o.setStatusDesc(StatusTypeEnum.getENDescByCode(o.getStatus()));
                 PayDO p = payDOList.stream().filter( i -> o.getOrderNo().equalsIgnoreCase(i.getOrderNo())).findFirst().orElse(null);
-                o.setRemark(p.getRemark());
-                o.setThirdResponse(p.getThirdResponse());
+                if (null != p) {
+                    o.setRemark(p.getRemark());
+                    o.setThirdResponse(p.getThirdResponse());
+                }
             });
         }
 

@@ -75,7 +75,7 @@ public class GrecashPayServiceImpl implements PaymentService {
             log.info("payIn : createPayInfoOrder:{}", createPayInOrder);
             PaymentResult paymentResult = new PaymentResult();
             BaseGrecashRes res = grecashClient.createPay(payDO.getOrderNo(), payDO.getAmount(),
-                    userDO.getEmail(), userDO.getMobile());
+                    userDO.getEmail(), userDO.getMobile(), userDO.getName());
             log.info("payIn third result : {}", res);
             if (null != res && "1000".equals(res.getErrorCode())) {
                 CreatePayRes createPayRes = ((com.alibaba.fastjson.JSONObject) res.getPayorder()).toJavaObject(CreatePayRes.class);
@@ -95,10 +95,10 @@ public class GrecashPayServiceImpl implements PaymentService {
     public BaseResponse<PaymentResult> getPayoutOrder(QueryPayOutParam queryPayOutParam) {
         log.info("getPayoutOrder : queryPayOutParam:{}", queryPayOutParam);
         PaymentResult result = new PaymentResult();
-        BaseGrecashRes<CreatePayOutRes> res = grecashClient.queryTransfer(queryPayOutParam.getThirdOrderNo());
+        BaseGrecashRes res = grecashClient.queryTransfer(queryPayOutParam.getThirdOrderNo());
         log.info("getPayoutOrder : getPayoutOrder: post : {}", res);
         if (null != res && GrecashConst.SUCCESS_CODE == res.getCode()) {
-            CreatePayOutRes createPayOutRes = res.getResult();
+            CreatePayOutRes createPayOutRes = ((com.alibaba.fastjson.JSONObject) res.getResult()).toJavaObject(CreatePayOutRes.class);
             result.setThirdOrderAmount(new BigDecimal(createPayOutRes.getAmount()));
             result.setDescription(res.getInfo());
             result.setThirdOrderStatus(createPayOutRes.getStatus() + "");
@@ -121,13 +121,19 @@ public class GrecashPayServiceImpl implements PaymentService {
         log.info("payout : orderNo:{}: createPayOutOrder:{}", createPayOutOrder.getOrderNo(), createPayOutOrder);
         UserDO userDO = createPayOutOrder.getUserDO();
         PaymentResult result = new PaymentResult();
-        BaseGrecashRes<CreatePayOutRes> res = grecashClient.createTransfer(createPayOutOrder.getOrderNo(), createPayOutOrder.getAmount(),
+        BaseGrecashRes res = grecashClient.createTransfer(createPayOutOrder.getOrderNo(), createPayOutOrder.getAmount(),
                 userDO.getMobile(), userDO.getEmail(), userDO.getFirstName(), userDO.getAccountNumber(), userDO.getBankCode());
         log.info("payout : orderNo:{}: createPayOutOrder: post : {}", createPayOutOrder.getOrderNo(), res);
         if (null != res && GrecashConst.SUCCESS_CODE == res.getCode()) {
             result.setDescription(res.getInfo());
-            CreatePayOutRes createPayOutRes = res.getResult();
+            CreatePayOutRes createPayOutRes = ((com.alibaba.fastjson.JSONObject) res.getResult()).toJavaObject(CreatePayOutRes.class);
             result.setThirdOrderNo(createPayOutRes.getId());
+            if (GrecashConst.PAY_OUT_STATUS_0 != createPayOutRes.getStatus()
+                    && GrecashConst.PAY_OUT_STATUS_1 != createPayOutRes.getStatus()
+                    && GrecashConst.PAY_OUT_STATUS_3 != createPayOutRes.getStatus()
+                    && GrecashConst.PAY_OUT_STATUS_4 != createPayOutRes.getStatus()) {
+               result.setStatus(PayEnums.PayStatusEnum.FAIL.getCode());
+            }
             return BaseResponse.success(result);
         }
         return BaseResponse.fail(result.getDescription());

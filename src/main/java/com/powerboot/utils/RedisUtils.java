@@ -61,6 +61,10 @@ public class RedisUtils {
         return StringUtils.isBlank(value) ? null : Integer.parseInt(value);
     }
 
+    public static void setInteger(String key, Integer val) {
+        stringRedisTemplate.opsForValue().set(key, val.toString());
+    }
+
     public static <T> T getValue(String key, Class<T> cls) {
         String value = stringRedisTemplate.opsForValue().get(key);
         if (StringUtils.isBlank(value)) {
@@ -155,5 +159,4 @@ public class RedisUtils {
         }
         return JsonUtils.parseArray(str, clazz);
     }
-
 }

@@ -30,6 +30,8 @@ public class MemberInfoDescDto {
     @ApiModelProperty("购买vip条件描述")
     private String buyVipCondition;
 
+    private Boolean clickButton;
+
     public String getLimitAmount() {
         return limitAmount;
     }

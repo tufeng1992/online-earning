@@ -58,6 +58,11 @@ public class BalanceDO implements Serializable {
 	@ApiModelProperty(value = "销售id")
 	private Long saleId;
 
+	/**
+	 * 与订单相关用户id
+	 */
+	private Long relationUserId;
+
 	@ApiModelProperty(value = "三方请求返回")
 	private String thirdResponse;
 

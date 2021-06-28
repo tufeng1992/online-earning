@@ -53,7 +53,6 @@ public class BankRequest extends BaseRequest{
      * 银行名称
      */
     @ApiModelProperty(value = "银行名称", required = true)
-    @NotEmpty
     private String bankName;
 
     /**

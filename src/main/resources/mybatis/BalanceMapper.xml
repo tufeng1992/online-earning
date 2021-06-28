@@ -4,19 +4,23 @@
 <mapper namespace="com.powerboot.dao.BalanceDao">
 
 	<select id="get" resultType="com.powerboot.domain.BalanceDO">
-		select `id`,`order_no`,`user_id`,`amount`,`type`,`withdraw_amount`,`service_fee`,`status`,`create_time`,`update_time` from balance where id = #{value}
+		select `id`,`order_no`,`user_id`,`relation_user_id`,`amount`,`type`,`withdraw_amount`,
+		`service_fee`,`status`,`create_time`,`update_time` from balance where id = #{value}
 	</select>
 
 	<select id="getByOrderNo" resultType="com.powerboot.domain.BalanceDO">
-		select `id`,`order_no`,`user_id`,`amount`,`type`,`withdraw_amount`,`service_fee`,`status`,`create_time`,`update_time` from balance where order_no = #{orderNo}
+		select `id`,`order_no`,`user_id`,`relation_user_id`,`amount`,`type`,`withdraw_amount`,
+		`service_fee`,`status`,`create_time`,`update_time` from balance where order_no = #{orderNo}
 	</select>
 
 	<select id="list" resultType="com.powerboot.domain.BalanceDO">
-		select `id`,`order_no`,`user_id`,`amount`,`type`,`withdraw_amount`,`service_fee`,`status`,`create_time`,`update_time` from balance
+		select `id`,`order_no`,`user_id`,`relation_user_id`,`amount`,`type`,`withdraw_amount`,
+		`service_fee`,`status`,`create_time`,`update_time` from balance
         <where>  
 		  		  <if test="id != null and id != ''"> and id = #{id} </if>
 				  <if test="orderNo != null and orderNo != ''"> and order_no = #{orderNo} </if>
 		  		  <if test="userId != null and userId != ''"> and user_id = #{userId} </if>
+				<if test="relationUserId != null and relationUserId != ''"> and relation_user_id = #{relationUserId} </if>
 		  		  <if test="amount != null and amount != ''"> and amount = #{amount} </if>
 		  		  <if test="type != null and type != ''"> and type = #{type} </if>
 		  		  <if test="withdrawAmount != null and withdrawAmount != ''"> and withdraw_amount = #{withdrawAmount} </if>
@@ -39,7 +43,8 @@
 	</select>
 
 	<select id="listByDate" resultType="com.powerboot.domain.BalanceDO">
-		select `id`,`order_no`,`user_id`,`amount`,`type`,`withdraw_amount`,`service_fee`,`status`,`create_time`,`update_time` from balance
+		select `id`,`order_no`,`user_id`,`relation_user_id`,`amount`,`type`,`withdraw_amount`,`service_fee`,
+		`status`,`create_time`,`update_time` from balance
 		<where>
 			<if test="id != null"> and id = #{id} </if>
 			<if test="orderNo != null"> and order_no = #{orderNo} </if>
@@ -86,6 +91,7 @@
 		(
 		    `order_no`,
 			`user_id`,
+			`relation_user_id`,
 			`amount`, 
 			`type`, 
 			`withdraw_amount`, 
@@ -99,6 +105,7 @@
 		(
 		    #{orderNo},
 			#{userId},
+			#{relationUserId},
 			#{amount}, 
 			#{type}, 
 			#{withdrawAmount}, 

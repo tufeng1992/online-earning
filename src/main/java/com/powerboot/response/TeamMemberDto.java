@@ -4,11 +4,13 @@ import com.fasterxml.jackson.annotation.JsonFormat;
 import com.powerboot.utils.LocalDateUtil;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
+import lombok.Data;
 
 import java.math.BigDecimal;
 import java.util.Date;
 
 @ApiModel
+@Data
 public class TeamMemberDto {
     @ApiModelProperty("昵称")
     private String name;
@@ -23,6 +25,9 @@ public class TeamMemberDto {
     private BigDecimal contribution;
     @ApiModelProperty("提现金额")
     private BigDecimal withdraw;
+
+    @ApiModelProperty("注册奖励金额")
+    private BigDecimal registerAmount;
 
     public String getName() {
         return name;

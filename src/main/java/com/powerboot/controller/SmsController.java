@@ -45,11 +45,10 @@ public class SmsController extends BaseController {
 	@ApiOperation(value = "发送验证码")
 	@PostMapping
 	public BaseResponse<String> sendVerCode(HttpServletRequest request,@RequestBody @Valid SendSmsRequest param){
-		int index = param.getTel().length();
 		if (!MobileUtil.isValidMobile(param.getTel())){
 			return BaseResponse.fail(I18nEnum.MOBILE_NUMBER_FAIL.getMsg());
 		}
-		param.setTel(MobileUtil.THAILAND_MOBILE_PREFIX + param.getTel().substring(index-10));
+		param.setTel(MobileUtil.replaceValidMobile(param.getTel()));
 		String ip = getIp(request);
 
 		//风控

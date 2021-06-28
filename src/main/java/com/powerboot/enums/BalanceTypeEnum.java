@@ -16,7 +16,8 @@ public enum BalanceTypeEnum {
     J(10L,"提现失败金额返还"),
     K(11L,"系统人工增加余额"),
     L(12L,"系统人工减少余额"),
-    M(13L,"注册活动赠送");
+    M(13L,"注册活动赠送"),
+    N(14L,"下级注册活动赠送");
 
     private final Long code;
     private final String msg;

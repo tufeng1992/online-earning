@@ -1,5 +1,6 @@
 package com.powerboot.controller;
 
+import com.powerboot.base.BaseResponse;
 import com.powerboot.config.BaseException;
 import com.powerboot.consts.I18nEnum;
 import com.powerboot.consts.TipConsts;
@@ -100,7 +101,7 @@ public class BaseController {
     }
 
     public static void main(String[] args) {
-        System.out.println(CryptoUtils.encode("1"));
+        System.out.println(BaseResponse.fail(I18nEnum.PAY_BIND_CARD_FAIL.getCode(), I18nEnum.PAY_BIND_CARD_FAIL.getMsg()));
     }
 
 }

@@ -3,6 +3,7 @@ package com.powerboot.controller;
 import com.powerboot.base.BaseResponse;
 import com.powerboot.consts.DictAccount;
 import com.powerboot.consts.DictConsts;
+import com.powerboot.consts.I18nEnum;
 import com.powerboot.domain.UserDO;
 import com.powerboot.domain.WindowContentDO;
 import com.powerboot.request.BaseRequest;
@@ -86,9 +87,9 @@ public class HomeController extends BaseController {
         Integer applyAmountMax = RedisUtils.getValue(DictConsts.APPLY_AMOUNT_MAX, Integer.class);
         List<String> msgList = new ArrayList<>();
         List<String> mobileList = MobileUtil.getIndiaMobileList(applyCount);
+        String homeRunTitle = I18nEnum.HOME_RUN_TITLE.getMsg();
         for (int i = 0; i < applyCount; i++) {
-            msgList.add(mobileList.get(i) + " : ec-aww Revenue " + MobileUtil
-                .getRandom(applyAmountMin, applyAmountMax) + "฿ ");
+            msgList.add(mobileList.get(i) + " :" + String.format(homeRunTitle, MobileUtil.getRandom(applyAmountMin, applyAmountMax)));
         }
         homeResponse.setSuccessMessageList(msgList);
         homeResponse.setColor(RedisUtils.getString(DictConsts.HOME_TEXT_COLOR));

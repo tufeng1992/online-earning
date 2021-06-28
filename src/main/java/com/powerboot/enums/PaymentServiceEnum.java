@@ -18,6 +18,8 @@ public enum  PaymentServiceEnum {
     WALLYT("14", "WallytPay"),
     GRECASH("15", "GrecashPay"),
     GMS("16", "GmsPay"),
+    SEPRO("17", "SeproPay"),
+    THKINGZ("18", "ThkingzPay"),
     ;
 
     private final String code;

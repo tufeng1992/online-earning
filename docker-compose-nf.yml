@@ -1,0 +1,68 @@
+version: "3"
+services:
+  app:
+    image: online-earning:1.0.0
+    build:
+      context: .
+      dockerfile: Dockerfile
+    environment:
+      SPRING_PROFILE:
+      TZ: "Africa/Johannesburg"
+    container_name: online-earning
+    ports:
+      - 8080:8080
+    restart: always
+    volumes:
+      - /earning/logs:/earning/logs
+      - /earning/static:/earning/static
+      - /usr/share/zoneinfo:/usr/share/zoneinfo
+      - "/etc/localtime:/etc/localtime:ro"
+    links:
+      - db07:mysql
+      - redis:redis
+    depends_on:
+      - db07
+  #sudo docker run -d -p 3306:3306 --name mysql -v /vx/data/mysql:/var/lib/mysql -e MYSQL_ROOT_PASSWORD=adminadmin  -d mysql:5.7
+  db07:
+    image: mysql:5.7
+    command: mysqld --character-set-server=utf8mb4 --collation-server=utf8mb4_unicode_ci --default-time_zone='+2:00' --lower-case-table-names=1
+    container_name: mysql07-5.7
+    ports:
+      - 3307:3306
+    volumes:
+      - /earning/data/mysql:/var/lib/mysql
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: adminvxadmin
+      TZ: Africa/Johannesburg
+      MYSQL_DATABASE: online_earning
+  redis:
+    image: redis
+    ports:
+    - 6379:6379
+    restart: always
+    volumes:
+    # 持久化 目录映射
+    - "./redis/redis.conf:/usr/local/etc/redis/redis.conf"
+    - "./redis/data:/data"
+    command:
+      # 执行的命令
+      redis-server --requirepass adminvxadmin
+  nginx:
+    restart: always
+    container_name: nginx
+    image: nginx
+    ports:
+      - 80:80
+      - 443:443
+    volumes:
+      - /home/ubuntu/nginx/conf.d:/etc/nginx/conf.d
+      - /home/ubuntu/nginx/log:/var/log/nginx
+      - /home/ubuntu/nginx/wwww:/var/www
+      - /home/ubuntu/nginx/etc/letsencrypt:/etc/letsencrypt
+      - /home/ubuntu/nginx/html:/usr/share/nginx/html
+      - /home/ubuntu/nginx/cert:/etc/nginx/cert
+    links:
+      - app:app
+    depends_on:
+      - app

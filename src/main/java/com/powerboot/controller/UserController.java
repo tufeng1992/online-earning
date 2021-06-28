@@ -1,13 +1,14 @@
 package com.powerboot.controller;
 
+import cn.hutool.core.bean.BeanUtil;
+import com.baomidou.mybatisplus.mapper.Condition;
+import com.google.common.collect.Maps;
 import com.powerboot.base.BaseResponse;
 import com.powerboot.common.StringCommonUtils;
 import com.powerboot.config.BaseException;
 import com.powerboot.consts.*;
-import com.powerboot.domain.BalanceDO;
-import com.powerboot.domain.PayDO;
-import com.powerboot.domain.UserDO;
-import com.powerboot.domain.WithdrawalRecordDO;
+import com.powerboot.dao.MemberInfoDao;
+import com.powerboot.domain.*;
 import com.powerboot.enums.BalanceTypeEnum;
 import com.powerboot.enums.PayEnums;
 import com.powerboot.enums.PayEnums.SysWithdrawalCheckEnum;
@@ -29,14 +30,7 @@ import com.powerboot.response.NewMissionResponse;
 import com.powerboot.response.PayVO;
 import com.powerboot.response.pay.PaymentResult;
 import com.powerboot.response.pay.WithdrawAmountDoc;
-import com.powerboot.service.BalanceService;
-import com.powerboot.service.BlackUserService;
-import com.powerboot.service.EhcacheService;
-import com.powerboot.service.InviteLogService;
-import com.powerboot.service.PayService;
-import com.powerboot.service.PaymentService;
-import com.powerboot.service.UserService;
-import com.powerboot.service.WithdrawalRecordService;
+import com.powerboot.service.*;
 import com.powerboot.utils.DateUtils;
 import com.powerboot.utils.MobileUtil;
 import com.powerboot.utils.RedisUtils;
@@ -47,11 +41,7 @@ import io.swagger.annotations.ApiOperation;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.List;
+import java.util.*;
 import javax.validation.Valid;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
@@ -86,84 +76,11 @@ public class UserController extends BaseController {
     @Autowired
     private InviteLogService inviteLogService;
 
-    @PostMapping("/memberInfo")
-    @ApiOperation(value = "购买会员卡页面")
-    public BaseResponse<List<MemberInfoDto>> memberInfo(@RequestBody @Valid BaseRequest request) {
-        BaseResponse<List<MemberInfoDto>> response = BaseResponse.success();
-        Long userId = getUserId(request);
-        List<MemberInfoDto> list = new ArrayList<>();
+    @Autowired
+    private MemberInfoDao memberInfoDao;
 
-        //vip1
-        MemberInfoDto vip1 = new MemberInfoDto();
-        vip1.setLimitAmount(
-            new BigDecimal(RedisUtils.getValue(DictConsts.VIP1_SINGLE_MAX_WITHDRAW_QUOTA, String.class)));
-        vip1.setWithdrawTimes(
-            Integer.valueOf(RedisUtils.getValue(DictConsts.VIP1_TODAY_MAX_WITHDRAW_COUNT, String.class)));
-
-        HashMap<Integer, List<Integer>> vipInfo = ehcacheService.getVipInfo();
-        List<Integer> vip1List = vipInfo.get(1);
-        vip1.setFeeStr(vip1List.get(0) + "%/" + vip1List.get(1) + "%/" + vip1List.get(2) + "%");
-        vip1.setAmount(BigDecimal.ZERO);
-        vip1.setOrderTimes(vip1List.get(3));
-        vip1.setVip("VIP1");
-        vip1.setPicUrl("http://www.ec-aww.com/vipImages/vip1.png");
-        list.add(vip1);
-
-        //vip2
-        MemberInfoDto vip2 = new MemberInfoDto();
-        vip2.setLimitAmount(
-            new BigDecimal(RedisUtils.getValue(DictConsts.VIP2_SINGLE_MAX_WITHDRAW_QUOTA, String.class)));
-        vip2.setWithdrawTimes(
-            Integer.valueOf(RedisUtils.getValue(DictConsts.VIP2_TODAY_MAX_WITHDRAW_COUNT, String.class)));
-
-        List<Integer> vip2List = vipInfo.get(2);
-        vip2.setFeeStr(vip2List.get(0) + "%/" + vip2List.get(1) + "%/" + vip2List.get(2) + "%");
-        vip2.setAmount(new BigDecimal(RedisUtils.getValue(DictAccount.VIP2_CHARGE, String.class)));
-        vip2.setOrderTimes(vip2List.get(3));
-        vip2.setType(2);
-        vip2.setVip("VIP2");
-        vip2.setPicUrl("http://www.ec-aww.com/vipImages/vip2.png");
-        vip2.setVipDesc("Prerequisites for unlocking the LV2 task area");
-        list.add(vip2);
-
-        //vip3
-        MemberInfoDto vip3 = new MemberInfoDto();
-        vip3.setLimitAmount(
-            new BigDecimal(RedisUtils.getValue(DictConsts.VIP3_SINGLE_MAX_WITHDRAW_QUOTA, String.class)));
-        vip3.setWithdrawTimes(
-            Integer.valueOf(RedisUtils.getValue(DictConsts.VIP3_TODAY_MAX_WITHDRAW_COUNT, String.class)));
-
-        List<Integer> vip3List = vipInfo.get(3);
-        vip3.setFeeStr(vip3List.get(0) + "%/" + vip3List.get(1) + "%/" + vip3List.get(2) + "%");
-        vip3.setAmount(new BigDecimal(RedisUtils.getValue(DictAccount.VIP3_CHARGE, String.class)));
-        vip3.setOrderTimes(vip3List.get(3));
-        vip3.setType(3);
-        vip3.setVip("VIP3");
-        vip3.setPicUrl("http://www.ec-aww.com/vipImages/vip3.png");
-        vip3.setVipDesc("Prerequisites for unlocking the LV3 task area");
-        list.add(vip3);
-
-        //vip4
-        MemberInfoDto vip4 = new MemberInfoDto();
-        vip4.setLimitAmount(
-            new BigDecimal(RedisUtils.getValue(DictConsts.VIP4_SINGLE_MAX_WITHDRAW_QUOTA, String.class)));
-        vip4.setWithdrawTimes(
-            Integer.valueOf(RedisUtils.getValue(DictConsts.VIP4_TODAY_MAX_WITHDRAW_COUNT, String.class)));
-
-        //vip4除了购买金额，其他与vip3保持一致
-        List<Integer> vip4List = vipInfo.get(4);
-        vip4.setFeeStr(vip4List.get(0) + "%/" + vip4List.get(1) + "%/" + vip4List.get(2) + "%");
-        vip4.setAmount(new BigDecimal(RedisUtils.getValue(DictAccount.VIP4_CHARGE, String.class)));
-        vip4.setOrderTimes(vip4List.get(3));
-        vip4.setType(4);
-        vip4.setVip("VIP4");
-        vip4.setPicUrl("http://www.ec-aww.com/vipImages/vip4.png");
-        vip4.setVipDesc("Prerequisites for unlocking the LV4 task area");
-        list.add(vip4);
-
-        response.setResultData(list);
-        return response;
-    }
+    @Autowired
+    private LoginLogService loginLogService;
 
     @PostMapping("/memberInfoNew")
     @ApiOperation(value = "购买会员卡页面-新")
@@ -171,97 +88,32 @@ public class UserController extends BaseController {
         BuyMemberInfoResponse<List<MemberInfoDescDto>> response = new BuyMemberInfoResponse();
         Long userId = getUserId(request);
         List<UserDO> userDOList = userService.getUserByParentId(userId);
-        //完成首充的子集用户数量
+        //完成登录的子集用户数量
         int childFirstRechargedCount = 0;
         if (CollectionUtils.isNotEmpty(userDOList)){
             for (UserDO aDo : userDOList) {
-                if (1 == aDo.getFirstRecharge()) {
+                Map<String, Object> loginLogParams = Maps.newHashMap();
+                loginLogParams.put("userId", aDo.getId());
+                int loginCount = loginLogService.count(loginLogParams);
+                if (loginCount > 0) {
                     childFirstRechargedCount++;
                 }
             }
         }
         List<MemberInfoDescDto> list = new ArrayList<>();
         response.setTitle(I18nEnum.MEMBER_INFO_TITLE.getMsg());
-        String limitAmount = "ขีดจำกัดในการถอนเงินต่อครั้งคือ";
-        String withdrawTimes = "ถอนเงินวันละ %s ครั้ง";
-        String freeStr = "ส่วนลดจากการส่งเสริมการขายคือ %s%%/ %s%%/ %s%%";
-        String orderTimes = "จำนวนคำสั่งซื้อที่สามารถรับได้คือ ";
-        String buyVipCondition = "คุณจะต้องเชิญผู้ใช้ลงทะเบียน ";
-        String vipDesc = "ปลดล็อกข้อกำหนดเบื้องต้นสำหรับพื้นที่งาน ";
 
-        //vip1
-        MemberInfoDescDto vip1 = new MemberInfoDescDto();
-        vip1.setLimitAmount(
-            limitAmount + RedisUtils.getValue(DictConsts.VIP1_SINGLE_MAX_WITHDRAW_QUOTA, String.class));
-        vip1.setWithdrawTimes(String.format(withdrawTimes, RedisUtils.getValue(DictConsts.VIP1_TODAY_MAX_WITHDRAW_COUNT, String.class)));
-
-        HashMap<Integer, List<Integer>> vipInfo = ehcacheService.getVipInfo();
-        List<Integer> vip1List = vipInfo.get(1);
-        vip1.setFeeStr(String.format(freeStr, vip1List.get(0), vip1List.get(1), vip1List.get(2)));
-        vip1.setAmount(BigDecimal.ZERO);
-        vip1.setOrderTimes(orderTimes + vip1List.get(3));
-        vip1.setVip("VIP1");
-        vip1.setPicUrl("http://www.ec-aww.com/vipImages/vip1.png");
-        list.add(vip1);
-
-        //vip2
-        MemberInfoDescDto vip2 = new MemberInfoDescDto();
-        vip2.setLimitAmount(
-            limitAmount + RedisUtils.getValue(DictConsts.VIP2_SINGLE_MAX_WITHDRAW_QUOTA, String.class));
-        vip2.setWithdrawTimes(String.format(withdrawTimes, RedisUtils.getValue(DictConsts.VIP2_TODAY_MAX_WITHDRAW_COUNT, String.class)));
-
-        List<Integer> vip2List = vipInfo.get(2);
-        vip2.setFeeStr(String.format(freeStr, vip2List.get(0), vip2List.get(1), vip2List.get(2)));
-        vip2.setAmount(new BigDecimal(RedisUtils.getValue(DictAccount.VIP2_CHARGE, String.class)));
-        vip2.setOrderTimes(orderTimes + vip2List.get(3));
-        vip2.setType(2);
-        vip2.setVip("VIP2");
-        vip2.setPicUrl("http://www.ec-aww.com/vipImages/vip2.png");
-        vip2.setVipDesc(vipDesc + "LV2");
-        if (childFirstRechargedCount < 5) {
-            vip2.setBuyVipCondition(buyVipCondition + childFirstRechargedCount + "/5");
+        List<MemberInfoDO> memberInfoList = memberInfoDao.selectList(new Condition());
+        int finalChildFirstRechargedCount = childFirstRechargedCount;
+        for (MemberInfoDO memberInfoDO : memberInfoList) {
+            MemberInfoDescDto vip = new MemberInfoDescDto();
+            BeanUtil.copyProperties(memberInfoDO, vip);
+            vip.setAmount(memberInfoDO.getAmount());
+            vip.setOrderTimes(memberInfoDO.getOrderTimes());
+            vip.setBuyVipCondition(String.format(vip.getBuyVipCondition(), finalChildFirstRechargedCount));
+            vip.setClickButton(memberInfoDO.getUpLimit() <= childFirstRechargedCount);
+            list.add(vip);
         }
-        list.add(vip2);
-
-        //vip3
-        MemberInfoDescDto vip3 = new MemberInfoDescDto();
-        vip3.setLimitAmount(
-            limitAmount + RedisUtils.getValue(DictConsts.VIP3_SINGLE_MAX_WITHDRAW_QUOTA, String.class));
-        vip3.setWithdrawTimes(String.format(withdrawTimes, RedisUtils.getValue(DictConsts.VIP3_TODAY_MAX_WITHDRAW_COUNT, String.class)));
-
-        List<Integer> vip3List = vipInfo.get(3);
-        vip3.setFeeStr(String.format(freeStr, vip3List.get(0), vip3List.get(1), vip3List.get(2)));
-        vip3.setAmount(new BigDecimal(RedisUtils.getValue(DictAccount.VIP3_CHARGE, String.class)));
-        vip3.setOrderTimes(orderTimes + vip3List.get(3));
-        vip3.setType(3);
-        vip3.setVip("VIP3");
-        vip3.setPicUrl("http://www.ec-aww.com/vipImages/vip3.png");
-        vip3.setVipDesc(vipDesc + "LV3");
-        if (childFirstRechargedCount < 10) {
-            vip3.setBuyVipCondition(buyVipCondition + childFirstRechargedCount + "/10");
-        }
-        list.add(vip3);
-
-        //vip4
-        MemberInfoDescDto vip4 = new MemberInfoDescDto();
-        vip4.setLimitAmount(
-            limitAmount + RedisUtils.getValue(DictConsts.VIP4_SINGLE_MAX_WITHDRAW_QUOTA, String.class));
-        vip4.setWithdrawTimes(String.format(withdrawTimes, RedisUtils.getValue(DictConsts.VIP4_TODAY_MAX_WITHDRAW_COUNT, String.class)));
-
-        //vip4除了购买金额，其他与vip3保持一致
-        List<Integer> vip4List = vipInfo.get(4);
-        vip4.setFeeStr(String.format(freeStr, vip4List.get(0), vip4List.get(1), vip4List.get(2)));
-        vip4.setAmount(new BigDecimal(RedisUtils.getValue(DictAccount.VIP4_CHARGE, String.class)));
-        vip4.setOrderTimes(orderTimes + vip4List.get(3));
-        vip4.setType(4);
-        vip4.setVip("VIP4");
-        vip4.setPicUrl("http://www.ec-aww.com/vipImages/vip4.png");
-        vip4.setVipDesc(vipDesc + "LV4");
-        if (childFirstRechargedCount < 15) {
-            vip4.setBuyVipCondition(buyVipCondition + childFirstRechargedCount + "/15");
-        }
-//        list.add(vip4);
-
         response.setSuccess(true);
         response.setResultData(list);
         return response;
@@ -326,11 +178,8 @@ public class UserController extends BaseController {
         user.setLastName(StringUtils.trim(request.getLastName()));
         String phone = StringUtils.replace(request.getMobile(), " ", "");
         //补全手机号
-        if (phone != null && phone.length() == 10 && "66".equals(phone.subSequence(0, 2))) {
-            phone = MobileUtil.THAILAND_MOBILE_PREFIX + phone.substring(2, phone.length());
-        } else if (phone != null && phone.length() == 10) {
-            phone = MobileUtil.THAILAND_MOBILE_PREFIX + phone;
-        }
+        phone = MobileUtil.replaceValidMobile(phone);
+
 
         if (MobileUtil.isValidMobile(phone)) {
             user.setAccountPhone(phone);
@@ -350,7 +199,9 @@ public class UserController extends BaseController {
         if (StringUtils.isNotBlank(request.getAccountExpireMonth())) {
             user.setAccountExpireMonth(request.getAccountExpireMonth().trim());
         }
-        user.setBankName(request.getBankName().trim());
+        if (StringUtils.isNotBlank(request.getBankName())) {
+            user.setBankName(request.getBankName().trim());
+        }
         user.setBankCode(request.getBankCode().trim());
         user.setAccountNumber(request.getAccountNumber().trim());
 
@@ -445,9 +296,9 @@ public class UserController extends BaseController {
             return BaseResponse.fail(I18nEnum.CREDIT_RUNNING_LOW.getMsg());
         }
         //未充值账户余额用户（仅购买vip也算未充值余额用户），永远不可提现。
-//        if (userDO.getFirstRecharge().equals(0)) {
-//            return BaseResponse.fail(TipConsts.NO_RECHARGE);
-//        }
+        if (userDO.getFirstRecharge().equals(0)) {
+            return BaseResponse.fail(I18nEnum.NO_RECHARGE.getMsg());
+        }
         //获取用户充值成功金额
         PayVO payVO = payService.getCountByTypeStatus(Arrays.asList(1), 2, userId, null, null);
         if (userDO.getLxSwitch() == 0) {
@@ -587,6 +438,7 @@ public class UserController extends BaseController {
         //支付渠道分支 1-wegame 2-paystax
         String payChannelBranch = RedisUtils.getValue(DictConsts.PAYOUT_CHANNEL_BRANCH, String.class);
         String payoutId = "";
+        Integer payoutStatus = null;
         //生成随机订单号
         String orderFirstNo = userId + "o";
         String orderNo = orderFirstNo + StringRandom.getNumberAndLetterRandom(12 - orderFirstNo.length());
@@ -614,7 +466,7 @@ public class UserController extends BaseController {
             balanceDO.setOrderNo(orderNo);
             int updateBalanceCount = balanceService.addBalanceDetail(balanceDO);
             if (updateBalanceCount <= 0) {
-                throw new BaseException("submit withdraw error,please try again!");
+                throw new BaseException(I18nEnum.SUBMIT_WITHDRAW_FAIL.getMsg());
             }
         }
         String applySwitch = RedisUtils.getString(DictConsts.APPLY_SWITCH);
@@ -643,11 +495,12 @@ public class UserController extends BaseController {
             createPayOutOrder.setAmount(relAccount);
             BaseResponse<PaymentResult> payout = paymentService.payout(createPayOutOrder);
             if (payout == null) {
-                throw new BaseException("submit withdraw error,please try again!");
+                throw new BaseException(I18nEnum.SUBMIT_WITHDRAW_FAIL.getMsg());
             }
             if (!payout.isSuccess()) {
                 throw new BaseException(payout.getMsg());
             }
+            payoutStatus = payout.getResultData().getStatus();
             payoutId = payout.getResultData().getThirdOrderNo();
         }
 
@@ -664,7 +517,11 @@ public class UserController extends BaseController {
         payDO.setThirdResponse(payoutId);
         payDO.setUserId(userId);
         payDO.setAmount(relAccount);
-        payDO.setStatus(PayEnums.PayStatusEnum.PAYING.getCode());
+        if (null != payoutStatus) {
+            payDO.setStatus(payoutStatus);
+        } else {
+            payDO.setStatus(PayEnums.PayStatusEnum.PAYING.getCode());
+        }
         payDO.setPayChannel(payChannel);
         payDO.setPayChannelBranch(payChannelBranch);
         payDO.setRefNo(orderNo);
@@ -672,7 +529,7 @@ public class UserController extends BaseController {
         payDO.setApplyStatus(PayEnums.PayApplyStatusEnum.PASS.getCode());
         int saveSuccess = payService.save(payDO);
         if (saveSuccess <= 0) {
-            throw new BaseException("submit withdraw error,please try again!");
+            throw new BaseException(I18nEnum.SUBMIT_WITHDRAW_FAIL.getMsg());
         }
         logger.info("{}提现入库,提现金额:{},订单号:{},对方订单号:{}", userId, relAccount, orderNo, payoutId);
         return BaseResponse.success();
@@ -735,7 +592,7 @@ public class UserController extends BaseController {
         payDO.setApplyStatus(PayEnums.PayApplyStatusEnum.APPLY.getCode());
         int saveSuccess = payService.save(payDO);
         if (saveSuccess <= 0) {
-            throw new BaseException("submit withdraw error,please try again!");
+            throw new BaseException(I18nEnum.SUBMIT_WITHDRAW_FAIL.getMsg());
         }
         return BaseResponse.success();
     }
@@ -778,6 +635,9 @@ public class UserController extends BaseController {
             //提现会话id
             payDO.setThirdResponse(payout.getResultData().getDescription());
             payDO.setApplyStatus(PayEnums.PayApplyStatusEnum.PASS.getCode());
+            if (null != payout.getResultData().getStatus()) {
+                payDO.setStatus(payout.getResultData().getStatus());
+            }
             payService.updatePay(payDO);
         } else {
             payDO.setThirdResponse(payout.getMsg());
@@ -811,7 +671,8 @@ public class UserController extends BaseController {
         WithdrawAmountDoc withdrawAmountDoc = new WithdrawAmountDoc();
         String minAmount = RedisUtils.getString(DictConsts.WITHDRAW_AMOUNT_MIN);
         withdrawAmountDoc.setMinimumWithdrawAmount(new BigDecimal(minAmount));
-        withdrawAmountDoc.setWithdrawInputText("Enter " + minAmount + " and above");
+
+        withdrawAmountDoc.setWithdrawInputText(String.format(I18nEnum.WITHDRAW_INPUT_TEXT.getMsg(), minAmount));
         withdrawAmountDoc.setWithdrawInputTextColor(RedisUtils.getString(DictConsts.WITHDRAW_AMOUNT_TEXT_COLOR));
         withdrawAmountDoc.setTips(RedisUtils.getString(DictConsts.WITHDRAW_AMOUNT_TIPS));
         return BaseResponse.success(withdrawAmountDoc);

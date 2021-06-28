@@ -1,5 +1,7 @@
 package com.powerboot.service;
 
+import com.baomidou.mybatisplus.mapper.Condition;
+import com.baomidou.mybatisplus.mapper.EntityWrapper;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.powerboot.base.BaseResponse;
@@ -95,7 +97,12 @@ public class UserService {
     }
 
     public UserDO getByMobileAndAppId(String mobile, String appId) {
-        return userDao.getByMobileAndAppId(mobile, appId);
+        EntityWrapper<UserDO> condition = new EntityWrapper();
+        condition.and()
+                .eq("mobile", mobile)
+                .eq("app_id", appId);
+        List<UserDO> userDOList = userDao.selectList(condition);
+        return CollectionUtils.isEmpty(userDOList) ? null : userDOList.get(0);
     }
 
     public int updateByIdAndVersion(UserDO user) {
@@ -158,7 +165,7 @@ public class UserService {
         if (!MobileUtil.isValidMobile(registerRequest.getMobile())) {
             return BaseResponse.fail(I18nEnum.MOBILE_NUMBER_FAIL.getMsg());
         }
-        registerRequest.setMobile(MobileUtil.THAILAND_MOBILE_PREFIX + registerRequest.getMobile().substring(index - 10));
+        registerRequest.setMobile(MobileUtil.replaceValidMobile(registerRequest.getMobile()));
         String mobile = registerRequest.getMobile();
         if (!MobileUtil.isValidMobile(mobile)) {
             return BaseResponse.fail(I18nEnum.MOBILE_ERROR.getMsg());
@@ -184,6 +191,7 @@ public class UserService {
         userDO.setMobile(mobile);
         userDO.setPassword(registerRequest.getPassword());
         userDO.setEmail(registerRequest.getEmail());
+        userDO.setSdkType(registerRequest.getSdkType());
         //生成自己的邀请码
         String numberAndLetterRandom = StringRandom.getNumberAndLetterRandom(8);
         while (userDao.getByReferralCode(numberAndLetterRandom) != null) {
@@ -285,7 +293,7 @@ public class UserService {
         if (!MobileUtil.isValidMobile(request.getMobile())){
             return BaseResponse.fail(I18nEnum.MOBILE_NUMBER_FAIL.getMsg());
         }
-        request.setMobile(MobileUtil.THAILAND_MOBILE_PREFIX + request.getMobile().substring(index - 10));
+        request.setMobile(MobileUtil.replaceValidMobile(request.getMobile()));
         String mobile = request.getMobile();
 
         String codeKey = String.format(CacheConsts.VER_CODE, mobile, appId);
@@ -389,6 +397,10 @@ public class UserService {
         return userDao.count(params);
     }
 
+    public List<UserDO> list(Map<String, Object> params) {
+        return userDao.list(params);
+    }
+
     public Integer getUserReferral(Integer role, LocalDate startDate, LocalDate endDate, Long saleId) {
         return userDao.getUserCount(role, startDate, endDate, 1, null, saleId);
     }
@@ -446,5 +458,16 @@ public class UserService {
             return Lists.newArrayList();
         }
         return userDao.getUserByAccountNumber(accountNumber);
+    }
+
+    /**
+     * 封禁用户
+     * @param user
+     * @return
+     */
+    public int blockedUser(UserDO user) {
+        user.setLoginFlag(0);
+        user.setBlackFlag(1);
+        return updateByIdAndVersion(user);
     }
 }

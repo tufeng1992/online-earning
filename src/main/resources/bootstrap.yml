@@ -20,9 +20,8 @@ spring:
 mybatis:
   configuration:
     map-underscore-to-camel-case: true
-
   mapper-locations: mybatis/*Mapper.xml
-  typeAliasesPackage: com.powerboot.dto
+  typeAliasesPackage: com.powerboot.domain
 
 config:
   tempPath : ./tempPath

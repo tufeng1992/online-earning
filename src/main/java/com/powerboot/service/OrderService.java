@@ -159,6 +159,14 @@ public class OrderService {
         List<BalanceDO> balanceDOList = balanceDao.list(map);
         teamMemberDto.setRecharge(balanceDOList.stream().map(BalanceDO::getAmount).reduce(BigDecimal.ZERO, BigDecimal::add));
 
+        HashMap<String, Object> map3 = new HashMap<>();
+        map3.put("userId", upUserid);
+        map3.put("relationUserId", userDO.getId());
+        map3.put("status", StatusTypeEnum.SUCCESS.getCode());
+        map3.put("type", BalanceTypeEnum.N.getCode());
+        List<BalanceDO> balanceDOList3 = balanceDao.list(map3);
+        teamMemberDto.setRegisterAmount(balanceDOList3.stream().map(BalanceDO::getAmount).reduce(BigDecimal.ZERO, BigDecimal::add));
+
         map.put("type", BalanceTypeEnum.G.getCode());
         List<BalanceDO> balanceDOList2 = balanceDao.list(map);
         teamMemberDto.setWithdraw(balanceDOList2.stream().map(BalanceDO::getAmount).reduce(BigDecimal.ZERO, BigDecimal::add).multiply(new BigDecimal(-1)));

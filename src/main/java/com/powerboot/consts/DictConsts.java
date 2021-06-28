@@ -454,6 +454,94 @@ public class DictConsts {
      */
     public static final String GMS_PAY_OUT_KEY = "GMS_PAY_OUT_KEY";
 
+    /**
+     * 默认支付类型
+     */
+    public static final String GMS_DEFAULT_PAY_TYPE = "GMS_DEFAULT_PAY_TYPE";
+
+    /**
+     * 商户id
+     */
+    public static final String SEPRO_MERCHANT_ID = "SEPRO_MERCHANT_ID";
+
+    /**
+     * 基础网关
+     */
+    public static final String SEPRO_BASE_URL = "SEPRO_BASE_URL";
+
+
+    /**
+     * 支付回调地址
+     */
+    public static final String SEPRO_PAY_NOTIFY_URL = "SEPRO_PAY_NOTIFY_URL";
+
+    /**
+     * 支付重定向地址
+     */
+    public static final String SEPRO_PAY_REDIRECT_URL = "SEPRO_PAY_REDIRECT_URL";
+
+    /**
+     * 支付回调地址
+     */
+    public static final String SEPRO_PAY_OUT_NOTIFY_URL = "SEPRO_PAY_OUT_NOTIFY_URL";
+
+    /**
+     * 支付key
+     */
+    public static final String SEPRO_PAY_IN_KEY = "SEPRO_PAY_IN_KEY";
+
+    /**
+     * 代付key
+     */
+    public static final String SEPRO_PAY_OUT_KEY = "SEPRO_PAY_OUT_KEY";
+
+    /**
+     * 默认支付类型
+     */
+    public static final String SEPRO_DEFAULT_PAY_TYPE = "SEPRO_DEFAULT_PAY_TYPE";
+
+
+    /**
+     * 商户id
+     */
+    public static final String THKINGZ_MERCHANT_ID = "THKINGZ_MERCHANT_ID";
+
+    /**
+     * 基础网关
+     */
+    public static final String THKINGZ_BASE_URL = "THKINGZ_BASE_URL";
+
+
+    /**
+     * 支付回调地址
+     */
+    public static final String THKINGZ_PAY_NOTIFY_URL = "THKINGZ_PAY_NOTIFY_URL";
+
+    /**
+     * 支付重定向地址
+     */
+    public static final String THKINGZ_PAY_ERROR_REDIRECT_URL = "THKINGZ_PAY_ERROR_REDIRECT_URL";
+
+    /**
+     * 支付重定向地址
+     */
+    public static final String THKINGZ_PAY_REDIRECT_URL = "THKINGZ_PAY_REDIRECT_URL";
+
+    /**
+     * 支付回调地址
+     */
+    public static final String THKINGZ_PAY_OUT_NOTIFY_URL = "THKINGZ_PAY_OUT_NOTIFY_URL";
+
+    /**
+     * 支付key
+     */
+    public static final String THKINGZ_PAY_IN_KEY = "THKINGZ_PAY_IN_KEY";
+
+    /**
+     * 默认支付类型
+     */
+    public static final String THKINGZ_DEFAULT_PAY_TYPE = "THKINGZ_DEFAULT_PAY_TYPE";
+
     //相同ip注册最大个数
     public static final String IP_REGISTER_MAX_COUNT = "IP_REGISTER_MAX_COUNT";
 
@@ -584,6 +672,11 @@ public class DictConsts {
     public static final String PAY_OUT_CHECK_JOB_SWITCH = "PAY_OUT_CHECK_JOB_SWITCH";
 
     /**
+     * 支付校验任务开关
+     */
+    public static final String PAY_IN_CHECK_JOB_SWITCH = "PAY_IN_CHECK_JOB_SWITCH";
+
+    /**
      * infobip api key
      */
     public static final String INFOBIP_VOICE_MESSAGE_API_KEY = "INFOBIP_VOICE_MESSAGE_API_KEY";
@@ -622,4 +715,56 @@ public class DictConsts {
      * 默认语言
      */
     public static final String DEFAULT_LANGUAGE = "DEFAULT_LANGUAGE";
+
+    /**
+     * 服务地区
+     */
+    public static final String SERVER_AREA = "SERVER_AREA";
+
+    /**
+     * 发送验证码类型：sms、voice
+     */
+    public static final String SEND_SMS_TYPE = "SEND_SMS_TYPE";
+
+    /**
+     * VIP1 图片url
+     */
+    public static final String VIP1_IMAGE_PIC_URL = "VIP1_IMAGE_PIC_URL";
+    /**
+     * VIP2 图片url
+     */
+    public static final String VIP2_IMAGE_PIC_URL = "VIP2_IMAGE_PIC_URL";
+    /**
+     * VIP3 图片url
+     */
+    public static final String VIP3_IMAGE_PIC_URL = "VIP3_IMAGE_PIC_URL";
+    /**
+     * VIP4 图片url
+     */
+    public static final String VIP4_IMAGE_PIC_URL = "VIP4_IMAGE_PIC_URL";
+
+    /**
+     * 用户登录设备限制数量
+     */
+    public static final String USER_LOGIN_DEVICE_LIMIT_COUNT = "USER_LOGIN_DEVICE_LIMIT_COUNT";
+
+    /**
+     * 用户登录ip限制数量
+     */
+    public static final String USER_LOGIN_IP_LIMIT_COUNT = "USER_LOGIN_IP_LIMIT_COUNT";
+
+    /**
+     * 邀请奖励频率
+     */
+    public static final String INVITE_FREQUENCY_LIMIT = "INVITE_FREQUENCY_LIMIT";
+
+    /**
+     * 邀请奖励次数限制
+     */
+    public static final String INVITE_REWARD_COUNT_LIMIT = "INVITE_REWARD_COUNT_LIMIT";
+
+    /**
+     * 邀请奖励金额
+     */
+    public static final String INVITE_REWARD_AMOUNT = "INVITE_REWARD_AMOUNT";
 }

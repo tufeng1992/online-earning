@@ -139,7 +139,12 @@ public class SmsService {
             response.setCode("0");
             result = BaseResponse.success(response);
         } else {
-            result = smsSendConfig.sendVoiceMessage(tel, verCode);
+            String sendSmsType = RedisUtils.getString(DictConsts.SEND_SMS_TYPE);
+            if ("sms".equalsIgnoreCase(sendSmsType)) {
+                result = smsSendConfig.sendKenya(tel, verCode);
+            } else {
+                result = smsSendConfig.sendVoiceMessage(tel, verCode);
+            }
         }
         SmsSendResponse smsSingleResponse = result.getResultData();
         String sendResult = "";

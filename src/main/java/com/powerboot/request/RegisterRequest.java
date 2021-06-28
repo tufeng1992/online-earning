@@ -27,6 +27,9 @@ public class RegisterRequest extends BaseRequest{
     @NotEmpty(message = "please enter your email")
     private String email;
 
+    @ApiModelProperty("注册sdk类型")
+    private String sdkType;
+
     public String getMobile() {
         return mobile;
     }

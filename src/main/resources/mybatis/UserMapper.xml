@@ -47,7 +47,9 @@
 			   `account_expire_month`,
 			   `account_expire_day`,
 			   `bank_name`,
-			   `bank_code`
+			   `bank_code`,
+			   `sdk_type`,
+			   `first_task`
 	</sql>
 
 	<select id="get" resultType="com.powerboot.domain.UserDO">
@@ -64,7 +66,7 @@
 
 	<select id="getByMobileAndAppId" resultType="com.powerboot.domain.UserDO">
 		SELECT
-		<include refid="Base_Column_List" />
+		*
 		FROM user where mobile = #{mobile} and app_id = #{appId}
 	</select>
 	<insert id="insertSale" parameterType="com.powerboot.domain.UserDO" keyProperty="id" useGeneratedKeys="true">
@@ -109,7 +111,8 @@
 		`team_flag`,
 		`balance`,
 		`create_time`,
-		`update_time`)
+		`update_time`,
+		`sdk_type`)
 		VALUES
 		(
 		#{mobile},
@@ -126,7 +129,8 @@
 		#{teamFlag},
 		#{balance},
 		now(),
-		now())
+		now(),
+		#{sdkType})
 	</insert>
 
 	<update id="updateClose">
@@ -174,6 +178,7 @@
 			<if test="bankCode != null"> bank_code = #{bankCode}, </if>
 			<if test="loginFlag != null"> login_flag = #{loginFlag}, </if>
 			<if test="blackFlag != null"> black_flag = #{blackFlag}, </if>
+			<if test="firstTask != null"> first_task = #{firstTask}, </if>
 			version = version+1,
 		</set>
 		where id = #{id} and version  = #{version}
@@ -339,6 +344,38 @@
 				and device_number = #{deviceNumber}
 			</if>
 		</where>
+	</select>
+
+	<select id="list" resultType="com.powerboot.domain.UserDO">
+		select *
+		from `user`
+		<where>
+			<if test="role != null">
+				and role = #{role}
+			</if>
+			<if test="startDate != null">
+				and create_time &gt;= #{startDate}
+			</if>
+			<if test="endDate != null">
+				and create_time &lt;= #{endDate}
+			</if>
+			<if test="userReferral != null">
+				and parent_id is not null
+			</if>
+			<if test="saleReferral != null">
+				and parent_id is null
+			</if>
+			<if test="saleId != null">
+				and sale_id = #{saleId}
+			</if>
+			<if test="deviceNumber != null">
+				and device_number = #{deviceNumber}
+			</if>
+			<if test="registerIp != null">
+				and register_ip = #{registerIp}
+			</if>
+		</where>
+		order by create_time desc
 	</select>
 
 	<select id="getUserByAccountNumber" resultType="com.powerboot.domain.UserDO">

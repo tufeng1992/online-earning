@@ -80,17 +80,22 @@ public class GrecashClient {
      * @param amount
      * @param email
      * @param phone
+     * @param name
      * @return
      */
-    public BaseGrecashRes<CreatePayRes> createPay(String orderNo, BigDecimal amount, String email, String phone) {
+    public BaseGrecashRes<CreatePayRes> createPay(String orderNo, BigDecimal amount, String email, String phone, String name) {
         JSONObject body = new JSONObject();
         body.put("amount", amount);
         body.put("merchantID", getMerchantId());
         body.put("merchantOrderId", orderNo);
+        if (StringUtils.isNotBlank(name)) {
+            body.put("merchantUserName", name);
+        }
         body.put("merchantUserEmail", email);
-        body.put("countryCode", "NG");
-        body.put("currency", "NGN");
+        body.put("countryCode", "GS");
+        body.put("currency", "ZAR");
         body.put("merchantUserPhone", phone);
+
         body.put("redirectUrl", getPayRedirectUrl());
         String url = getBaseUrl() + "/core/api/payment/africa/prepay";
         BaseGrecashRes baseGrecashRes = HttpUtil.post4JsonObj(url, getHeader(), body)
@@ -124,8 +129,8 @@ public class GrecashClient {
     public BaseGrecashRes<CreatePayOutRes> createTransfer(String orderNo, BigDecimal amount, String phone,
                                                                  String email, String name, String accountNumber, String bankCode) {
         JSONObject body = new JSONObject();
-        body.put("countryCode", "NG");
-        body.put("currency", "NGN");
+        body.put("countryCode", "GS");
+        body.put("currency", "ZAR");
         body.put("payType", "card");
         body.put("payoutId", orderNo);
         body.put("callBackUrl", getPayOutNotifyUrl());

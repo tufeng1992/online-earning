@@ -1,5 +1,8 @@
 package com.powerboot;
 
+import com.alibaba.fastjson.JSONArray;
+import com.alibaba.fastjson.JSONObject;
+import com.baomidou.mybatisplus.mapper.Condition;
 import com.google.common.collect.Maps;
 import com.infobip.ApiClient;
 import com.infobip.ApiException;
@@ -9,14 +12,23 @@ import com.infobip.model.SmsAdvancedTextualRequest;
 import com.infobip.model.SmsDestination;
 import com.infobip.model.SmsResponse;
 import com.infobip.model.SmsTextualMessage;
+import com.powerboot.base.BaseResponse;
 import com.powerboot.config.BaseException;
+import com.powerboot.config.SmsSendConfig;
 import com.powerboot.consts.I18nEnum;
 import com.powerboot.controller.OrderController;
+import com.powerboot.dao.BalanceDao;
+import com.powerboot.dao.MemberInfoDao;
+import com.powerboot.domain.BalanceDO;
+import com.powerboot.domain.MemberInfoDO;
 import com.powerboot.domain.UserDO;
+import com.powerboot.enums.BalanceTypeEnum;
 import com.powerboot.enums.PayEnums;
+import com.powerboot.enums.StatusTypeEnum;
 import com.powerboot.job.PaymentTimeoutJob;
 import com.powerboot.job.SummaryTableJob;
 import com.powerboot.response.pay.PaymentResult;
+import com.powerboot.service.PayService;
 import com.powerboot.service.ProductService;
 import com.powerboot.utils.RedisUtils;
 import com.powerboot.utils.StringRandom;
@@ -28,10 +40,17 @@ import com.powerboot.utils.gms.model.GmsCreatePayOutRes;
 import com.powerboot.utils.gms.model.GmsCreatePayRes;
 import com.powerboot.utils.grecash.core.GrecashClient;
 import com.powerboot.utils.grecash.model.BaseGrecashRes;
+import com.powerboot.utils.grecash.model.CreatePayOutRes;
 import com.powerboot.utils.grecash.model.CreatePayRes;
 import com.powerboot.utils.grecash.model.QueryPayRes;
 import com.powerboot.utils.infobip.utils.VoiceMessageSendUtil;
 import com.powerboot.utils.paystack.core.PaystackInline;
+import com.powerboot.utils.sepro.core.SeproClient;
+import com.powerboot.utils.sepro.model.SeproCreatePayRes;
+import com.powerboot.utils.thkingz.core.ThkingzClient;
+import com.powerboot.utils.thkingz.model.ThkingzBaseRes;
+import com.powerboot.utils.thkingz.model.ThkingzCreatePayOutRes;
+import com.powerboot.utils.thkingz.model.ThkingzCreatePayRes;
 import com.powerboot.utils.wallyt.core.WallytClient;
 import lombok.SneakyThrows;
 import okhttp3.*;
@@ -43,8 +62,7 @@ import org.springframework.test.context.junit4.SpringRunner;
 
 import java.io.IOException;
 import java.math.BigDecimal;
-import java.util.Arrays;
-import java.util.Collections;
+import java.util.*;
 
 @RunWith(SpringRunner.class)
 @SpringBootTest(classes = WebApplication.class)
@@ -63,6 +81,9 @@ public class TestCase {
     private PaystackInline paystackInline;
 
     @Autowired
+    private PayService payService;
+
+    @Autowired
     private WallytClient wallytClient;
 
     @Autowired
@@ -75,7 +96,19 @@ public class TestCase {
     private GMSClient gmsClient;
 
     @Autowired
+    private SeproClient seproClient;
+
+    @Autowired
+    private ThkingzClient thkingzClient;
+
+    @Autowired
     private ProductService productService;
+
+    @Autowired
+    private BalanceDao balanceDao;
+
+    @Autowired
+    private MemberInfoDao memberInfoDao;
 
 //    @Test
 //    public void test01() {
@@ -120,6 +153,9 @@ public class TestCase {
     @Autowired
     private VoiceMessageSendUtil voiceMessageSendUtil;
 
+    @Autowired
+    private SmsSendConfig smsSendConfig;
+
     @Test
     public void test2() throws IOException {
 //        System.out.println(paystackInline.initiateTransfer("testcaseferfern2",
@@ -154,15 +190,71 @@ public class TestCase {
 
     @Test
     public void test05() throws IOException {
-        GmsCreatePayRes res = gmsClient.createPay("testOrder001", BigDecimal.valueOf(100), "TMB");
+//        GmsCreatePayRes res = gmsClient.createPay("testOrder001", BigDecimal.valueOf(100), "TMB");
+//        GmsCreatePayOutRes res = gmsClient.createTransfer("testTransferOrder01", BigDecimal.valueOf(100),
+//                "testName", "123456123", "TMB");
+//        System.out.println(res);
+        UserDO userDO = new UserDO();
+        userDO.setId(21884L);
+        userDO.setParentId(21884l);
+//        payService.addParentBalance(1, userDO, new Date(), "testOrdert");
+        HashMap<String, Object> map = new HashMap<>();
+        map.put("userId", userDO.getId());
+        map.put("type", BalanceTypeEnum.F.getCode());
+        map.put("status", StatusTypeEnum.SUCCESS.getCode());
+        List<BalanceDO> balanceDOList = balanceDao.list(map);
+        System.out.println(balanceDOList.stream().map(BalanceDO::getAmount).reduce(BigDecimal.ZERO, BigDecimal::add));
+        System.in.read();
+    }
+
+    @Test
+    public void test06() throws IOException {
+        SeproCreatePayRes res = seproClient.createPay("testOrder004", BigDecimal.valueOf(100), "TMB");
 //        GmsCreatePayOutRes res = gmsClient.createTransfer("testTransferOrder01", BigDecimal.valueOf(100),
 //                "testName", "123456123", "TMB");
         System.out.println(res);
-        System.in.read();
+    }
+
+
+    @Test
+    public void test07() throws IOException {
+        ThkingzBaseRes res = thkingzClient.createPay("testOrder008", BigDecimal.valueOf(100), "test111");
+        System.out.println(res);
+        System.out.println(res.getUrl());
+        ThkingzCreatePayRes data = ((com.alibaba.fastjson.JSONObject) res.getData()).toJavaObject(ThkingzCreatePayRes.class);
+        System.out.println(data);
+    }
+
+    @Test
+    public void test08() throws IOException {
+//        SeproCreatePayRes res = thkingzClient.createPay("testOrder003", BigDecimal.valueOf(100), "test111");
+//        ThkingzBaseRes res = thkingzClient.queryPay("33pxjdqjwdma");
+//        System.out.println(res);
+//        JSONArray jsonArray = (JSONArray) res.getData();
+//        ThkingzCreatePayRes createPayRes = ((JSONObject)jsonArray.get(0)).toJavaObject(ThkingzCreatePayRes.class);
+//        thkingzClient.createTransfer("testTransferOrder02", BigDecimal.valueOf(100),
+//                "testName", "123456123", "TMB");
+//        MemberInfoDO m = new MemberInfoDO();
+//        m.setType(2);
+//        MemberInfoDO memberInfoDO = memberInfoDao.selectOne(m);
+//        System.out.println(memberInfoDO);
+        System.out.println(BaseResponse.fail(I18nEnum.PAY_BIND_CARD_FAIL.getCode(), I18nEnum.PAY_BIND_CARD_FAIL.getMsg()));
     }
 
     @SneakyThrows
     public static void main(String[] args) {
+        String json = "{\"code\":1000,\"info\":\"请求成功\",\"result\":{\"id\":\"PO202116519020200001\"," +
+                "\"merchantId\":\"de5ad6ec-0fa9-4580-9940-f2eb2304f784\",\"merchantPayoutId\":\"159ocwf2s4dm\"," +
+                "\"bizType\":2,\"amount\":1646.56,\"channelId\":\"5\",\"channelPayoutId\":null,\"countryCode\":\"GS\"," +
+                "\"currency\":\"ZAR\",\"payType\":2,\"rate\":0.0500,\"singleCharge\":10.0000," +
+                "\"callBack\":\"https://www.fixmyptwallet.com/pay/callback/grecash/payOut\"," +
+                "\"deductionMethod\":1,\"status\":4,\"approver\":\"System Auto\",\"comment\":null," +
+                "\"createTime\":\"2021-06-14 19:02:02\",\"updateTime\":\"2021-06-14 19:02:02\"}}";
+        JSONObject j = JSONObject.parseObject(json);
+        BaseGrecashRes res = j.toJavaObject(BaseGrecashRes.class);
+        CreatePayOutRes createPayOutRes = ((com.alibaba.fastjson.JSONObject) res.getResult()).toJavaObject(CreatePayOutRes.class);
+
+        System.out.println(createPayOutRes);
 
     }
 

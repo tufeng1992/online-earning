@@ -63,6 +63,11 @@ public class GMSClient {
         return RedisUtils.getValue(DictConsts.GMS_PAY_OUT_KEY, String.class);
     }
 
+    private String getDefaultPayType() {
+        String type = RedisUtils.getValue(DictConsts.GMS_DEFAULT_PAY_TYPE, String.class);
+        return StringUtils.isNotBlank(type) ? type : "321";
+    }
+
     /**
      * 创建支付
      * @param orderNo
@@ -78,7 +83,7 @@ public class GMSClient {
         map.put("notify_url", getPayNotifyUrl());
         map.put("page_url", getPayRedirectUrl());
         map.put("mch_order_no", orderNo);
-        map.put("pay_type", 321 + "");
+        map.put("pay_type", getDefaultPayType());
         map.put("order_date", DateUtils.getFormatNow(DateUtils.SIMPLE_DATEFORMAT));
         map.put("bank_code", bankCode);
         map.put("goods_name", "taskp order");
