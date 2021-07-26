@@ -58,6 +58,11 @@ public class Definitions {
     public static final String PAYSTACK_INITIATE_TRANSFER = BASE_API_ENDPOINT + "/transfer";
 
     /**
+     * 查询转账
+     */
+    public static final String PAYSTACK_VERIFY_TRANSFER = BASE_API_ENDPOINT + "/transfer/verify/";
+
+    /**
      * 创建一个新的收件人。重复的帐户号码将导致检索现有记录。
      */
     public static final String PAYSTACK_CREATE_TRANSFER_RECIPIENT = BASE_API_ENDPOINT + "/transferrecipient";

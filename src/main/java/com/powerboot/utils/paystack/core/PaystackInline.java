@@ -55,6 +55,7 @@ public class PaystackInline {
         apiQuery.putParams("email", email);
         apiQuery.putParams("plan", plan);
         apiQuery.putParams("callback_url", callback_url);
+        apiQuery.putParams("currency", "GHS");
 
         return apiConnection.connectAndQuery(apiQuery);
     }
@@ -123,7 +124,13 @@ public class PaystackInline {
         apiQuery.putParams("amount", amount);
         apiQuery.putParams("reference", reference);
         apiQuery.putParams("source", "balance");
+        apiQuery.putParams("currency", "GHS");
         return this.apiConnection.connectAndQuery(apiQuery);
+    }
+
+    public JSONObject verifyTransfer(String reference) {
+        this.apiConnection = new ApiConnection(Definitions.PAYSTACK_VERIFY_TRANSFER.concat(reference));
+        return this.apiConnection.connectAndQueryWithGet();
     }
 
     /**
@@ -140,6 +147,7 @@ public class PaystackInline {
         apiQuery.putParams("account_number", accountNumber);
         apiQuery.putParams("bank_code", bankCode);
         apiQuery.putParams("name", name);
+        apiQuery.putParams("currency", "GHS");
         return this.apiConnection.connectAndQuery(apiQuery);
     }
 

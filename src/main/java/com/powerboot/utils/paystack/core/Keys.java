@@ -26,12 +26,11 @@ public class Keys {
      * @throws FileNotFoundException
      */
     void initKeys() throws FileNotFoundException {
-        this.KEY_IN_USE = "sk_live_5240e617e8bb371623604ddee052ff9079f63229";
-        this.TEST_SECRET_KEY = "sk_test_7dce0178a5a933a16849c84802057d97d55d2b07";
-        this.TEST_PUBLIC_KEY = "pk_test_21306e8b089f209a231a7bc7668e4d6d883bcbc2";
+        this.TEST_SECRET_KEY = "sk_test_36a93b8d982c74f440095385b8c98c8bc2cc057b";
+        this.TEST_PUBLIC_KEY = "pk_test_8c08eea9d2243324b05bf5c6aa34ccad92bf702d";
         this.LIVE_SECRET_KEY = RedisUtils.getValue(DictConsts.PAY_STACK_SK, String.class);
         this.LIVE_PUBLIC_KEY = RedisUtils.getValue(DictConsts.PAY_STACK_PK, String.class);
-
+        this.KEY_IN_USE = LIVE_SECRET_KEY;
     }
 
     /**

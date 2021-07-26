@@ -222,7 +222,9 @@ public class PayEnums {
 
         APPLY(1,"审批中"),
         PASS(2,"审批通过"),
-        REJECT(99,"审批驳回"),;
+        REJECT(99,"审批驳回"),
+        PASS_WAIT(3, "审批通过待提交")
+        ;
 
         private final Integer code;
         private final String msg;

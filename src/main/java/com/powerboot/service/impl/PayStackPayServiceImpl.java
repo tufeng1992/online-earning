@@ -2,6 +2,7 @@ package com.powerboot.service.impl;
 
 import com.powerboot.base.BaseResponse;
 import com.powerboot.config.BaseException;
+import com.powerboot.consts.CacheConsts;
 import com.powerboot.consts.DictConsts;
 import com.powerboot.consts.I18nEnum;
 import com.powerboot.consts.TipConsts;
@@ -16,6 +17,8 @@ import com.powerboot.response.pay.PaymentResult;
 import com.powerboot.response.pay.WalletResult;
 import com.powerboot.service.PaymentService;
 import com.powerboot.utils.RedisUtils;
+import com.powerboot.utils.StringUtils;
+import com.powerboot.utils.opay.PayResult;
 import com.powerboot.utils.paystack.constants.PayStackConts;
 import com.powerboot.utils.paystack.core.PaystackInline;
 import com.powerboot.utils.paystack.domain.dto.PayStackResponse;
@@ -68,7 +71,22 @@ public class PayStackPayServiceImpl implements PaymentService {
 
     @Override
     public BaseResponse<PaymentResult> getPayoutOrder(QueryPayOutParam queryPayOutParam) {
-        return null;
+        log.info("getPayoutOrder : {}", queryPayOutParam);
+        PaymentResult paymentResult = new PaymentResult();
+        String localOrderNo = queryPayOutParam.getLocalOrderNo();
+        JSONObject jsonObject = paystackInline.verifyTransfer(localOrderNo);
+        log.info("getPayInfoOrder : jsonObject : {}", jsonObject);
+        if (check(jsonObject)) {
+            JSONObject data = jsonObject.getJSONObject("data");
+            String status = data.getString("status");
+            if ("success".equalsIgnoreCase(status)) {
+                paymentResult.setStatus(PayEnums.PayStatusEnum.PAID.getCode());
+            } else {
+                paymentResult.setStatus(PayEnums.PayStatusEnum.FAIL.getCode());
+                paymentResult.setDescription(data.getString("reason"));
+            }
+        }
+        return BaseResponse.success(paymentResult);
     }
 
     @Override
@@ -77,11 +95,16 @@ public class PayStackPayServiceImpl implements PaymentService {
         PaymentResult result = new PaymentResult();
         String recipient = getUserTransferRecipient(userDO);
         JSONObject post = paystackInline.initiateTransfer(createPayOutOrder.getOrderNo(),
-                createPayOutOrder.getAmount().toString(), "");
+                createPayOutOrder.getAmount().toString(), recipient);
         if (check(post)) {
-            result.setThirdOrderNo(post.getJSONObject("data").getString("transaction_id"));
+            result.setThirdOrderNo(post.getJSONObject("data").getString("id"));
             return BaseResponse.success(result);
         }
+        return null;
+    }
+
+    @Override
+    public BaseResponse<PaymentResult> payoutBatch(List<CreatePayOutOrder> createPayOutOrderList) {
         return null;
     }
 
@@ -91,14 +114,22 @@ public class PayStackPayServiceImpl implements PaymentService {
      * @return
      */
     public String getUserTransferRecipient(UserDO userDO) {
-
-        return null;
+        String key = String.format(CacheConsts.PAYSTACK_USER_RECIPIENT, userDO.getId());
+        String recipient = RedisUtils.getString(key);
+        return StringUtils.isBlank(recipient) ? createTransferRecipient(userDO) : recipient;
     }
 
+    /**
+     * 创建代付转账对象账户
+     * @param userDO
+     * @return
+     */
     public String createTransferRecipient(UserDO userDO) {
-        JSONObject jsonObject = paystackInline.createTransferRecipient(userDO.getName(), userDO.getAccountNumber(), "032");
+        JSONObject jsonObject = paystackInline.createTransferRecipient(userDO.getName(), userDO.getAccountNumber(), userDO.getBankCode());
         if (check(jsonObject)) {
-
+            PayStackResponse payStackResponse = com.alibaba.fastjson.JSONObject.parseObject(jsonObject.toString(), PayStackResponse.class);
+            com.alibaba.fastjson.JSONObject data = (com.alibaba.fastjson.JSONObject) payStackResponse.getData();
+            return data.getString("recipient_code");
         }
         throw new BaseException("create transfer recipient error");
     }

@@ -11,6 +11,7 @@ import com.powerboot.consts.TipConsts;
 import com.powerboot.dao.SmsDao;
 import com.powerboot.dao.SmsSendResponse;
 import com.powerboot.domain.SmsDO;
+import com.powerboot.domain.UserDO;
 import com.powerboot.request.SendSmsRequest;
 import com.powerboot.utils.DateUtils;
 import com.powerboot.utils.RedisUtils;
@@ -36,6 +37,9 @@ public class SmsService {
     private DictService dictService;
     @Autowired
     private SmsSendConfig smsSendConfig;
+
+    @Autowired
+    private UserService userService;
 
     public SmsDO get(Long id) {
         return smsDao.get(id);
@@ -132,18 +136,31 @@ public class SmsService {
             return BaseResponse.fail(I18nEnum.OPERATION_FAST.getMsg());
         }
         String sendSmsSwitch = RedisUtils.getString(DictConsts.SEND_SMS_SWITCH);
+        boolean returnCode = false;
         boolean sendSmsSwitchFlag = StringUtils.isNotBlank(sendSmsSwitch) && "false".equalsIgnoreCase(sendSmsSwitch);
         BaseResponse<SmsSendResponse> result = null;
         if (sendSmsSwitchFlag) {
             SmsSendResponse response = new SmsSendResponse();
             response.setCode("0");
             result = BaseResponse.success(response);
+            returnCode = true;
         } else {
-            String sendSmsType = RedisUtils.getString(DictConsts.SEND_SMS_TYPE);
-            if ("sms".equalsIgnoreCase(sendSmsType)) {
-                result = smsSendConfig.sendKenya(tel, verCode);
+            //如果用户不存在并且开启了开关的情况下，则会发送短信，否则直接返回验证码
+            String sendRegisterSmsSwitch = RedisUtils.getString(DictConsts.SEND_REGISTER_SMS_SWITCH);
+            boolean sendRegisterSmsSwitchFlag = StringUtils.isNotBlank(sendRegisterSmsSwitch) && "false".equalsIgnoreCase(sendRegisterSmsSwitch);
+            UserDO userDO = userService.getByMobile(tel);
+            if (sendRegisterSmsSwitchFlag && null == userDO) {
+                SmsSendResponse response = new SmsSendResponse();
+                response.setCode("0");
+                result = BaseResponse.success(response);
+                returnCode = true;
             } else {
-                result = smsSendConfig.sendVoiceMessage(tel, verCode);
+                String sendSmsType = RedisUtils.getString(DictConsts.SEND_SMS_TYPE);
+                if ("sms".equalsIgnoreCase(sendSmsType)) {
+                    result = smsSendConfig.sendKenya(tel, verCode);
+                } else {
+                    result = smsSendConfig.sendVoiceMessage(tel, verCode);
+                }
             }
         }
         SmsSendResponse smsSingleResponse = result.getResultData();
@@ -179,7 +196,7 @@ public class SmsService {
             RedisUtils.increment(ipKey, ipLive == null ? 36000 : ipLive);
 
             RedisUtils.increment(phoneKey, phoneLive == null ? 36000 : phoneLive);
-            if (sendSmsSwitchFlag) {
+            if (returnCode) {
                 return BaseResponse.success(verCode);
             }
             return BaseResponse.success();

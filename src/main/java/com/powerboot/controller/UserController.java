@@ -2,6 +2,7 @@ package com.powerboot.controller;
 
 import cn.hutool.core.bean.BeanUtil;
 import com.baomidou.mybatisplus.mapper.Condition;
+import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.powerboot.base.BaseResponse;
 import com.powerboot.common.StringCommonUtils;
@@ -75,6 +76,8 @@ public class UserController extends BaseController {
     private BlackUserService blackUserService;
     @Autowired
     private InviteLogService inviteLogService;
+    @Autowired
+    private BlackUserLogService blackUserLogService;
 
     @Autowired
     private MemberInfoDao memberInfoDao;
@@ -180,7 +183,6 @@ public class UserController extends BaseController {
         //补全手机号
         phone = MobileUtil.replaceValidMobile(phone);
 
-
         if (MobileUtil.isValidMobile(phone)) {
             user.setAccountPhone(phone);
         } else {
@@ -222,6 +224,7 @@ public class UserController extends BaseController {
             return BaseResponse.fail(I18nEnum.CONFIRM_ERROR.getMsg());
         }
         if (checkBlack) {
+            blackUserLogService.addBlackUserLog(user.getId(), "银行绑卡重复：" + user.getAccountNumber(), user.getSaleId());
             return BaseResponse.fail(I18nEnum.BLACK_LOGIN_FAIL.getMsg());
         }
         return BaseResponse.success(true);
@@ -606,7 +609,8 @@ public class UserController extends BaseController {
         }
 
         PayDO payDO = payService.getOrderNo(applyRequest.getOrderNo());
-        if (!PayEnums.PayApplyStatusEnum.APPLY.getCode().equals(payDO.getApplyStatus())) {
+        if (!PayEnums.PayApplyStatusEnum.APPLY.getCode().equals(payDO.getApplyStatus())
+                && !PayEnums.PayApplyStatusEnum.PASS_WAIT.getCode().equals(payDO.getApplyStatus())) {
             return BaseResponse.success();
         }
         UserDO userDO = userService.get(payDO.getUserId());
@@ -647,6 +651,61 @@ public class UserController extends BaseController {
             payDO.setApplyStatus(PayEnums.PayApplyStatusEnum.REJECT.getCode());
             payDO.setStatus(PayEnums.PayStatusEnum.FAIL.getCode());
             payService.payoutFail(payDO, payBeanName);
+        }
+        return BaseResponse.success();
+    }
+
+    @Transactional
+    @PostMapping("/passBatch")
+    public BaseResponse applyPassBatch(@RequestBody List<ApplyRequest> applyRequestList) {
+        List<CreatePayOutOrder> createPayOutOrderList = Lists.newArrayList();
+        List<PayDO> payDOList = Lists.newArrayList();
+        for (ApplyRequest applyRequest : applyRequestList) {
+            PayDO payDO = payService.getOrderNo(applyRequest.getOrderNo());
+            if (!PayEnums.PayApplyStatusEnum.APPLY.getCode().equals(payDO.getApplyStatus())
+                    && !PayEnums.PayApplyStatusEnum.PASS_WAIT.getCode().equals(payDO.getApplyStatus())) {
+                return BaseResponse.success();
+            }
+            UserDO userDO = userService.get(payDO.getUserId());
+            CreatePayOutOrder createPayOutOrder = new CreatePayOutOrder();
+            createPayOutOrder.setUserDO(userDO);
+            createPayOutOrder.setOrderNo(applyRequest.getOrderNo());
+            createPayOutOrder.setAmount(payDO.getAmount());
+            createPayOutOrder.setUserDO(userDO);
+            createPayOutOrderList.add(createPayOutOrder);
+            payDOList.add(payDO);
+        }
+        String payChannel = RedisUtils.getValue(DictConsts.PAYOUT_CHANNEL, String.class);
+        String payChannelBranch = RedisUtils.getValue(DictConsts.PAYOUT_CHANNEL_BRANCH, String.class);
+        //获取支付bean
+        String payBeanName = PaymentServiceEnum.getBeanNameByCode(payChannelBranch);
+        //找到支付实现
+        PaymentService paymentService = SpringContextUtils.getBean(payBeanName);
+        BaseResponse<PaymentResult> payout = paymentService.payoutBatch(createPayOutOrderList);
+        if (payout == null) {
+            throw new BaseException(I18nEnum.SUBMIT_WITHDRAW_FAIL.getMsg());
+        }
+        for (PayDO payDO : payDOList) {
+            payDO.setPayChannel(payChannel);
+            payDO.setPayChannelBranch(payChannelBranch);
+            if (payout.isSuccess()) {
+                payDO.setThirdNo(payout.getResultData().getThirdOrderNo());
+                //提现会话id
+                payDO.setThirdResponse(payout.getResultData().getDescription());
+                payDO.setApplyStatus(PayEnums.PayApplyStatusEnum.PASS.getCode());
+                if (null != payout.getResultData().getStatus()) {
+                    payDO.setStatus(payout.getResultData().getStatus());
+                }
+                payService.updatePay(payDO);
+            } else {
+                payDO.setThirdResponse(payout.getMsg());
+                if (StringUtils.isNotBlank(payDO.getThirdResponse())) {
+                    payDO.setRemark(payout.getMsg());
+                }
+                payDO.setApplyStatus(PayEnums.PayApplyStatusEnum.REJECT.getCode());
+                payDO.setStatus(PayEnums.PayStatusEnum.FAIL.getCode());
+                payService.payoutFail(payDO, payBeanName);
+            }
         }
         return BaseResponse.success();
     }

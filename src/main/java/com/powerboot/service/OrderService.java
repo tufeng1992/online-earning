@@ -38,6 +38,9 @@ public class OrderService {
     @Autowired
     EhcacheService ehcacheService;
 
+    @Autowired
+    private UserTaskOrderMissionService userTaskOrderMissionService;
+
     //获取今日已刷单列表
     public List<OrderDO> getTodayList(Long userId) {
         Date today = DateUtils.parseDate(new Date(), DateUtils.SIMPLE_DATEFORMAT_YMD + " 00:00:00");

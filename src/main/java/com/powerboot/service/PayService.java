@@ -21,6 +21,7 @@ import com.powerboot.utils.DateUtils;
 import com.powerboot.utils.RedisUtils;
 import com.powerboot.utils.SpringContextUtils;
 import com.powerboot.utils.StringRandom;
+import com.powerboot.utils.adjustevent.core.AdjustEventClient;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.json.JSONObject;
@@ -60,6 +61,12 @@ public class PayService {
     private ExecutorService commonExecutor;
     @Autowired
     private InviteLogService inviteLogService;
+
+    @Autowired
+    private AdjustEventClient adjustEventClient;
+
+    @Autowired
+    private UserPrizeListService userPrizeListService;
 
     public PayDO get(Long id) {
         return payDao.get(id);
@@ -233,8 +240,13 @@ public class PayService {
                 balanceService.addBalanceDetail(balanceDO);
                 //判断是否首冲
                 UserDO userDO = userService.get(payDO.getUserId());
+
+                //充值金额列表
+                String rechargeAmountListStr = RedisUtils.getString(DictConsts.RECHARGE_AMOUNT_LIST);
+                String[] rechargeAmountArray = rechargeAmountListStr.split("-");
+                String minAmount = rechargeAmountArray[0];
                 if (userDO != null && userDO.getFirstRecharge() == 0
-                        && relPayAmount.compareTo(new BigDecimal("300")) >= 0
+                        && relPayAmount.compareTo(new BigDecimal(minAmount)) >= 0
                         && userDO.getParentId() != null) {
                     //给上级返现
                     addParentBalance(1, userDO, now, payDO.getOrderNo());
@@ -248,18 +260,41 @@ public class PayService {
                         inviteLog.setInviteAmount(parentAmount);
                         inviteLogService.updateByNewUserId(inviteLog);
                     });
+                    //直接下级用户首次充值后，获得一次抽奖机会。
+                    //奖励机制：每次奖励下级首次充值金额的5%-8%
+                    userPrizeListService.addUserPrize(userDO.getParentId(), PrizeStatusEnum.CHARGE.getCode(), relPayAmount, "0.05-0.08");
                 }
                 userService.updateFirstRechargeById(userDO.getId());
+                //充值活动赠送
+                String sendSwitch = RedisUtils.getString(DictConsts.PAY_SEND_BALANCE_SWITCH);
+                if (StringUtils.isNotBlank(sendSwitch) && "true".equalsIgnoreCase(sendSwitch)) {
+                    //充值活动赠送
+                    BalanceDO sendBalanceDO = new BalanceDO();
+                    sendBalanceDO.setAmount(relPayAmount.multiply(new BigDecimal(RedisUtils.getString(DictConsts.PAY_SEND_BALANCE_RATIO))));
+                    sendBalanceDO.setType(BalanceTypeEnum.F.getCode());
+                    sendBalanceDO.setUserId(payDO.getUserId());
+                    sendBalanceDO.setWithdrawAmount(BigDecimal.ZERO);
+                    sendBalanceDO.setServiceFee(BigDecimal.ZERO);
+                    sendBalanceDO.setStatus(StatusTypeEnum.SUCCESS.getCode());
+                    sendBalanceDO.setCreateTime(now);
+                    sendBalanceDO.setUpdateTime(now);
+                    sendBalanceDO.setOrderNo(payDO.getOrderNo());
+                    balanceService.addBalanceDetail(sendBalanceDO);
+                }
 
                 Long timeOut = DateUtils.getEndOfDay(DateUtils.now()).getTime() - DateUtils.now().getTime();
                 String rechargeKey = CacheConsts.getTodayRechargeKey(userDO.getId());
                 RedisUtils.increment(rechargeKey, timeOut.intValue() / 1000);
+                //提交充值成功事件
+                adjustEventClient.rechargeSuccess(RedisUtils.getString(String.format(CacheConsts.ADID_USER, payDO.getUserId())));
             } else if (PayEnums.PayTypeEnum.PAY_VIP2.getCode().equals(payDO.getType())
                     || PayEnums.PayTypeEnum.PAY_VIP3.getCode().equals(payDO.getType())
                     || PayEnums.PayTypeEnum.PAY_VIP4.getCode().equals(payDO.getType())
                     || PayEnums.PayTypeEnum.PAY_VIP5.getCode().equals(payDO.getType())) {
                 //购买会员成功
                 userService.updateUserVIP(payDO.getUserId(), payDO.getType());
+                //提交购买vip成功事件
+                adjustEventClient.vipSuccess(RedisUtils.getString(String.format(CacheConsts.ADID_USER, payDO.getUserId())));
             } else {
                 throw new BaseException("未知支付");
             }

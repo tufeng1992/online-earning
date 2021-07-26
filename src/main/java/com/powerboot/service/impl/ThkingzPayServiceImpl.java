@@ -133,6 +133,11 @@ public class ThkingzPayServiceImpl implements PaymentService {
     }
 
     @Override
+    public BaseResponse<PaymentResult> payoutBatch(List<CreatePayOutOrder> createPayOutOrderList) {
+        return null;
+    }
+
+    @Override
     public List<WalletResult> wallet() {
         return null;
     }

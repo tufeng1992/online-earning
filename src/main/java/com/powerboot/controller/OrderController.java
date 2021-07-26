@@ -53,9 +53,13 @@ public class OrderController extends BaseController {
     @Autowired
     private BalanceService balanceService;
 
+    @Autowired
+    private UserTaskOrderMissionService userTaskOrderMissionService;
+
 
     private final BigDecimal hundred = new BigDecimal(100);
     private final BigDecimal four_hundred = new BigDecimal(400);
+    private final BigDecimal five_hundred = new BigDecimal("500");
     private final long registerDay = 5L;
 
     @ApiOperation(value = "抢单接口orderGrabbing")
@@ -154,8 +158,9 @@ public class OrderController extends BaseController {
         }
         List<OrderDO> todayList = orderService.getTodayList(userId);
         HashMap<Integer, List<Integer>> vipInfo = ehcacheService.getVipInfo();
-
-        if (todayList.size() >= vipInfo.get(userDO.getMemberLevel()).get(3)) {
+        int todayLimit = todayList.size();
+        int memberLimit = vipInfo.get(userDO.getMemberLevel()).get(3);
+        if (todayLimit >= memberLimit) {
             response = BaseResponse.fail(I18nEnum.ORDER_UPPER_LIMIT_FAIL.getMsg());
             return response;
         }
@@ -222,7 +227,28 @@ public class OrderController extends BaseController {
             response = BaseResponse.fail(I18nEnum.RATE_FAIL.getMsg());
             return response;
         }
+        //上级返利减半check
+        boolean productCommissionCheck = false;
 
+        long time = (new Date().getTime() - userDO.getCreateTime().getTime()) / 1000 / 3600 / 24;
+        String flag = RedisUtils.getValue(DictAccount.INVITE_FLAG_HALF, String.class);
+        if (!StringUtils.isEmpty(flag) && Integer.parseInt(flag) > 0) {
+            //受益减半判断，注册7日后，仍未有有效邀请记录用户
+            if (time >= Integer.parseInt(flag)) {
+                String userKey = "user_count_" + userId.toString();
+                String countStr = RedisUtils.getValue(userKey, String.class);
+                Integer count = 0;
+                if (StringUtils.isEmpty(countStr)) {
+                    count = userService.getCountPeople(userDO.getId());
+                    RedisUtils.setValue(userKey, count.toString(), 600);
+                } else {
+                    count = Integer.valueOf(countStr);
+                }
+                if (count == 0) {
+                    productCommissionCheck = true;
+                }
+            }
+        }
 
         long days = getDays(userDO);
         //获取vip对应分润比例
@@ -236,7 +262,7 @@ public class OrderController extends BaseController {
                 orderDO.setOneRatio(vipInfo.get(userDO1.getMemberLevel()).get(0).longValue());
                 //注册满5天并且不充值，上级受益变为1/4
                 if(days>= registerDay && userDO.getFirstRecharge() != 1){
-                    orderDO.setOneAmount(orderDO.getProductCommission().multiply(new BigDecimal(orderDO.getOneRatio()).divide(four_hundred, 2, BigDecimal.ROUND_DOWN)));
+                    orderDO.setOneAmount(orderDO.getProductCommission().multiply(new BigDecimal(orderDO.getOneRatio()).divide(productCommissionCheck ? five_hundred : four_hundred, 2, BigDecimal.ROUND_DOWN)));
                 }else {
                     orderDO.setOneAmount(orderDO.getProductCommission().multiply(new BigDecimal(orderDO.getOneRatio()).divide(hundred, 2, BigDecimal.ROUND_DOWN)));
                 }
@@ -258,12 +284,10 @@ public class OrderController extends BaseController {
                     orderDO.setTwoRatio(vipInfo.get(userDO2.getMemberLevel()).get(1).longValue());
                     //注册满5天并且不充值，上级受益变为1/4
                     if(days >= registerDay && userDO.getFirstRecharge() != 1){
-                        orderDO.setTwoAmount(orderDO.getProductCommission().multiply(new BigDecimal(orderDO.getTwoRatio()).divide(four_hundred, 2, BigDecimal.ROUND_DOWN)));
+                        orderDO.setTwoAmount(orderDO.getProductCommission().multiply(new BigDecimal(orderDO.getTwoRatio()).divide(productCommissionCheck ? five_hundred : four_hundred, 2, BigDecimal.ROUND_DOWN)));
                     }else {
                         orderDO.setTwoAmount(orderDO.getProductCommission().multiply(new BigDecimal(orderDO.getTwoRatio()).divide(hundred, 2, BigDecimal.ROUND_DOWN)));
                     }
-
-                    orderDO.setTwoAmount(orderDO.getProductCommission().multiply(new BigDecimal(orderDO.getTwoRatio()).divide(hundred)));
 
                     if (userDO.getFirstRecharge() >= 0) {
                         //更新余额
@@ -285,7 +309,7 @@ public class OrderController extends BaseController {
 
                         //注册满5天并且不充值，上级受益变为1/4
                         if(days >= registerDay && userDO.getFirstRecharge() != 1){
-                            orderDO.setThreeAmount(orderDO.getProductCommission().multiply(new BigDecimal(orderDO.getThreeRatio()).divide(four_hundred, 2, BigDecimal.ROUND_DOWN)));
+                            orderDO.setThreeAmount(orderDO.getProductCommission().multiply(new BigDecimal(orderDO.getThreeRatio()).divide(productCommissionCheck ? five_hundred : four_hundred, 2, BigDecimal.ROUND_DOWN)));
                         }else {
                             orderDO.setThreeAmount(orderDO.getProductCommission().multiply(new BigDecimal(orderDO.getThreeRatio()).divide(hundred, 2, BigDecimal.ROUND_DOWN)));
                         }
@@ -320,8 +344,19 @@ public class OrderController extends BaseController {
         orderService.save(orderDO);
 
         if (userDO.getFirstTask() == 0) {
-            userDO.setFirstTask(1);
-            userService.updateByIdAndVersion(userDO);
+            UserDO tempUser = new UserDO();
+            tempUser.setId(userDO.getId());
+            tempUser.setFirstTask(1);
+            tempUser.setVersion(userDO.getVersion());
+            userService.updateByIdAndVersion(tempUser);
+        }
+        //如果今天刷单数已达到限制，记录用户完成今日的刷单任务
+        if ((todayLimit + 1) >= memberLimit) {
+            BigDecimal taskOrderAmount = orderDO.getProductCommission();
+            for (OrderDO todayOrder : todayList) {
+                taskOrderAmount = taskOrderAmount.add(todayOrder.getProductCommission());
+            }
+            userTaskOrderMissionService.addMissionLog(userId, memberLimit, taskOrderAmount);
         }
         RedisUtils.setValue(param.getOrderNumber(), param.getOrderNumber(), 600);
         return response;

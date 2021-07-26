@@ -116,6 +116,7 @@
 			<if test="thirdResponse != null">`third_response` = #{thirdResponse}, </if>
 			<if test="applyStatus != null">`apply_status` = #{applyStatus}, </if>
 			<if test="remark != null">`remark` = #{remark}, </if>
+			<if test="thirdUrl != null">`third_url` = #{thirdUrl}, </if>
 		</set>
 		where id = #{id}
 	</update>

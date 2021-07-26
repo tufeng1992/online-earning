@@ -10,6 +10,7 @@ import com.powerboot.domain.UserDO;
 import com.powerboot.enums.BalanceTypeEnum;
 import com.powerboot.enums.InviteUserStatusEnum;
 import com.powerboot.enums.StatusTypeEnum;
+import com.powerboot.enums.UserRoleEnum;
 import com.powerboot.request.LoginRequest;
 import com.powerboot.request.LogoutRequest;
 import com.powerboot.request.ModifyPasswordRequest;
@@ -65,17 +66,18 @@ public class SsoController extends BaseController {
     @Autowired
     private InviteLogService inviteLogService;
 
+    @Autowired
+    private BlackUserLogService blackUserLogService;
+
     @ApiOperation("登录")
     @PostMapping("/login")
     @Transactional(rollbackFor = Exception.class)
-    public BaseResponse<SsoResponse> login(HttpServletRequest httpServletRequest,
-        @RequestBody @ApiParam(name = "登录条件") LoginRequest request) {
+    public BaseResponse<SsoResponse> login(@RequestBody @ApiParam(name = "登录条件") LoginRequest request,
+                                           HttpServletRequest httpServletRequest) {
         SsoResponse ssoResponse = new SsoResponse();
-        String whitePhone = RedisUtils.getValue(DictConsts.WHITE_PHONE, String.class);
         String ip = this.getIp(httpServletRequest);
         //白名单用户不验证手机正确性直接校验账号密码
-        if (StringUtils.isBlank(whitePhone) ||
-            !Arrays.asList(whitePhone.split(",")).contains(request.getMobile())) {
+        if (!checkWhitePhone(request.getMobile(), null)) {
             //手机校验
             if (StringUtils.isBlank(request.getMobile())) {
                 return BaseResponse.fail(I18nEnum.MOBILE_NOT_EMPTY.getMsg());
@@ -97,46 +99,56 @@ public class SsoController extends BaseController {
         if (1 == user.getBlackFlag()) {
             return BaseResponse.fail(I18nEnum.BLACK_LOGIN_FAIL.getMsg());
         }
-        //设备号风控校验
-        if (StringUtils.isNotBlank(request.getDeviceNumber())) {
-            Map<String, Object> deviceMap = Maps.newHashMap();
-            deviceMap.put("deviceNumber", request.getDeviceNumber());
-            List<UserDO> limit = userService.list(deviceMap);
-            Integer userLoginDeviceLimitCount = RedisUtils.getValue(DictConsts.USER_LOGIN_DEVICE_LIMIT_COUNT, Integer.class);
-            if (limit.size() > userLoginDeviceLimitCount) {
-                int t = limit.size() - userLoginDeviceLimitCount;
-                for (int i = 0; i < t; i++) {
-                    UserDO temp = limit.get(i);
-                    if (temp.getId().equals(user.getId())) {
-                        userService.blockedUser(user);
-                        return BaseResponse.fail(I18nEnum.REPETITION_DEVICE_LOGIN_FAIL.getMsg());
-                    }
-                }
-            }
-            if (StringUtils.isBlank(user.getDeviceNumber()) || !user.getDeviceNumber().equals(request.getDeviceNumber())) {
-                user.setDeviceNumber(request.getDeviceNumber());
-                userService.updateByIdAndVersion(user);
-            }
-        }
-        //ip风控校验
-        if (StringUtils.isNotBlank(ip)) {
-            Map<String, Object> ipMap = Maps.newHashMap();
-            ipMap.put("registerIp", ip);
-            List<UserDO> limit = userService.list(ipMap);
-            Integer userLoginIpLimitCount = RedisUtils.getValue(DictConsts.USER_LOGIN_IP_LIMIT_COUNT, Integer.class);
-            if (limit.size() > userLoginIpLimitCount) {
-                int t = limit.size() - userLoginIpLimitCount;
-                for (int i = 0; i < t; i++) {
-                    UserDO temp = limit.get(i);
-                    if (temp.getId().equals(user.getId())) {
-                        userService.blockedUser(user);
-                        return BaseResponse.fail(I18nEnum.REPETITION_DEVICE_LOGIN_FAIL.getMsg());
-                    }
-                }
-            }
-        }
         if (!user.getPassword().equals(request.getPassword())) {
             return BaseResponse.fail(I18nEnum.PASSWORD_ERROR.getMsg());
+        }
+
+        //验证白名单
+        if (!checkWhitePhone(request.getMobile(), user)) {
+            //设备号风控校验
+            if (StringUtils.isNotBlank(request.getDeviceNumber())) {
+                logger.info("deviceNumber valid, mobile:{},  deviceNumber:{}", request.getMobile(), request.getDeviceNumber());
+                Map<String, Object> deviceMap = Maps.newHashMap();
+                deviceMap.put("deviceNumber", request.getDeviceNumber());
+                deviceMap.put("blackFlag", 0);
+                List<UserDO> limit = userService.list(deviceMap);
+                Integer userLoginDeviceLimitCount = RedisUtils.getValue(DictConsts.USER_LOGIN_DEVICE_LIMIT_COUNT, Integer.class);
+                if (limit.size() > userLoginDeviceLimitCount) {
+                    //如果超过限制，截取出最早登录的用户
+                    List<UserDO> tempList = limit.subList(0, userLoginDeviceLimitCount);
+                    //如果当前用户不在截取出来的用户列表中，则拉黑当前用户
+                    UserDO temp = tempList.stream().filter(u -> u.getId().equals(user.getId())).findFirst().orElse(null);
+                    if (null == temp) {
+                        userService.blockedUser(user);
+                        blackUserLogService.addBlackUserLog(user.getId(), "设备号重复：" + request.getDeviceNumber(), user.getSaleId());
+                        return BaseResponse.fail(I18nEnum.REPETITION_DEVICE_LOGIN_FAIL.getMsg());
+                    }
+                }
+                if (StringUtils.isBlank(user.getDeviceNumber()) || !user.getDeviceNumber().equals(request.getDeviceNumber())) {
+                    user.setDeviceNumber(request.getDeviceNumber());
+                    userService.updateByIdAndVersion(user);
+                }
+            }
+            //ip风控校验
+            if (StringUtils.isNotBlank(ip)) {
+                logger.info("ip valid, mobile:{},  ip:{}", request.getMobile(), ip);
+                Map<String, Object> ipMap = Maps.newHashMap();
+                ipMap.put("registerIp", ip);
+                ipMap.put("blackFlag", 0);
+                List<UserDO> limit = userService.list(ipMap);
+                Integer userLoginIpLimitCount = RedisUtils.getValue(DictConsts.USER_LOGIN_IP_LIMIT_COUNT, Integer.class);
+                if (limit.size() > userLoginIpLimitCount) {
+                    //如果超过限制，截取出最早登录的用户
+                    List<UserDO> tempList = limit.subList(0, userLoginIpLimitCount);
+                    //如果当前用户不在截取出来的用户列表中，则拉黑当前用户
+                    UserDO temp = tempList.stream().filter(u -> u.getId().equals(user.getId())).findFirst().orElse(null);
+                    if (null == temp) {
+                        userService.blockedUser(user);
+                        blackUserLogService.addBlackUserLog(user.getId(), "IP重复：" + ip, user.getSaleId());
+                        return BaseResponse.fail(I18nEnum.REPETITION_DEVICE_LOGIN_FAIL.getMsg());
+                    }
+                }
+            }
         }
 
         String ssoKey = String.format(CacheConsts.SSO_USER, user.getId());
@@ -201,7 +213,9 @@ public class SsoController extends BaseController {
             logger.error("error", e);
         }
         RedisUtils.setValue(ssoKey, user.getId().toString());
-
+        if (StringUtils.isNotBlank(request.getAdid())) {
+            RedisUtils.setValue(String.format(CacheConsts.ADID_USER, user.getId()), request.getAdid());
+        }
         return BaseResponse.success(ssoResponse);
     }
 
@@ -299,5 +313,29 @@ public class SsoController extends BaseController {
                 balanceService.addBalanceDetail(parent);
             });
         }
+    }
+
+    /**
+     * 验证白名单
+     * @param mobile
+     * @param userDO
+     * @return
+     */
+    private boolean checkWhitePhone(String mobile, UserDO userDO) {
+        logger.info("checkWhitePhone mobile:{}", mobile);
+        //如果是客服则直接返回true
+        if (null != userDO && UserRoleEnum.SALE.getCode().equals(userDO.getRole())) {
+            logger.info("checkWhitePhone mobile:{} match SALE", mobile);
+            return true;
+        }
+        //否则校验白名单配置
+        String whitePhone = RedisUtils.getValue(DictConsts.WHITE_PHONE, String.class);
+        if (StringUtils.isNotBlank(whitePhone) &&
+                Arrays.asList(whitePhone.split(",")).contains(mobile)) {
+            logger.info("checkWhitePhone mobile:{} match WHITE_PHONE", mobile);
+            return true;
+        }
+        logger.info("checkWhitePhone mobile:{} not match", mobile);
+        return false;
     }
 }

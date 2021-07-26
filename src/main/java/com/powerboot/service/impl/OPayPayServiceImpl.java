@@ -104,6 +104,11 @@ public class OPayPayServiceImpl implements PaymentService {
     }
 
     @Override
+    public BaseResponse<PaymentResult> payoutBatch(List<CreatePayOutOrder> createPayOutOrderList) {
+        return null;
+    }
+
+    @Override
     public BaseResponse<PaymentResult> payIn(CreatePayInOrder createPayInOrder) {
         PayDO payDO = createPayInOrder.getPayDO();
         UserDO userDO = createPayInOrder.getUserDO();

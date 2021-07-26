@@ -2,9 +2,12 @@ package com.powerboot.request;
 
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
+import lombok.Data;
+
 import javax.validation.constraints.NotNull;
 
 @ApiModel
+@Data
 public class LoginRequest extends BaseRequest{
 
     @ApiModelProperty("手机号")
@@ -12,6 +15,9 @@ public class LoginRequest extends BaseRequest{
 
     @ApiModelProperty("密码")
     private String password;
+
+    @ApiModelProperty("谷歌adid")
+    private String adid;
 
     public String getMobile() {
         return mobile;

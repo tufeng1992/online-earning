@@ -374,8 +374,11 @@
 			<if test="registerIp != null">
 				and register_ip = #{registerIp}
 			</if>
+			<if test="blackFlag != null">
+				and black_flag = #{blackFlag}
+			</if>
 		</where>
-		order by create_time desc
+		order by create_time
 	</select>
 
 	<select id="getUserByAccountNumber" resultType="com.powerboot.domain.UserDO">

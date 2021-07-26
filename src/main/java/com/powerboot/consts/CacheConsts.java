@@ -24,6 +24,11 @@ public class CacheConsts {
 
     public static final String SSO_USER = "sso:%s";
 
+    /**
+     * 用户谷歌adid缓存
+     */
+    public static final String ADID_USER = "ADID:%s";
+
     //借款列表
     public static final String LOAN_LIST = "loan_list";
 
@@ -42,6 +47,11 @@ public class CacheConsts {
      * 用户已获邀请奖励次数
      */
     public static final String USER_INVITE_REWARD_COUNT = "USER_INVITE_REWARD_COUNT:%s";
+
+    /**
+     * PAYSTACK用户账户code
+     */
+    public static final String PAYSTACK_USER_RECIPIENT = "PAYSTACK_USER_RECIPIENT:%s";
 
     //用户每日提现key
     public static String getTodayRechargeKey(Long userId){

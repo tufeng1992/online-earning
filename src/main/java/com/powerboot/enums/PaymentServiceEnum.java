@@ -20,6 +20,7 @@ public enum  PaymentServiceEnum {
     GMS("16", "GmsPay"),
     SEPRO("17", "SeproPay"),
     THKINGZ("18", "ThkingzPay"),
+    QEAPAY("19", "qeaPay"),
     ;
 
     private final String code;

@@ -105,6 +105,14 @@ public class UserService {
         return CollectionUtils.isEmpty(userDOList) ? null : userDOList.get(0);
     }
 
+    public UserDO getByMobile(String mobile) {
+        EntityWrapper<UserDO> condition = new EntityWrapper();
+        condition.and()
+                .eq("mobile", mobile);
+        List<UserDO> userDOList = userDao.selectList(condition);
+        return CollectionUtils.isEmpty(userDOList) ? null : userDOList.get(0);
+    }
+
     public int updateByIdAndVersion(UserDO user) {
         return userDao.update(user);
     }
@@ -243,7 +251,7 @@ public class UserService {
         } else {
             userDO.setBalance(BigDecimal.ONE);
         }
-        int saveSuccess = userDao.save(userDO);
+        int saveSuccess = userDao.insert(userDO);
         if (saveSuccess <= 0) {
             return BaseResponse.fail(I18nEnum.REGISTER_FAIL.getMsg());
         }
@@ -468,6 +476,7 @@ public class UserService {
     public int blockedUser(UserDO user) {
         user.setLoginFlag(0);
         user.setBlackFlag(1);
+        logger.info("blockedUser userId:{}", user.getId());
         return updateByIdAndVersion(user);
     }
 }

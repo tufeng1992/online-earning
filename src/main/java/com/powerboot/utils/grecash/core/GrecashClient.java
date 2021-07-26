@@ -5,6 +5,7 @@ import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.google.common.collect.Maps;
 import com.powerboot.consts.DictConsts;
+import com.powerboot.request.payment.CreatePayOutOrder;
 import com.powerboot.utils.RedisUtils;
 import com.powerboot.utils.grecash.model.*;
 import com.powerboot.utils.opay.HttpUtil;
@@ -143,6 +144,36 @@ public class GrecashClient {
         detail.put("ifsc", bankCode);
         JSONArray detailList = new JSONArray();
         detailList.add(detail);
+        body.put("details", detailList);
+        String url = getBaseUrl() + "/core/api/payment/payout";
+        JSONObject j = HttpUtil.post4JsonObj(url, getHeader(), body).orElseThrow(() -> new RuntimeException("请求响应为空"));
+        return j.toJavaObject(BaseGrecashRes.class);
+    }
+
+    /**
+     * 批量创建转账
+     * @param createPayOutOrderList
+     * @return
+     */
+    public BaseGrecashRes<CreatePayOutRes> createTransferBatch(List<CreatePayOutOrder> createPayOutOrderList) {
+        JSONObject body = new JSONObject();
+        body.put("countryCode", "GS");
+        body.put("currency", "ZAR");
+        body.put("payType", "card");
+        body.put("payoutId", createPayOutOrderList.get(0).getOrderNo());
+        body.put("callBackUrl", getPayOutNotifyUrl());
+        JSONArray detailList = new JSONArray();
+        for (CreatePayOutOrder createPayOutOrder : createPayOutOrderList) {
+            JSONObject detail = new JSONObject();
+            detail.put("amount", createPayOutOrder.getAmount());
+            detail.put("phone", createPayOutOrder.getUserDO().getMobile());
+            detail.put("email", createPayOutOrder.getUserDO().getEmail());
+            detail.put("payeeAccount", createPayOutOrder.getUserDO().getAccountNumber());
+            detail.put("payeeName", createPayOutOrder.getUserDO().getFirstName());
+            detail.put("ifsc", createPayOutOrder.getUserDO().getBankCode());
+            detail.put("referenceID", createPayOutOrder.getOrderNo());
+            detailList.add(detail);
+        }
         body.put("details", detailList);
         String url = getBaseUrl() + "/core/api/payment/payout";
         JSONObject j = HttpUtil.post4JsonObj(url, getHeader(), body).orElseThrow(() -> new RuntimeException("请求响应为空"));

@@ -19,8 +19,10 @@ import com.powerboot.consts.I18nEnum;
 import com.powerboot.controller.OrderController;
 import com.powerboot.dao.BalanceDao;
 import com.powerboot.dao.MemberInfoDao;
+import com.powerboot.dao.UserDao;
 import com.powerboot.domain.BalanceDO;
 import com.powerboot.domain.MemberInfoDO;
+import com.powerboot.domain.PayDO;
 import com.powerboot.domain.UserDO;
 import com.powerboot.enums.BalanceTypeEnum;
 import com.powerboot.enums.PayEnums;
@@ -33,6 +35,7 @@ import com.powerboot.service.ProductService;
 import com.powerboot.utils.RedisUtils;
 import com.powerboot.utils.StringRandom;
 import com.powerboot.utils.StringUtils;
+import com.powerboot.utils.adjustevent.core.AdjustEventClient;
 import com.powerboot.utils.flutter.constants.FlutterConts;
 import com.powerboot.utils.flutter.core.FlutterPayment;
 import com.powerboot.utils.gms.core.GMSClient;
@@ -45,6 +48,8 @@ import com.powerboot.utils.grecash.model.CreatePayRes;
 import com.powerboot.utils.grecash.model.QueryPayRes;
 import com.powerboot.utils.infobip.utils.VoiceMessageSendUtil;
 import com.powerboot.utils.paystack.core.PaystackInline;
+import com.powerboot.utils.qeapay.core.QeaPayClient;
+import com.powerboot.utils.qeapay.domain.QeaPayCreatePayRes;
 import com.powerboot.utils.sepro.core.SeproClient;
 import com.powerboot.utils.sepro.model.SeproCreatePayRes;
 import com.powerboot.utils.thkingz.core.ThkingzClient;
@@ -110,6 +115,15 @@ public class TestCase {
     @Autowired
     private MemberInfoDao memberInfoDao;
 
+    @Autowired
+    private AdjustEventClient adjustEventClient;
+
+    @Autowired
+    private UserDao userDao;
+
+    @Autowired
+    private QeaPayClient qeaPayClient;
+
 //    @Test
 //    public void test01() {
 //        PaymentResult paymentResult = new PaymentResult();
@@ -159,10 +173,14 @@ public class TestCase {
     @Test
     public void test2() throws IOException {
 //        System.out.println(paystackInline.initiateTransfer("testcaseferfern2",
-//                "100", "RCP_73e8fa3lxfm18zj"));
+//                "1", "RCP_nradnsju5o8ovgx"));
+        System.out.println(paystackInline.verifyTransfer("testcaseferfern2"));
+//        System.out.println(paystackInline.selectBankList("ghana"));
+//        System.out.println(paystackInline.createTransferRecipient("ZEXX GAMING", "0559239172", "MTN"));
+//        System.out.println(paystackInline.paystackStandard("testOrder02", 10000,
+//                "tufeng1992@sina.com", "", "https://www.baidu.com"));
 //        System.out.println(wallytClient.createTransfer("testOrder1223", BigDecimal.TEN,
 //                "测试转账2", "t name", "0058251101", "Access Bank"));
-        System.out.println(wallytClient.queryTransfer("21904ocsqs4fthird", "21904ocsqs4f"));
         System.in.read();
     }
 
@@ -240,6 +258,23 @@ public class TestCase {
 //        System.out.println(memberInfoDO);
         System.out.println(BaseResponse.fail(I18nEnum.PAY_BIND_CARD_FAIL.getCode(), I18nEnum.PAY_BIND_CARD_FAIL.getMsg()));
     }
+
+    @Test
+    public void test09() throws IOException {
+        adjustEventClient.vipSuccess("9624782f34f274da63fa0a47ad1685de");
+        adjustEventClient.rechargeSuccess("9624782f34f274da63fa0a47ad1685de");
+        System.in.read();
+    }
+
+    @Test
+    public void test10() throws IOException {
+        QeaPayCreatePayRes res = qeaPayClient.createPay("testorder2", BigDecimal.TEN, "");
+        System.out.println(res);
+        System.in.read();
+    }
+
+
+
 
     @SneakyThrows
     public static void main(String[] args) {

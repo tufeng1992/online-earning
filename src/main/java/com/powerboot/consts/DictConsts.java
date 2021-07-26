@@ -128,6 +128,12 @@ public class DictConsts {
     //支付开关1-开,0-关
     public static final String PAY_SWITCH = "PAY_SWITCH";
 
+    //支付赠送余额开关
+    public static final String PAY_SEND_BALANCE_SWITCH = "PAY_SEND_BALANCE_SWITCH";
+
+    //支付赠送余额比例
+    public static final String PAY_SEND_BALANCE_RATIO = "PAY_SEND_BALANCE_RATIO";
+
     //系统支付关闭通知文案
     public static final String PAY_CLOSE_CONTENT = "PAY_CLOSE_CONTENT";
 
@@ -667,6 +673,11 @@ public class DictConsts {
     public static final String SEND_SMS_SWITCH = "SEND_SMS_SWITCH";
 
     /**
+     * 注册发送短信开关
+     */
+    public static final String SEND_REGISTER_SMS_SWITCH = "SEND_REGISTER_SMS_SWITCH";
+
+    /**
      * 提现校验任务开关
      */
     public static final String PAY_OUT_CHECK_JOB_SWITCH = "PAY_OUT_CHECK_JOB_SWITCH";
@@ -767,4 +778,63 @@ public class DictConsts {
      * 邀请奖励金额
      */
     public static final String INVITE_REWARD_AMOUNT = "INVITE_REWARD_AMOUNT";
+
+    /**
+     * adjust事件埋点授权token
+     */
+    public static final String ADJUST_EVENT_AUTH = "ADJUST_EVENT_AUTH";
+
+    /**
+     * adjust事件埋点基础url
+     */
+    public static final String ADJUST_EVENT_URL = "ADJUST_EVENT_URL";
+    /**
+     * adjust事件埋点app token
+     */
+    public static final String ADJUST_EVENT_APP_TOKEN = "ADJUST_EVENT_APP_TOKEN";
+
+    /**
+     * adjust事件埋点 充值成功事件名称
+     */
+    public static final String ADJUST_EVENT_RECHARGE_SUCCESS = "ADJUST_EVENT_RECHARGE_SUCCESS";
+
+    /**
+     * adjust事件埋点 购买vip成功事件名称
+     */
+    public static final String ADJUST_EVENT_VIP_SUCCESS = "ADJUST_EVENT_VIP_SUCCESS";
+
+    /**
+     * qeapay地址
+     */
+    public static final String QEAPAY_BASE_URL = "QEAPAY_BASE_URL";
+
+    /**
+     * qeapay商户id
+     */
+    public static final String QEAPAY_MERCHANT_ID = "QEAPAY_MERCHANT_ID";
+
+    /**
+     * qeapay支付回调地址
+     */
+    public static final String QEAPAY_PAY_NOTIFY_URL = "QEAPAY_PAY_NOTIFY_URL";
+
+    /**
+     * qeapay代付回调地址
+     */
+    public static final String QEAPAY_PAY_OUT_NOTIFY_URL = "QEAPAY_PAY_OUT_NOTIFY_URL";
+
+    /**
+     * qeapay支付重定向地址
+     */
+    public static final String QEAPAY_PAY_REDIRECT_URL = "QEAPAY_PAY_REDIRECT_URL";
+
+    /**
+     * 支付key
+     */
+    public static final String QEAPAY_PAY_IN_KEY = "QEAPAY_PAY_IN_KEY";
+
+    /**
+     * 代付key
+     */
+    public static final String QEAPAY_PAY_OUT_KEY = "QEAPAY_PAY_OUT_KEY";
 }

@@ -12,7 +12,7 @@ public class ExecutorConfig {
 
     @Bean("commonExecutor")
     public ExecutorService commonExecutor() {
-        return new ThreadPoolExecutor(5, 5, 60, TimeUnit.SECONDS,
+        return new ThreadPoolExecutor(5, 20, 60, TimeUnit.SECONDS,
             new LinkedBlockingDeque<>(1000), new ThreadPoolExecutor.CallerRunsPolicy());
 
     }

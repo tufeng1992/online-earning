@@ -36,7 +36,7 @@ public class BankController extends BaseController {
             return BaseResponse.success(res);
         }
         PaystackInline paystackInline = new PaystackInline();
-        JSONObject jsonObject = paystackInline.selectBankList("");
+        JSONObject jsonObject = paystackInline.selectBankList("ghana");
         PayStackResponse response = com.alibaba.fastjson.JSONObject.parseObject(jsonObject.toString(), PayStackResponse.class);
         if (response.getStatus()) {
             res = JSONArray.parseArray(response.getData().toString(), PayStackBank.class);
@@ -51,132 +51,100 @@ public class BankController extends BaseController {
         String json = "\n" +
                 "  [    \n" +
                 "    {\n" +
-                "      \"code\": \"KBANK\",\n" +
-                "      \"name\": \"KASIKORNBANK PCL\"\n" +
+                "      \"code\": \"ZAR10010\",\n" +
+                "      \"name\": \"Absa\"\n" +
                 "    },\n" +
                 "    {\n" +
-                "      \"code\": \"BBL\",\n" +
-                "      \"name\": \"BANGKOK BANK PUBLIC COMPANY LTD.\"\n" +
+                "      \"code\": \"ZAR10011\",\n" +
+                "      \"name\": \"NedBank\"\n" +
                 "    },\n" +
                 "    {\n" +
-                "      \"code\": \"BAAC\",\n" +
-                "      \"name\": \"BANK FOR AGRICULTURE AND AGRICULTURAL CO-OPERATIVES\"\n" +
+                "      \"code\": \"ZAR10012\",\n" +
+                "      \"name\": \"Capitec\"\n" +
                 "    },\n" +
                 "    {\n" +
-                "      \"code\": \"BOA\",\n" +
-                "      \"name\": \"BANK OF AMERICA NT&SA\"\n" +
+                "      \"code\": \"ZAR10013\",\n" +
+                "      \"name\": \"Standard\"\n" +
                 "    },\n" +
                 "    {\n" +
-                "      \"code\": \"BAY\",\n" +
-                "      \"name\": \"BANK OF AYUDHAYA PUBLIC COMPANY LTD.\"\n" +
+                "      \"code\": \"ZAR10014\",\n" +
+                "      \"name\": \"Fnb\"\n" +
                 "    },\n" +
                 "    {\n" +
-                "      \"code\": \"BOC\",\n" +
-                "      \"name\": \"Bank of China (Thai) PCL\"\n" +
+                "      \"code\": \"ZAR10015\",\n" +
+                "      \"name\": \"African Bank\"\n" +
                 "    },\n" +
                 "    {\n" +
-                "      \"code\": \"BNPP\",\n" +
-                "      \"name\": \"BNP PARIBAS BANGKOK BRANCH\"\n" +
+                "      \"code\": \"ZAR10016\",\n" +
+                "      \"name\": \"Bidvest Bank\"\n" +
                 "    },\n" +
                 "    {\n" +
-                "      \"code\": \"CIMB\",\n" +
-                "      \"name\": \"CIMB THAI BANK PUBLIC COMPANY LTD.\"\n" +
+                "      \"code\": \"ZAR10017\",\n" +
+                "      \"name\": \"Discovery\"\n" +
                 "    },\n" +
                 "    {\n" +
-                "      \"code\": \"CITI\",\n" +
-                "      \"name\": \"CITI BANK N.A.\"\n" +
+                "      \"code\": \"ZAR10018\",\n" +
+                "      \"name\": \"First National Bank\"\n" +
                 "    },\n" +
                 "    {\n" +
-                "      \"code\": \"DB\",\n" +
-                "      \"name\": \"Deutsche Bank AG\"\n" +
+                "      \"code\": \"ZAR10019\",\n" +
+                "      \"name\": \"FirstRand Bank\"\n" +
                 "    },\n" +
                 "    {\n" +
-                "      \"code\": \"GHB\",\n" +
-                "      \"name\": \"GOVERNMENT HOUSING BANK\"\n" +
+                "      \"code\": \"ZAR10020\",\n" +
+                "      \"name\": \"Grindrod Bank\"\n" +
                 "    },\n" +
                 "    {\n" +
-                "      \"code\": \"ICBC\",\n" +
-                "      \"name\": \"INDUSTRIAL AND COMMERCIAL BANK OF CHINA (THAI) PCL\"\n" +
+                "      \"code\": \"ZAR10021\",\n" +
+                "      \"name\": \"Imperial Bank\"\n" +
                 "    },\n" +
                 "    {\n" +
-                "      \"code\": \"TIBT\",\n" +
-                "      \"name\": \"ISLAMIC BANK OF THAILAND\"\n" +
+                "      \"code\": \"ZAR10022\",\n" +
+                "      \"name\": \"Investec Bank\"\n" +
                 "    },\n" +
                 "    {\n" +
-                "      \"code\": \"CHAS\",\n" +
-                "      \"name\": \"JPMorgan Chase Bank, Bangkok Branch\"\n" +
+                "      \"code\": \"ZAR10023\",\n" +
+                "      \"name\": \"Sasfin Bank\"\n" +
                 "    },\n" +
                 "    {\n" +
-                "      \"code\": \"KKB\",\n" +
-                "      \"name\": \"KIATNAKIN BANK PCL\"\n" +
+                "      \"code\": \"ZAR10024\",\n" +
+                "      \"name\": \"Standard Bank\"\n" +
                 "    },\n" +
                 "    {\n" +
-                "      \"code\": \"KTB\",\n" +
-                "      \"name\": \"KRUNG THAI BANK PUBLIC COMPANY LTD.\"\n" +
+                "      \"code\": \"ZAR10025\",\n" +
+                "      \"name\": \"Ubank\"\n" +
                 "    },\n" +
                 "    {\n" +
-                "      \"code\": \"LHBA\",\n" +
-                "      \"name\": \"Land and Houses Bank\"\n" +
+                "      \"code\": \"ZAR10026\",\n" +
+                "      \"name\": \"TymeBank\"\n" +
                 "    },\n" +
                 "    {\n" +
-                "      \"code\": \"MEGA\",\n" +
-                "      \"name\": \"MEGA INTERNATIONAL COMMERCIAL BANK\"\n" +
+                "      \"code\": \"ZAR10027\",\n" +
+                "      \"name\": \"Mercantile Bank\"\n" +
                 "    },\n" +
                 "    {\n" +
-                "      \"code\": \"MHCB\",\n" +
-                "      \"name\": \"MIZUHO CORPORATE BANK\"\n" +
+                "      \"code\": \"ZAR10028\",\n" +
+                "      \"name\": \"Albaraka Bank\"\n" +
                 "    },\n" +
                 "    {\n" +
-                "      \"code\": \"SCBT\",\n" +
-                "      \"name\": \"STANDARD CHARTERED BANK THAI PCL.\"\n" +
+                "      \"code\": \"ZAR10029\",\n" +
+                "      \"name\": \"HBZ Bank\"\n" +
                 "    },\n" +
                 "    {\n" +
-                "      \"code\": \"SMTB\",\n" +
-                "      \"name\": \"Sumitomo Mitsui Trust Bank (Thai) PCL.\"\n" +
+                "      \"code\": \"ZAR10030\",\n" +
+                "      \"name\": \"Habib Overseas Bank\"\n" +
                 "    },\n" +
                 "    {\n" +
-                "      \"code\": \"TBNK\",\n" +
-                "      \"name\": \"Thanachart Bank Public Company Limited\"\n" +
+                "      \"code\": \"ZAR10031\",\n" +
+                "      \"name\": \"Wesbank\"\n" +
                 "    },\n" +
                 "    {\n" +
-                "      \"code\": \"GSB\",\n" +
-                "      \"name\": \"THE GOVERNMENT SAVING BANK\"\n" +
+                "      \"code\": \"ZAR10032\",\n" +
+                "      \"name\": \"Rand Merchant Bank\"\n" +
                 "    },\n" +
                 "    {\n" +
-                "      \"code\": \"HSBC\",\n" +
-                "      \"name\": \"THE HONGKONG & SHANGHAI CORPORATION LTD.\"\n" +
-                "    },\n" +
-                "    {\n" +
-                "      \"code\": \"SCB\",\n" +
-                "      \"name\": \"THE SIAM COMMERCIAL BANK PUBLIC COMPANY\"\n" +
-                "    },\n" +
-                "    {\n" +
-                "      \"code\": \"SMBC\",\n" +
-                "      \"name\": \"THE SUMITOMO MITSU BANKING CORPORATION\"\n" +
-                "    },\n" +
-                "    {\n" +
-                "      \"code\": \"TCRB\",\n" +
-                "      \"name\": \"THE THAI CREDIT RETAIL BANK\"\n" +
-                "    },\n" +
-                "    {\n" +
-                "      \"code\": \"TISCO\",\n" +
-                "      \"name\": \"TISCO Bank PCL\"\n" +
-                "    },\n" +
-                "    {\n" +
-                "      \"code\": \"TMB\",\n" +
-                "      \"name\": \"TMB BANK PUBLIC COMPANY LTD.\"\n" +
-                "    },\n" +
-                "    {\n" +
-                "      \"code\": \"UOB\",\n" +
-                "      \"name\": \"UNITED OVERSEAS BANK (THAI) PUBLIC COMPANY LTD.\"\n" +
-                "    },\n" +
-                "    {\n" +
-                "      \"code\": \"EXIM\",\n" +
-                "      \"name\": \"EXPORT–IMPORT BANK OF THAILAND\"\n" +
-                "    },\n" +
-                "    {\n" +
-                "      \"code\": \"BOT\",\n" +
-                "      \"name\": \"BANK OF THAILAND\"\n" +
+                "      \"code\": \"ZAR10033\",\n" +
+                "      \"name\": \"Bank of Athens\"\n" +
                 "    }\n" +
                 "  ]\n";
         JSONArray j = JSONArray.parseArray(json);

@@ -152,30 +152,6 @@ public class PayController extends BaseController {
                 return BaseResponse.fail(I18nEnum.VIP_UPDATE_COUNT_FAIL.getMsg());
             }
             VIPAmount = memberInfoDO.getAmount();
-
-//            if (param.getType().equals(2)) {
-//                if (childFirstRechargedCount < 5) {
-//                    return BaseResponse.fail(I18nEnum.VIP_UPDATE_COUNT_FAIL.getMsg());
-//                }
-//                VIPAmount = RedisUtils.getValue(DictAccount.VIP2_CHARGE, BigDecimal.class);
-//            } else if (param.getType().equals(3)) {
-//                if (childFirstRechargedCount < 10) {
-//                    return BaseResponse.fail(I18nEnum.VIP_UPDATE_COUNT_FAIL.getMsg());
-//                }
-//                VIPAmount = RedisUtils.getValue(DictAccount.VIP3_CHARGE, BigDecimal.class);
-//            } else if (param.getType().equals(4)) {
-//                if (childFirstRechargedCount < 15) {
-//                    return BaseResponse.fail(I18nEnum.VIP_UPDATE_COUNT_FAIL.getMsg());
-//                }
-//                VIPAmount = RedisUtils.getValue(DictAccount.VIP4_CHARGE, BigDecimal.class);
-//            } else if (param.getType().equals(5)) {
-//                if (childFirstRechargedCount < 20) {
-//                    return BaseResponse.fail(I18nEnum.VIP_UPDATE_COUNT_FAIL.getMsg());
-//                }
-//                VIPAmount = RedisUtils.getValue(DictAccount.VIP5_CHARGE, BigDecimal.class);
-//            } else {
-//                return BaseResponse.fail(I18nEnum.AMOUNT_FAIL.getMsg());
-//            }
             if (VIPAmount == null) {
                 return BaseResponse.fail(I18nEnum.AMOUNT_FAIL.getMsg());
             }

@@ -35,6 +35,13 @@ public interface PaymentService {
     public BaseResponse<PaymentResult> payout(CreatePayOutOrder createPayOutOrder);
 
     /**
+     * 批量提交提现
+     * @param createPayOutOrderList
+     * @return
+     */
+    public BaseResponse<PaymentResult> payoutBatch(List<CreatePayOutOrder> createPayOutOrderList);
+
+    /**
      * 充值/购买VIP
      * @param createPayInOrder
      * @return

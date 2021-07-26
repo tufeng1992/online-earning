@@ -10,15 +10,18 @@ import com.powerboot.domain.UserDO;
 import com.powerboot.request.BaseRequest;
 import com.powerboot.response.*;
 import com.powerboot.service.IncomeMethodsService;
+import com.powerboot.service.SysUserService;
 import com.powerboot.service.UserService;
 import com.powerboot.utils.RedisUtils;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import javax.validation.Valid;
 
+import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -35,6 +38,8 @@ public class PaperworkController extends BaseController {
     private UserService userService;
     @Autowired
     private IncomeMethodsService incomeMethodsService;
+    @Autowired
+    private SysUserService sysUserService;
 
     @ApiOperation(value = "刷单记录数据提供方提示")
     @PostMapping("/orderRecordProvided")
@@ -57,7 +62,14 @@ public class PaperworkController extends BaseController {
         UserDO userDO = userService.get(userId);
         if(userDO!=null){
             String mobileStr = RedisUtils.getValue("CUSTOMER_SERVICE_"+userDO.getTeamFlag(), String.class);
-            response.setMobile(JsonUtils.parseArray(mobileStr, ServiceMobileResponse.class));
+            List<ServiceMobileResponse> mobileList = JsonUtils.parseArray(mobileStr, ServiceMobileResponse.class);
+            if (1 != userDO.getSaleId()) {
+                String whatsapp = sysUserService.getWhatsapp(userDO.getSaleId());
+                if (StringUtils.isNotBlank(whatsapp)) {
+                    mobileList.forEach(serviceMobileResponse -> serviceMobileResponse.setMobileNumber(Collections.singletonList(whatsapp)));
+                }
+            }
+            response.setMobile(mobileList);
         }
         return BaseResponse.success(response);
     }

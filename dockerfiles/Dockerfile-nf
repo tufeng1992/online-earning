@@ -12,4 +12,4 @@ ENTRYPOINT ["tini"]
 
 ADD target/online-earning-1.0.jar .
 
-ENTRYPOINT tini java -Djava.security.egd=file:/dev/./urandom  -jar -Dspring.profiles.active=prdnf online-earning-1.0.jar
+ENTRYPOINT tini java -Djava.security.egd=file:/dev/./urandom  -jar -Xmx8000M -Xms8000M -Dspring.profiles.active=prdnf online-earning-1.0.jar

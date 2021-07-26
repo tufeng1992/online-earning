@@ -60,9 +60,6 @@ public class ProductController extends BaseController {
         UserDO userDO = userService.get(userId);
         List<ProductDO> list = productService.list(map);
 
-//        HashMap<Integer, List<Integer>> hashMapBalance = ehcacheService.getBalanceInfo();
-//        HashMap<Integer, List<Integer>> priceSectionMap = ehcacheService.getPriceSection();
-
         List<ProductListDto> productListDtoList = new ArrayList<>();
 
         //获取用户余额，乘以随机系数获取商品价格
@@ -94,11 +91,6 @@ public class ProductController extends BaseController {
                     po.setIntroduction(o.getIntroduction());
                     po.setDescAmount(o.getDescAmount());
                     po.setLevel(o.getLevel().toString());
-//                    if (o.getLevel() > 1) {
-//                        po.setLevel(String.valueOf((o.getLevel() - 1)));
-//                    } else {
-//                        po.setLevel(String.valueOf(o.getLevel()));
-//                    }
                     po.setProductId(o.getId());
                     po.setRatio(new BigDecimal(balanceArr[3]).divide(new BigDecimal(100)));
                     po.setComment(o.getComment());
@@ -111,56 +103,27 @@ public class ProductController extends BaseController {
                         po.setClickButton(false);
                     }
 
-
-//                    if (o.getLevel().equals(1)) {
-//                        po.setClickButton(true);
-//                    } else if (o.getLevel().equals(2) && totalBalance.compareTo(levelLowPrice) >= 0) {
-//                        po.setClickButton(true);
-//                    } else if (o.getLevel().equals(3) && totalBalance.compareTo(levelLowPrice) >= 0) {
-//                        if (userDO.getMemberLevel() >= o.getUserLevelLimit()) {
-//                            po.setClickButton(true);
-//                        }else {
-//                            po.setClickButton(false);
+//                    long time = (new Date().getTime() - userDO.getCreateTime().getTime()) / 1000 / 3600 / 24;
+//                    String flag = RedisUtils.getValue(DictAccount.INVITE_FLAG_HALF, String.class);
+//                    if (!StringUtils.isEmpty(flag) && Integer.parseInt(flag) > 0) {
+//                        //受益减半判断，注册7日后，仍未有有效邀请记录用户
+//                        if (time >= Integer.parseInt(flag)) {
+//                            String userKey = "user_count_" + userId.toString();
+//                            String countStr = RedisUtils.getValue(userKey, String.class);
+//                            Integer count = 0;
+//                            if (StringUtils.isEmpty(countStr)) {
+//                                count = userService.getCountPeople(userDO.getId());
+//                                RedisUtils.setValue(userKey, count.toString(), 600);
+//                            } else {
+//                                count = Integer.valueOf(countStr);
+//                            }
+//                            if (count == 0) {
+//                                po.setReturnFund(po.getPrice().add(
+//                                        po.getReturnFund().subtract(
+//                                                po.getPrice()).divide(new BigDecimal("5"), 2, BigDecimal.ROUND_DOWN)));
+//                            }
 //                        }
-//                    } else if (o.getLevel().equals(4) && totalBalance.compareTo(levelLowPrice) >= 0) {
-//                        if (userDO.getMemberLevel() >= o.getUserLevelLimit()) {
-//                            po.setClickButton(true);
-//                        }else {
-//                            po.setClickButton(false);
-//                        }
-//                    } else if (o.getLevel().equals(5) && totalBalance.compareTo(levelLowPrice) >= 0) {
-//                        if (userDO.getMemberLevel() >= o.getUserLevelLimit()) {
-//                            po.setClickButton(true);
-//                        }else {
-//                            po.setClickButton(false);
-//                        }
-//                    } else {
-//                        po.setClickButton(false);
 //                    }
-
-                    long time = (new Date().getTime() - userDO.getCreateTime().getTime()) / 1000 / 3600 / 24;
-
-
-                    String flag = RedisUtils.getValue(DictAccount.INVITE_FLAG_HALF, String.class);
-                    if (!StringUtils.isEmpty(flag) && Integer.parseInt(flag) > 0) {
-                        //受益减半判断，注册7日后，仍未有有效邀请记录用户
-                        if (time >= Integer.parseInt(flag)) {
-                            String userKey = "user_count_" + userId.toString();
-                            String countStr = RedisUtils.getValue(userKey, String.class);
-                            Integer count = 0;
-                            if (StringUtils.isEmpty(countStr)) {
-                                count = userService.getCountPeople(userDO.getId());
-                                RedisUtils.setValue(userKey, count.toString(), 600);
-                            } else {
-                                count = Integer.valueOf(countStr);
-                            }
-                            if (count == 0) {
-                                po.setReturnFund(po.getPrice().add(
-                                        po.getReturnFund().subtract(
-                                                po.getPrice()).divide(new BigDecimal("2"), 2, BigDecimal.ROUND_DOWN)));
-                            }
-                        }
-                    }
 
                     //缓存校验
                     RedisUtils.setValue(userId.toString() + po.getProductId() + "price", po.getPrice().toString(), 1200);

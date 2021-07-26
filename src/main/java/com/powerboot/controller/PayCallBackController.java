@@ -20,6 +20,9 @@ import com.powerboot.utils.gms.model.GmsPayOutNotify;
 import com.powerboot.utils.grecash.contants.GrecashConst;
 import com.powerboot.utils.grecash.model.GrecashPayInCallBack;
 import com.powerboot.utils.grecash.model.PayOutNotifyReq;
+import com.powerboot.utils.qeapay.contants.QeaPayConst;
+import com.powerboot.utils.qeapay.domain.QeaPayInNotify;
+import com.powerboot.utils.qeapay.domain.QeaPayOutNotify;
 import com.powerboot.utils.sepro.constants.SeproConst;
 import com.powerboot.utils.sepro.model.SeproPayInNotify;
 import com.powerboot.utils.sepro.model.SeproPayOutNotify;
@@ -139,6 +142,35 @@ public class PayCallBackController extends BaseController{
     public String payStackPayInCallBack(@RequestBody String requestJson) {
         logger.info("payStack 支付回调：" + requestJson);
         return "SUCCESS";
+    }
+
+    @ApiOperation("payStack webhook")
+    @PostMapping("/payStack/webhook")
+    public String paystackWebhookCallBack(@RequestBody String requestJson) {
+        logger.info("payStack webhook：{}", requestJson);
+        com.alibaba.fastjson.JSONObject jsonObject = com.alibaba.fastjson.JSONObject.parseObject(requestJson);
+        String event = jsonObject.getString("event");
+        logger.info("payStack webhook：{}", event);
+        if (event.startsWith("transfer")) {
+            com.alibaba.fastjson.JSONObject data = jsonObject.getJSONObject("data");
+            PayDO payDO = payService.getOrderNo(data.getString("reference"));
+            if (payDO == null){
+                return "order is not exist";
+            }
+            logger.info("payStack webhook,用户ID--{}：{}" ,payDO.getUserId(), requestJson);
+            payService.getByPayOutOrder(payDO.getOrderNo());
+            return "OK";
+        } else if (event.startsWith("charge.success")) {
+            com.alibaba.fastjson.JSONObject data = jsonObject.getJSONObject("data");
+            PayDO payDO = payService.getOrderNo(data.getString("reference"));
+            if (payDO == null){
+                return "order is not exist";
+            }
+            logger.info("payStack webhook,用户ID--{}：{}" ,payDO.getUserId(), requestJson);
+            payService.getByOrderNo(payDO.getOrderNo());
+            return "OK";
+        }
+        return "fail";
     }
 
     @ApiOperation("flutter 支付回调")
@@ -266,10 +298,10 @@ public class PayCallBackController extends BaseController{
     @ApiOperation("grecash 提现回调")
     @PostMapping("/grecash/payOut")
     public String grecashPayoutCallBack(@RequestBody Map<String, Object> requestJson) {
-        logger.info("grecash 提现回调：" + requestJson);
         String jsonStr = com.alibaba.fastjson.JSONObject.toJSONString(requestJson);
+        logger.info("grecash 提现回调：" + jsonStr);
         PayOutNotifyReq payOutNotifyReq = com.alibaba.fastjson.JSONObject.parseObject(jsonStr, PayOutNotifyReq.class);
-        PayDO payDO = payService.getOrderNo(payOutNotifyReq.getMerchantPayoutId());
+        PayDO payDO = payService.getOrderNo(payOutNotifyReq.getReferenceID());
         if (payDO == null){
             return "order is not exist";
         }
@@ -421,6 +453,53 @@ public class PayCallBackController extends BaseController{
         }
         logger.info("thkingz 提现回调,用户ID--{}：{}" ,payDO.getUserId(), thkingzCreatePayOutRes);
         payService.getByPayOutOrder(payDO.getOrderNo());
+        return "success";
+    }
+
+    @ApiOperation("qea 支付回调")
+    @PostMapping("/qea/payIn")
+    @Transactional(rollbackFor = Exception.class)
+    public String qeaPayInCallBack(QeaPayInNotify qeaPayInNotify) {
+        logger.info("qea 支付回调：qeaPayInCallBack : {}", qeaPayInNotify);
+        PayDO payDO = payService.getOrderNo(qeaPayInNotify.getMchOrderNo());
+        if (null != payDO) {
+            payDO.setThirdNo(qeaPayInNotify.getOrderNo());
+            payDO.setThirdStatus(qeaPayInNotify.getTradeResult());
+            if (QeaPayConst.TRADE_RES_1.equalsIgnoreCase(qeaPayInNotify.getTradeResult())) {
+                payDO.setStatus(PayEnums.PayStatusEnum.PAID.getCode());
+            } else {
+                payDO.setStatus(PayEnums.PayStatusEnum.FAIL.getCode());
+            }
+            payService.update(payDO);
+            payService.payInComplete(payDO);
+            return "success";
+        }
+        return "FAIL";
+    }
+
+    @ApiOperation("qea 提现回调")
+    @PostMapping("/qea/payOut")
+    public String qeaPayoutCallBack(QeaPayOutNotify qeaPayOutNotify) {
+        logger.info("qea 提现回调：{}", qeaPayOutNotify);
+        PayDO payDO = payService.getOrderNo(qeaPayOutNotify.getMerTransferId());
+        if (payDO == null){
+            return "order is not exist";
+        }
+        logger.info("qea 提现回调,用户ID--{}：{}" ,payDO.getUserId(), qeaPayOutNotify);
+        payDO.setThirdStatus(qeaPayOutNotify.getTradeResult());
+        payDO.setThirdNo(qeaPayOutNotify.getTradeNo());
+        if (QeaPayConst.TRADE_RES_1.equalsIgnoreCase(qeaPayOutNotify.getTradeResult())){
+            //成功
+            payDO.setStatus(PayEnums.PayStatusEnum.PAID.getCode());
+            payService.payoutSuccess(payDO, PaymentServiceEnum.QEAPAY.getBeanName());
+        }  else if (GMSConst.TRADE_RES_0.equalsIgnoreCase(qeaPayOutNotify.getTradeResult())
+                || GMSConst.TRADE_RES_4.equalsIgnoreCase(qeaPayOutNotify.getTradeResult())) {
+            //do noting
+        } else {
+            //失败
+            payDO.setStatus(PayEnums.PayStatusEnum.FAIL.getCode());
+            payService.payoutFail(payDO, PaymentServiceEnum.QEAPAY.getBeanName());
+        }
         return "success";
     }
 
