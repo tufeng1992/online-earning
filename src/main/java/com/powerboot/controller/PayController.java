@@ -125,14 +125,14 @@ public class PayController extends BaseController {
         if (checkResult.isFail()){
             return checkResult;
         }
-        if (param.getType().equals(1)) {
-            if (StringUtils.isEmpty(userDO.getAccountNumber())) {
-                return BaseResponse.fail(I18nEnum.PAY_BIND_CARD_FAIL.getCode(), I18nEnum.PAY_BIND_CARD_FAIL.getMsg());
-            }
-            if (StringUtils.isEmpty(userDO.getName())) {
-                return BaseResponse.fail(I18nEnum.PAY_NAME_FAIL.getCode(), I18nEnum.PAY_NAME_FAIL.getMsg());
-            }
-        }
+//        if (param.getType().equals(1)) {
+//            if (StringUtils.isEmpty(userDO.getAccountNumber())) {
+//                return BaseResponse.fail(I18nEnum.PAY_BIND_CARD_FAIL.getCode(), I18nEnum.PAY_BIND_CARD_FAIL.getMsg());
+//            }
+//            if (StringUtils.isEmpty(userDO.getName())) {
+//                return BaseResponse.fail(I18nEnum.PAY_NAME_FAIL.getCode(), I18nEnum.PAY_NAME_FAIL.getMsg());
+//            }
+//        }
         if (!param.getType().equals(1)) {
             int childFirstRechargedCount = 9999;
             String createVipChildLimitSwitch = RedisUtils.getString(DictConsts.CREATE_VIP_CHILD_LIMIT_SWITCH);

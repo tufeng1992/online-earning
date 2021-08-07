@@ -244,6 +244,12 @@ public class UserController extends BaseController {
         if (userDO == null || StringUtils.isBlank(userDO.getAccountPhone())) {
             return BaseResponse.fail("555", I18nEnum.BANK_INFO_DEFECT.getMsg());
         }
+        if (StringUtils.isEmpty(userDO.getAccountNumber())) {
+            return BaseResponse.fail(I18nEnum.PAY_BIND_CARD_FAIL.getCode(), I18nEnum.PAY_BIND_CARD_FAIL.getMsg());
+        }
+        if (StringUtils.isEmpty(userDO.getName())) {
+            return BaseResponse.fail(I18nEnum.PAY_NAME_FAIL.getCode(), I18nEnum.PAY_NAME_FAIL.getMsg());
+        }
 
         //提现时间为工作日8~19点
         String nineClock = RedisUtils.getString(DictConsts.WITHDRAW_START_TIME);

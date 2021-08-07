@@ -71,7 +71,7 @@ public class FlutterPayment {
         JSONObject body = new JSONObject();
         body.put("tx_ref", reference);
         body.put("amount", amount);
-        body.put("currency", "NGN");
+        body.put("currency", "GHS");
         body.put("redirect_url", getRedirectUrl());
         body.put("payment_options", "card");
         JSONObject customer = new JSONObject();
@@ -128,10 +128,10 @@ public class FlutterPayment {
         body.put("account_number", accountNumber);
         body.put("amount", amount);
         body.put("narration", narration);
-        body.put("currency", "NGN");
+        body.put("currency", "GHS");
         body.put("reference", reference);
 //        body.put("callback_url", getCallbackUrl());
-        body.put("debit_currency", "NGN");
+        body.put("debit_currency", "GHS");
         String url = getBaseUrl() + "/v3/transfers";
         return HttpUtil.post4JsonObj(url, getHeader(), body).orElseThrow(() -> new RuntimeException("请求响应为空"));
     }

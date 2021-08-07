@@ -19,6 +19,7 @@ public enum BalanceTypeEnum {
     M(13L,"注册活动赠送"),
     N(14L,"下级注册活动赠送"),
     O(15L,"充值活动赠送"),
+    P(16L,"红包奖励赠送"),
     ;
 
     private final Long code;

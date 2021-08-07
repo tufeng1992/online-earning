@@ -150,7 +150,7 @@ public class OrderService {
     //根据用户id获取收益详情
     public TeamMemberDto getDetailByUserId(UserDO userDO, Integer lv, Long upUserid) {
         TeamMemberDto teamMemberDto = new TeamMemberDto();
-        teamMemberDto.setName(userDO.getNikeName());
+        teamMemberDto.setName(userDO.getMobile());
         teamMemberDto.setCreateTime(userDO.getCreateTime());
         List<UserDO> oneUserList = userService.getUserByParentId(userDO.getId());
         teamMemberDto.setNumber(oneUserList.size());

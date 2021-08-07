@@ -5,6 +5,10 @@ public enum PrizeStatusEnum {
     CHARGE(1,"下级用户首充"),
     INVITE(2,"邀请好友"),
     MISSION(3,"完成任务"),
+    //奖励状态 1：未使用、2：已使用、3：已过期
+    STATUS_INIT(1, "未使用"),
+    STATUS_USED(2, "已使用"),
+    STATUS_EXPIRE(3, "已过期"),
     ;
 
     private final Integer code;

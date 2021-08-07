@@ -167,6 +167,12 @@ public class DictConsts {
     //白名单手机号
     public static final String WHITE_PHONE = "WHITE_PHONE";
 
+    //白名单设备号
+    public static final String WHITE_DEVICE = "WHITE_DEVICE";
+
+    //白名单ip
+    public static final String WHITE_IP = "WHITE_IP";
+
 
     //短信请求服务url
     public static final String SMS_SINGLE_REQUEST_SERVER_URL = "SMS_SINGLE_REQUEST_SERVER_URL";
@@ -693,6 +699,11 @@ public class DictConsts {
     public static final String INFOBIP_VOICE_MESSAGE_API_KEY = "INFOBIP_VOICE_MESSAGE_API_KEY";
 
     /**
+     * infobip base url
+     */
+    public static final String INFOBIP_VOICE_MESSAGE_BASE_URL = "INFOBIP_VOICE_MESSAGE_BASE_URL";
+
+    /**
      * infobip from
      */
     public static final String INFOBIP_VOICE_MESSAGE_FROM = "INFOBIP_VOICE_MESSAGE_FROM";
@@ -837,4 +848,19 @@ public class DictConsts {
      * 代付key
      */
     public static final String QEAPAY_PAY_OUT_KEY = "QEAPAY_PAY_OUT_KEY";
+
+    /**
+     * 首充奖励比例
+     */
+    public static final String PRIZE_RATIO_CHARGE = "PRIZE_RATIO_CHARGE";
+
+    /**
+     * 邀请好友奖励比例
+     */
+    public static final String PRIZE_RATIO_INVITE = "PRIZE_RATIO_INVITE";
+
+    /**
+     * 完成任务奖励比例
+     */
+    public static final String PRIZE_RATIO_MISSION = "PRIZE_RATIO_MISSION";
 }

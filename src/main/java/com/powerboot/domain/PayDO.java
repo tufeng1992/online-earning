@@ -6,6 +6,7 @@ import com.powerboot.utils.DateUtils;
 import com.powerboot.utils.LocalDateUtil;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
+import lombok.Data;
 
 import java.io.Serializable;
 import java.math.BigDecimal;
@@ -15,6 +16,7 @@ import java.util.Date;
  * 支付结果
  */
 @ApiModel(value = "支付类")
+@Data
 public class PayDO implements Serializable {
 	
 	//主键id

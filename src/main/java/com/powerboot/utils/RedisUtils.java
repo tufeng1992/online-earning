@@ -138,7 +138,7 @@ public class RedisUtils {
         Class<T> clazz) {
         List<T> resultObj;
         String result = getString(key);
-        if (StringUtils.isEmpty(result)) {
+        if (StringUtils.isEmpty(result) || "PAY_STACK_BANK_LIST".equalsIgnoreCase(result)) {
             List<T> supplierResult = supplier.get();
             if (CollectionUtils.isNotEmpty(supplierResult)) {
                 setValue(key, JsonUtils.toJSONString(supplierResult), timeOut);

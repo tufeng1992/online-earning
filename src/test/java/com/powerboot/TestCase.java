@@ -13,12 +13,14 @@ import com.infobip.model.SmsDestination;
 import com.infobip.model.SmsResponse;
 import com.infobip.model.SmsTextualMessage;
 import com.powerboot.base.BaseResponse;
+import com.powerboot.common.StringCommonUtils;
 import com.powerboot.config.BaseException;
 import com.powerboot.config.SmsSendConfig;
 import com.powerboot.consts.I18nEnum;
 import com.powerboot.controller.OrderController;
 import com.powerboot.dao.BalanceDao;
 import com.powerboot.dao.MemberInfoDao;
+import com.powerboot.dao.SmsSendResponse;
 import com.powerboot.dao.UserDao;
 import com.powerboot.domain.BalanceDO;
 import com.powerboot.domain.MemberInfoDO;
@@ -32,6 +34,7 @@ import com.powerboot.job.SummaryTableJob;
 import com.powerboot.response.pay.PaymentResult;
 import com.powerboot.service.PayService;
 import com.powerboot.service.ProductService;
+import com.powerboot.service.UserTaskOrderMissionService;
 import com.powerboot.utils.RedisUtils;
 import com.powerboot.utils.StringRandom;
 import com.powerboot.utils.StringUtils;
@@ -46,7 +49,8 @@ import com.powerboot.utils.grecash.model.BaseGrecashRes;
 import com.powerboot.utils.grecash.model.CreatePayOutRes;
 import com.powerboot.utils.grecash.model.CreatePayRes;
 import com.powerboot.utils.grecash.model.QueryPayRes;
-import com.powerboot.utils.infobip.utils.VoiceMessageSendUtil;
+import com.powerboot.utils.happylife.core.HappyLifeClient;
+import com.powerboot.utils.infobip.utils.InfobMessageSendUtil;
 import com.powerboot.utils.paystack.core.PaystackInline;
 import com.powerboot.utils.qeapay.core.QeaPayClient;
 import com.powerboot.utils.qeapay.domain.QeaPayCreatePayRes;
@@ -124,34 +128,20 @@ public class TestCase {
     @Autowired
     private QeaPayClient qeaPayClient;
 
-//    @Test
-//    public void test01() {
-//        PaymentResult paymentResult = new PaymentResult();
-//        com.alibaba.fastjson.JSONObject jsonObject = flutterPayment.getTransactions(null, null, "22027pn1c8ujw", null);
-//        if (doCheck(jsonObject)) {
-//            com.alibaba.fastjson.JSONArray data = jsonObject.getJSONArray("data");
-//            if (null != data) {
-//                data.forEach(d -> {
-//                    com.alibaba.fastjson.JSONObject obj = (com.alibaba.fastjson.JSONObject) d;
-//                    if (StringUtils.isNotBlank(paymentResult.getThirdOrderStatus())
-//                            && FlutterConts.PAY_STATUS_SUCCESS.equalsIgnoreCase(paymentResult.getThirdOrderStatus())) {
-//                        return;
-//                    }
-//                    paymentResult.setThirdOrderAmount(obj.getBigDecimal("amount"));
-//                    paymentResult.setDescription(jsonObject.getString("message"));
-//                    paymentResult.setThirdOrderStatus(obj.getString("status"));
-//                    if (FlutterConts.PAY_STATUS_SUCCESS.equalsIgnoreCase(paymentResult.getThirdOrderStatus())) {
-//                        paymentResult.setStatus(PayEnums.PayStatusEnum.PAID.getCode());
-//                    } else if (FlutterConts.PAY_STATUS_PENDING.equalsIgnoreCase(paymentResult.getThirdOrderStatus())) {
-//                        paymentResult.setStatus(PayEnums.PayStatusEnum.PAYING.getCode());
-//                    } else {
-//                        paymentResult.setStatus(PayEnums.PayStatusEnum.FAIL.getCode());
-//                    }
-//                });
-//            }
-//        }
-//        System.out.println(paymentResult);
-//    }
+    @Autowired
+    private UserTaskOrderMissionService userTaskOrderMissionService;
+
+    @Autowired
+    private HappyLifeClient happyLifeClient;
+
+    @Test
+    public void test01() throws IOException {
+        PaymentResult paymentResult = new PaymentResult();
+        com.alibaba.fastjson.JSONObject jsonObject = flutterPayment.createPayment("22027pn1c8ujw", "10",
+                "sdasd@qq.com", "23312345645", "testName");
+        System.out.println(jsonObject.toJSONString());
+        System.in.read();
+    }
 //
 //    private Boolean doCheck(com.alibaba.fastjson.JSONObject jsonObject) {
 //        Boolean check = false;
@@ -165,20 +155,20 @@ public class TestCase {
 //    }
 
     @Autowired
-    private VoiceMessageSendUtil voiceMessageSendUtil;
+    private InfobMessageSendUtil infobMessageSendUtil;
 
     @Autowired
     private SmsSendConfig smsSendConfig;
 
     @Test
     public void test2() throws IOException {
-//        System.out.println(paystackInline.initiateTransfer("testcaseferfern2",
-//                "1", "RCP_nradnsju5o8ovgx"));
-        System.out.println(paystackInline.verifyTransfer("testcaseferfern2"));
+//        System.out.println(paystackInline.initiateTransfer("testcaseferfern4",
+//                "164.02", "RCP_mtdwbluu7emcurn"));
+//        System.out.println(paystackInline.verifyTransfer("testcaseferfern2"));
 //        System.out.println(paystackInline.selectBankList("ghana"));
 //        System.out.println(paystackInline.createTransferRecipient("ZEXX GAMING", "0559239172", "MTN"));
-//        System.out.println(paystackInline.paystackStandard("testOrder02", 10000,
-//                "tufeng1992@sina.com", "", "https://www.baidu.com"));
+        System.out.println(paystackInline.paystackStandard("testOrder03", new BigDecimal("100.00").intValue(),
+                "tufeng1992@sina.com", "", "https://www.baidu.com"));
 //        System.out.println(wallytClient.createTransfer("testOrder1223", BigDecimal.TEN,
 //                "测试转账2", "t name", "0058251101", "Access Bank"));
         System.in.read();
@@ -273,23 +263,32 @@ public class TestCase {
         System.in.read();
     }
 
+    @Test
+    public void test11() throws IOException {
+        userTaskOrderMissionService.addMissionLog(646L, 10, new BigDecimal("1001"));
+        System.in.read();
+    }
 
+    @Test
+    public void test12() throws IOException {
+        String verCode = StringRandom.getStringRandom(6);
+        String msg = StringCommonUtils.buildString("[TaskP] your verification code is {}. To ensure information security, please do not tell others.", verCode);
+        BaseResponse<SmsSendResponse> resp = smsSendConfig.sendKenya("233112233445", msg);
+        System.out.println(resp);
+        System.in.read();
+    }
+
+    @Test
+    public void test13() throws IOException {
+        System.out.println(happyLifeClient.createPay("testOrder", new BigDecimal("10"), null));
+        System.in.read();
+    }
 
 
     @SneakyThrows
     public static void main(String[] args) {
-        String json = "{\"code\":1000,\"info\":\"请求成功\",\"result\":{\"id\":\"PO202116519020200001\"," +
-                "\"merchantId\":\"de5ad6ec-0fa9-4580-9940-f2eb2304f784\",\"merchantPayoutId\":\"159ocwf2s4dm\"," +
-                "\"bizType\":2,\"amount\":1646.56,\"channelId\":\"5\",\"channelPayoutId\":null,\"countryCode\":\"GS\"," +
-                "\"currency\":\"ZAR\",\"payType\":2,\"rate\":0.0500,\"singleCharge\":10.0000," +
-                "\"callBack\":\"https://www.fixmyptwallet.com/pay/callback/grecash/payOut\"," +
-                "\"deductionMethod\":1,\"status\":4,\"approver\":\"System Auto\",\"comment\":null," +
-                "\"createTime\":\"2021-06-14 19:02:02\",\"updateTime\":\"2021-06-14 19:02:02\"}}";
-        JSONObject j = JSONObject.parseObject(json);
-        BaseGrecashRes res = j.toJavaObject(BaseGrecashRes.class);
-        CreatePayOutRes createPayOutRes = ((com.alibaba.fastjson.JSONObject) res.getResult()).toJavaObject(CreatePayOutRes.class);
 
-        System.out.println(createPayOutRes);
+        System.out.println(new org.json.JSONObject().toString());
 
     }
 

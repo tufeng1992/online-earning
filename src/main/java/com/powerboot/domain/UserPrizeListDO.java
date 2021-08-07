@@ -1,7 +1,9 @@
 package com.powerboot.domain;
 
 import com.baomidou.mybatisplus.annotations.TableName;
+import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
+import org.springframework.data.annotation.Transient;
 
 import java.io.Serializable;
 import java.math.BigDecimal;
@@ -43,4 +45,9 @@ public class UserPrizeListDO implements Serializable {
 	private Date createTime;
 	//更新时间
 	private Date updateTime;
+
+	//销售id
+	private Long saleId;
+
+	private transient String userName;
 }

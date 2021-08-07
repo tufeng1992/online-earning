@@ -2,6 +2,7 @@ package com.powerboot.config;
 
 
 import com.alibaba.fastjson.JSON;
+import com.infobip.model.SmsResponse;
 import com.powerboot.base.BaseResponse;
 import com.powerboot.common.HttpRequestUtils;
 import com.powerboot.consts.DictConsts;
@@ -12,7 +13,7 @@ import com.powerboot.utils.RedisUtils;
 import com.powerboot.utils.SmsUtil;
 import com.powerboot.utils.chuanglan.model.request.SmsSendGJRequest;
 import com.powerboot.utils.chuanglan.util.ChuangLanSmsUtil;
-import com.powerboot.utils.infobip.utils.VoiceMessageSendUtil;
+import com.powerboot.utils.infobip.utils.InfobMessageSendUtil;
 import org.apache.commons.collections.CollectionUtils;
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -29,21 +30,25 @@ public class SmsSendConfig {
     Logger logger = LoggerFactory.getLogger(SmsSendConfig.class);
 
     @Autowired
-    private VoiceMessageSendUtil voiceMessageSendUtil;
+    private InfobMessageSendUtil infobMessageSendUtil;
 
     public BaseResponse<SmsSendResponse> sendKenya(String tel, String msg) {
-        //请求地址请登录253云通讯自助通平台查看或者询问您的商务负责人获取
-        String smsSingleRequestServerUrl = RedisUtils.getString(DictConsts.CL_SMS_SEND_GJ_URL);
-        // 短信内容
-        tel = tel.replaceAll(" ", "");
-        SmsSendGJRequest smsSingleRequest = new SmsSendGJRequest(RedisUtils.getString(DictConsts.CL_SMS_SEND_GJ_ACCOUNT),
-                RedisUtils.getString(DictConsts.CL_SMS_SEND_GJ_PASSWORD), msg, tel);
-        String requestJson = JSON.toJSONString(smsSingleRequest);
-        logger.info("before request string is: " + requestJson);
-        String response = ChuangLanSmsUtil.sendSmsByPost(smsSingleRequestServerUrl, requestJson);
-        logger.info("response after request result is :" + response);
-        SmsSendResponse smsSingleResponse = JSON.parseObject(response, SmsSendResponse.class);
-        logger.info("response  toString is :" + smsSingleResponse);
+//        //请求地址请登录253云通讯自助通平台查看或者询问您的商务负责人获取
+//        String smsSingleRequestServerUrl = RedisUtils.getString(DictConsts.CL_SMS_SEND_GJ_URL);
+//        // 短信内容
+//        tel = tel.replaceAll(" ", "");
+//        SmsSendGJRequest smsSingleRequest = new SmsSendGJRequest(RedisUtils.getString(DictConsts.CL_SMS_SEND_GJ_ACCOUNT),
+//                RedisUtils.getString(DictConsts.CL_SMS_SEND_GJ_PASSWORD), msg, tel);
+//        String requestJson = JSON.toJSONString(smsSingleRequest);
+        logger.info("before request msg:{}, tel:{} ", msg, tel);
+        SmsResponse smsResponse = infobMessageSendUtil.sendSms(msg, tel);
+//        String response = ChuangLanSmsUtil.sendSmsByPost(smsSingleRequestServerUrl, requestJson);
+        logger.info("response after request result is :" + smsResponse);
+//        SmsSendResponse smsSingleResponse = JSON.parseObject(response, SmsSendResponse.class);
+        SmsSendResponse smsSingleResponse = new SmsSendResponse();
+        smsSingleResponse.setMsgId(smsResponse.getBulkId());
+        smsSingleResponse.setCode("0");
+//        logger.info("response  toString is :" + smsSingleResponse);
         return BaseResponse.success(smsSingleResponse);
     }
 
@@ -61,7 +66,7 @@ public class SmsSendConfig {
             s.append(c).append("    ");
         }
         com.alibaba.fastjson.JSONObject res =
-                voiceMessageSendUtil.sendVoiceMessage(g.toString() + "        "
+                infobMessageSendUtil.sendVoiceMessage(g.toString() + "        "
                 + s.toString() + "        " + s.toString() + "        " + s.toString(), tel);
         SmsSendResponse smsSendResponse = new SmsSendResponse();
         if (null != res) {

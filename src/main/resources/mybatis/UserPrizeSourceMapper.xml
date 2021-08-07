@@ -3,7 +3,7 @@
 
 <mapper namespace="com.powerboot.dao.UserPrizeSourceDao">
 
-    <select id="getNoPrizeInviteUser" resultType="int" parameterType="long">
+    <select id="getNoPrizeInviteUser" resultType="long" parameterType="long">
         SELECT
             l.new_user_id
         FROM

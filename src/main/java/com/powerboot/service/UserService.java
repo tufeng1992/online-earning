@@ -32,6 +32,8 @@ import java.util.Date;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ExecutorService;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import javax.annotation.Resource;
 import org.apache.commons.collections.CollectionUtils;
@@ -172,6 +174,9 @@ public class UserService {
 
         if (!MobileUtil.isValidMobile(registerRequest.getMobile())) {
             return BaseResponse.fail(I18nEnum.MOBILE_NUMBER_FAIL.getMsg());
+        }
+        if (!isEmail(registerRequest.getEmail())) {
+            return BaseResponse.fail(I18nEnum.EMAIL_FAIL.getMsg());
         }
         registerRequest.setMobile(MobileUtil.replaceValidMobile(registerRequest.getMobile()));
         String mobile = registerRequest.getMobile();
@@ -478,5 +483,24 @@ public class UserService {
         user.setBlackFlag(1);
         logger.info("blockedUser userId:{}", user.getId());
         return updateByIdAndVersion(user);
+    }
+
+    /**
+     * 邮箱格式验证
+     * @param string
+     * @return
+     */
+    public static boolean isEmail(String string) {
+        if (string == null)
+            return false;
+        String regEx1 = "^[a-zA-Z0-9_.-]+@[a-zA-Z0-9-]+(\\.[a-zA-Z0-9-]+)*\\.[a-zA-Z0-9]{2,6}$";
+        Pattern p;
+        Matcher m;
+        p = Pattern.compile(regEx1);
+        m = p.matcher(string);
+        if (m.matches())
+            return true;
+        else
+            return false;
     }
 }

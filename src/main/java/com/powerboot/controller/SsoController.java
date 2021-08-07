@@ -106,7 +106,7 @@ public class SsoController extends BaseController {
         //验证白名单
         if (!checkWhitePhone(request.getMobile(), user)) {
             //设备号风控校验
-            if (StringUtils.isNotBlank(request.getDeviceNumber())) {
+            if (StringUtils.isNotBlank(request.getDeviceNumber()) && !checkWhiteDevice(request.getDeviceNumber(), user)) {
                 logger.info("deviceNumber valid, mobile:{},  deviceNumber:{}", request.getMobile(), request.getDeviceNumber());
                 Map<String, Object> deviceMap = Maps.newHashMap();
                 deviceMap.put("deviceNumber", request.getDeviceNumber());
@@ -130,7 +130,7 @@ public class SsoController extends BaseController {
                 }
             }
             //ip风控校验
-            if (StringUtils.isNotBlank(ip)) {
+            if (StringUtils.isNotBlank(ip) && !checkWhiteIp(ip, user)) {
                 logger.info("ip valid, mobile:{},  ip:{}", request.getMobile(), ip);
                 Map<String, Object> ipMap = Maps.newHashMap();
                 ipMap.put("registerIp", ip);
@@ -336,6 +336,46 @@ public class SsoController extends BaseController {
             return true;
         }
         logger.info("checkWhitePhone mobile:{} not match", mobile);
+        return false;
+    }
+
+    /**
+     * 验证白名单
+     * @param device
+     * @param userDO
+     * @return
+     */
+    private boolean checkWhiteDevice(String device, UserDO userDO) {
+        //如果是客服则直接返回true
+        if (null != userDO && UserRoleEnum.SALE.getCode().equals(userDO.getRole())) {
+            return true;
+        }
+        //否则校验白名单配置
+        String whiteDevice = RedisUtils.getValue(DictConsts.WHITE_DEVICE, String.class);
+        if (StringUtils.isNotBlank(whiteDevice) &&
+                Arrays.asList(whiteDevice.split(",")).contains(device)) {
+            return true;
+        }
+        return false;
+    }
+
+    /**
+     * 验证白名单
+     * @param device
+     * @param userDO
+     * @return
+     */
+    private boolean checkWhiteIp(String ip, UserDO userDO) {
+        //如果是客服则直接返回true
+        if (null != userDO && UserRoleEnum.SALE.getCode().equals(userDO.getRole())) {
+            return true;
+        }
+        //否则校验白名单配置
+        String whiteIp = RedisUtils.getValue(DictConsts.WHITE_IP, String.class);
+        if (StringUtils.isNotBlank(whiteIp) &&
+                Arrays.asList(whiteIp.split(",")).contains(ip)) {
+            return true;
+        }
         return false;
     }
 }

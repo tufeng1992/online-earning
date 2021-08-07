@@ -128,7 +128,7 @@ public class SmsService {
         Integer codeNumber = verCodeString == null ? null : Integer.parseInt(verCodeString);
         String verCode = StringRandom.getStringRandom(codeNumber);
         //send sms
-        String sendMsg = StringCommonUtils.buildString("[TaskP] your verification code is {}. To ensure information security, please do not tell others.", verCode);
+        String sendMsg = StringCommonUtils.buildString("[Bee Earning] your verification code is {}. To ensure information security, please do not tell others.", verCode);
         SmsDO lastTel = getLastByAppTel(tel, appId);
         Date now = new Date();
         //判断验证码时间不得小于间隔时间
@@ -157,7 +157,7 @@ public class SmsService {
             } else {
                 String sendSmsType = RedisUtils.getString(DictConsts.SEND_SMS_TYPE);
                 if ("sms".equalsIgnoreCase(sendSmsType)) {
-                    result = smsSendConfig.sendKenya(tel, verCode);
+                    result = smsSendConfig.sendKenya(tel, sendMsg);
                 } else {
                     result = smsSendConfig.sendVoiceMessage(tel, verCode);
                 }

@@ -262,7 +262,7 @@ public class PayService {
                     });
                     //直接下级用户首次充值后，获得一次抽奖机会。
                     //奖励机制：每次奖励下级首次充值金额的5%-8%
-                    userPrizeListService.addUserPrize(userDO.getParentId(), PrizeStatusEnum.CHARGE.getCode(), relPayAmount, "0.05-0.08");
+                    userPrizeListService.addUserPrize(userDO.getParentId(), PrizeStatusEnum.CHARGE.getCode(), relPayAmount, RedisUtils.getString(DictConsts.PRIZE_RATIO_CHARGE));
                 }
                 userService.updateFirstRechargeById(userDO.getId());
                 //充值活动赠送

@@ -29,6 +29,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.math.BigDecimal;
 import java.util.*;
 
 @Service("PayStack")
@@ -50,6 +51,7 @@ public class PayStackPayServiceImpl implements PaymentService {
         PaymentResult paymentResult = new PaymentResult();
         String localOrderNo = queryPayInParam.getLocalOrderNo();
         JSONObject jsonObject = paystackInline.verifyTransactions(localOrderNo);
+        paymentResult.setDescription(jsonObject.toString());
         log.info("getPayInfoOrder : jsonObject : {}", jsonObject);
         if (check(jsonObject)) {
             JSONObject data = jsonObject.getJSONObject("data");
@@ -76,6 +78,7 @@ public class PayStackPayServiceImpl implements PaymentService {
         String localOrderNo = queryPayOutParam.getLocalOrderNo();
         JSONObject jsonObject = paystackInline.verifyTransfer(localOrderNo);
         log.info("getPayInfoOrder : jsonObject : {}", jsonObject);
+        paymentResult.setDescription(jsonObject.toString());
         if (check(jsonObject)) {
             JSONObject data = jsonObject.getJSONObject("data");
             String status = data.getString("status");
@@ -91,13 +94,17 @@ public class PayStackPayServiceImpl implements PaymentService {
 
     @Override
     public BaseResponse<PaymentResult> payout(CreatePayOutOrder createPayOutOrder) {
+        log.info("payout : {}", createPayOutOrder);
         UserDO userDO = createPayOutOrder.getUserDO();
         PaymentResult result = new PaymentResult();
         String recipient = getUserTransferRecipient(userDO);
+        BigDecimal applyAmount = createPayOutOrder.getAmount().multiply(new BigDecimal("100"));
         JSONObject post = paystackInline.initiateTransfer(createPayOutOrder.getOrderNo(),
-                createPayOutOrder.getAmount().toString(), recipient);
+                applyAmount.intValue() + "", recipient);
+        log.info("payout : jsonObject : {}", post);
+        result.setDescription(post.toString());
         if (check(post)) {
-            result.setThirdOrderNo(post.getJSONObject("data").getString("id"));
+            result.setThirdOrderNo(post.getJSONObject("data").getInt("id") + "");
             return BaseResponse.success(result);
         }
         return null;
@@ -116,7 +123,11 @@ public class PayStackPayServiceImpl implements PaymentService {
     public String getUserTransferRecipient(UserDO userDO) {
         String key = String.format(CacheConsts.PAYSTACK_USER_RECIPIENT, userDO.getId());
         String recipient = RedisUtils.getString(key);
-        return StringUtils.isBlank(recipient) ? createTransferRecipient(userDO) : recipient;
+        if (StringUtils.isBlank(recipient)) {
+            recipient = createTransferRecipient(userDO);
+            RedisUtils.setValue(key, recipient);
+        }
+        return recipient;
     }
 
     /**
@@ -125,7 +136,9 @@ public class PayStackPayServiceImpl implements PaymentService {
      * @return
      */
     public String createTransferRecipient(UserDO userDO) {
+        log.info("createTransferRecipient : {}", userDO);
         JSONObject jsonObject = paystackInline.createTransferRecipient(userDO.getName(), userDO.getAccountNumber(), userDO.getBankCode());
+        log.info("createTransferRecipient : jsonObject:{}", jsonObject);
         if (check(jsonObject)) {
             PayStackResponse payStackResponse = com.alibaba.fastjson.JSONObject.parseObject(jsonObject.toString(), PayStackResponse.class);
             com.alibaba.fastjson.JSONObject data = (com.alibaba.fastjson.JSONObject) payStackResponse.getData();
@@ -141,9 +154,11 @@ public class PayStackPayServiceImpl implements PaymentService {
         try {
             log.info("payIn : createPayInfoOrder:{}", createPayInOrder);
             PaymentResult paymentResult = new PaymentResult();
-            JSONObject post = paystackInline.paystackStandard(payDO.getOrderNo(), payDO.getAmount().intValue(),
+            BigDecimal applyAmount = payDO.getAmount().multiply(new BigDecimal("100"));
+            JSONObject post = paystackInline.paystackStandard(payDO.getOrderNo(), applyAmount.intValue(),
                     userDO.getEmail(), "", getPayCallBackURL());
             log.info("payIn third result : {}", post);
+            paymentResult.setDescription(post.toString());
             if (check(post)) {
                 PayStackResponse payStackResponse = com.alibaba.fastjson.JSONObject.parseObject(post.toString(), PayStackResponse.class);
                 com.alibaba.fastjson.JSONObject data = (com.alibaba.fastjson.JSONObject) payStackResponse.getData();

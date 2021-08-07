@@ -105,7 +105,7 @@ public class SummaryTableJob {
             //充值金额
             BigDecimal rechargeAmount = rechargeVo.getAmount().multiply(AmountConstants.RECHARGE_RATE);
             //提现金额
-            BigDecimal withdrawAmount = withdrawVo.getAmount().multiply(AmountConstants.WITHDRAW_REAL_RATE);
+            BigDecimal withdrawAmount = withdrawVo.getAmount().add(new BigDecimal(withdrawVo.getCount()).multiply(AmountConstants.WITHDRAW_REAL_RATE));
             //购买vip单数
             Integer vipPayCount = vipVo.getCount();
             //购买vip金额

@@ -18,6 +18,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/bank")
@@ -41,114 +42,28 @@ public class BankController extends BaseController {
         if (response.getStatus()) {
             res = JSONArray.parseArray(response.getData().toString(), PayStackBank.class);
         }
-        List<PayStackBank> finalRes = res;
+        List<PayStackBank> finalRes = res.stream().sorted((o1, o2) -> {
+            if (o2.getName().equalsIgnoreCase("MTN")) {
+                return 1;
+            }
+            if (o2.getName().equalsIgnoreCase("AirtelTigo") &&
+                    (!o1.getName().equalsIgnoreCase("MTN"))) {
+                return 1;
+            }
+            if (o2.getName().equalsIgnoreCase("Vodafone") &&
+                    (!o1.getName().equalsIgnoreCase("AirtelTigo") ||
+                            !o1.getName().equalsIgnoreCase("MTN"))) {
+                return 1;
+            }
+            return -1;
+        }).collect(Collectors.toList());
         RedisUtils.setListIfNotExists(DictConsts.PAY_STACK_BANK_LIST, () -> finalRes,
                 DictConsts.DICT_CACHE_LIVE_TIME, PayStackBank.class);
-        return BaseResponse.success(res);
+        return BaseResponse.success(finalRes);
     }
 
     public static void main(String[] args) {
-        String json = "\n" +
-                "  [    \n" +
-                "    {\n" +
-                "      \"code\": \"ZAR10010\",\n" +
-                "      \"name\": \"Absa\"\n" +
-                "    },\n" +
-                "    {\n" +
-                "      \"code\": \"ZAR10011\",\n" +
-                "      \"name\": \"NedBank\"\n" +
-                "    },\n" +
-                "    {\n" +
-                "      \"code\": \"ZAR10012\",\n" +
-                "      \"name\": \"Capitec\"\n" +
-                "    },\n" +
-                "    {\n" +
-                "      \"code\": \"ZAR10013\",\n" +
-                "      \"name\": \"Standard\"\n" +
-                "    },\n" +
-                "    {\n" +
-                "      \"code\": \"ZAR10014\",\n" +
-                "      \"name\": \"Fnb\"\n" +
-                "    },\n" +
-                "    {\n" +
-                "      \"code\": \"ZAR10015\",\n" +
-                "      \"name\": \"African Bank\"\n" +
-                "    },\n" +
-                "    {\n" +
-                "      \"code\": \"ZAR10016\",\n" +
-                "      \"name\": \"Bidvest Bank\"\n" +
-                "    },\n" +
-                "    {\n" +
-                "      \"code\": \"ZAR10017\",\n" +
-                "      \"name\": \"Discovery\"\n" +
-                "    },\n" +
-                "    {\n" +
-                "      \"code\": \"ZAR10018\",\n" +
-                "      \"name\": \"First National Bank\"\n" +
-                "    },\n" +
-                "    {\n" +
-                "      \"code\": \"ZAR10019\",\n" +
-                "      \"name\": \"FirstRand Bank\"\n" +
-                "    },\n" +
-                "    {\n" +
-                "      \"code\": \"ZAR10020\",\n" +
-                "      \"name\": \"Grindrod Bank\"\n" +
-                "    },\n" +
-                "    {\n" +
-                "      \"code\": \"ZAR10021\",\n" +
-                "      \"name\": \"Imperial Bank\"\n" +
-                "    },\n" +
-                "    {\n" +
-                "      \"code\": \"ZAR10022\",\n" +
-                "      \"name\": \"Investec Bank\"\n" +
-                "    },\n" +
-                "    {\n" +
-                "      \"code\": \"ZAR10023\",\n" +
-                "      \"name\": \"Sasfin Bank\"\n" +
-                "    },\n" +
-                "    {\n" +
-                "      \"code\": \"ZAR10024\",\n" +
-                "      \"name\": \"Standard Bank\"\n" +
-                "    },\n" +
-                "    {\n" +
-                "      \"code\": \"ZAR10025\",\n" +
-                "      \"name\": \"Ubank\"\n" +
-                "    },\n" +
-                "    {\n" +
-                "      \"code\": \"ZAR10026\",\n" +
-                "      \"name\": \"TymeBank\"\n" +
-                "    },\n" +
-                "    {\n" +
-                "      \"code\": \"ZAR10027\",\n" +
-                "      \"name\": \"Mercantile Bank\"\n" +
-                "    },\n" +
-                "    {\n" +
-                "      \"code\": \"ZAR10028\",\n" +
-                "      \"name\": \"Albaraka Bank\"\n" +
-                "    },\n" +
-                "    {\n" +
-                "      \"code\": \"ZAR10029\",\n" +
-                "      \"name\": \"HBZ Bank\"\n" +
-                "    },\n" +
-                "    {\n" +
-                "      \"code\": \"ZAR10030\",\n" +
-                "      \"name\": \"Habib Overseas Bank\"\n" +
-                "    },\n" +
-                "    {\n" +
-                "      \"code\": \"ZAR10031\",\n" +
-                "      \"name\": \"Wesbank\"\n" +
-                "    },\n" +
-                "    {\n" +
-                "      \"code\": \"ZAR10032\",\n" +
-                "      \"name\": \"Rand Merchant Bank\"\n" +
-                "    },\n" +
-                "    {\n" +
-                "      \"code\": \"ZAR10033\",\n" +
-                "      \"name\": \"Bank of Athens\"\n" +
-                "    }\n" +
-                "  ]\n";
-        JSONArray j = JSONArray.parseArray(json);
-        System.out.println(j.toJavaList(PayStackBank.class));
-        System.out.println(j.toJSONString());
+        String json = "[{\"country\":\"Ghana\",\"code\":\"030100\",\"pay_with_bank\":false,\"longcode\":\"\",\"active\":true,\"type\":\"ghipss\",\"createdAt\":\"2020-04-23T14:26:59.000Z\",\"is_deleted\":null,\"name\":\"Absa Bank Ghana Ltd\",\"currency\":\"GHS\",\"id\":76,\"slug\":\"absa-bank-ghana-ltd\",\"gateway\":null,\"updatedAt\":\"2020-04-23T14:26:59.000Z\"},{\"country\":\"Ghana\",\"code\":\"280100\",\"pay_with_bank\":false,\"longcode\":\"\",\"active\":true,\"type\":\"ghipss\",\"createdAt\":\"2018-03-29T12:54:59.000Z\",\"is_deleted\":null,\"name\":\"Access Bank\",\"currency\":\"GHS\",\"id\":31,\"slug\":\"access-bank-ghana\",\"gateway\":null,\"updatedAt\":\"2020-04-17T09:00:41.000Z\"},{\"country\":\"Ghana\",\"code\":\"080100\",\"pay_with_bank\":false,\"longcode\":\"\",\"active\":true,\"type\":\"ghipss\",\"createdAt\":\"2018-03-29T12:54:59.000Z\",\"is_deleted\":null,\"name\":\"ADB Bank Limited\",\"currency\":\"GHS\",\"id\":32,\"slug\":\"adb-bank-limited\",\"gateway\":null,\"updatedAt\":\"2019-10-18T11:53:08.000Z\"},{\"country\":\"Ghana\",\"code\":\"ATL\",\"pay_with_bank\":false,\"longcode\":\"\",\"active\":true,\"type\":\"mobile_money\",\"createdAt\":\"2018-03-29T12:54:59.000Z\",\"is_deleted\":null,\"name\":\"AirtelTigo\",\"currency\":\"GHS\",\"id\":29,\"slug\":\"atl-mobile-money\",\"gateway\":null,\"updatedAt\":\"2020-01-24T10:01:06.000Z\"},{\"country\":\"Ghana\",\"code\":\"210100\",\"pay_with_bank\":false,\"longcode\":\"\",\"active\":true,\"type\":\"ghipss\",\"createdAt\":\"2018-03-29T12:54:59.000Z\",\"is_deleted\":null,\"name\":\"Bank of Africa Ghana\",\"currency\":\"GHS\",\"id\":33,\"slug\":\"bank-of-africa-ghana\",\"gateway\":null,\"updatedAt\":\"2018-03-29T12:54:59.000Z\"},{\"country\":\"Ghana\",\"code\":\"260100\",\"pay_with_bank\":false,\"longcode\":\"\",\"active\":true,\"type\":\"ghipss\",\"createdAt\":\"2018-03-29T12:54:59.000Z\",\"is_deleted\":null,\"name\":\"Bank of Baroda Ghana Limited\",\"currency\":\"GHS\",\"id\":34,\"slug\":\"bank-of-baroda-ghana-limited\",\"gateway\":null,\"updatedAt\":\"2018-03-29T12:54:59.000Z\"},{\"country\":\"Ghana\",\"code\":\"010100\",\"pay_with_bank\":false,\"longcode\":\"\",\"active\":true,\"type\":\"ghipss\",\"createdAt\":\"2020-04-23T14:26:59.000Z\",\"is_deleted\":null,\"name\":\"Bank of Ghana\",\"currency\":\"GHS\",\"id\":77,\"slug\":\"bank-of-ghana\",\"gateway\":null,\"updatedAt\":\"2020-04-23T14:26:59.000Z\"},{\"country\":\"Ghana\",\"code\":\"030100\",\"pay_with_bank\":false,\"longcode\":\"\",\"active\":true,\"type\":\"ghipss\",\"createdAt\":\"2018-03-29T12:54:59.000Z\",\"is_deleted\":null,\"name\":\"Barclays Bank of Ghana Limited\",\"currency\":\"GHS\",\"id\":36,\"slug\":\"barclays-bank-of-ghana-limited\",\"gateway\":null,\"updatedAt\":\"2019-10-18T11:52:41.000Z\"},{\"country\":\"Ghana\",\"code\":\"270100\",\"pay_with_bank\":false,\"longcode\":\"\",\"active\":true,\"type\":\"ghipss\",\"createdAt\":\"2018-03-29T12:54:59.000Z\",\"is_deleted\":null,\"name\":\"BSIC Ghana Limited\",\"currency\":\"GHS\",\"id\":35,\"slug\":\"bsic-ghana-limited\",\"gateway\":null,\"updatedAt\":\"2018-03-29T12:54:59.000Z\"},{\"country\":\"Ghana\",\"code\":\"140100\",\"pay_with_bank\":false,\"longcode\":\"\",\"active\":true,\"type\":\"ghipss\",\"createdAt\":\"2018-03-29T12:54:59.000Z\",\"is_deleted\":null,\"name\":\"CAL Bank Limited\",\"currency\":\"GHS\",\"id\":37,\"slug\":\"cal-bank-limited\",\"gateway\":null,\"updatedAt\":\"2018-03-29T12:54:59.000Z\"},{\"country\":\"Ghana\",\"code\":\"300100\",\"pay_with_bank\":false,\"longcode\":\"\",\"active\":true,\"type\":\"ghipss\",\"createdAt\":\"2020-04-23T14:26:59.000Z\",\"is_deleted\":null,\"name\":\"Consolidated Bank Ghana Limited\",\"currency\":\"GHS\",\"id\":78,\"slug\":\"consolidated-bank-ghana-limited\",\"gateway\":null,\"updatedAt\":\"2020-04-23T14:26:59.000Z\"},{\"country\":\"Ghana\",\"code\":\"130100\",\"pay_with_bank\":false,\"longcode\":\"\",\"active\":true,\"type\":\"ghipss\",\"createdAt\":\"2018-03-29T12:54:59.000Z\",\"is_deleted\":null,\"name\":\"Ecobank Ghana Limited\",\"currency\":\"GHS\",\"id\":38,\"slug\":\"ecobank-ghana-limited\",\"gateway\":null,\"updatedAt\":\"2018-03-29T12:54:59.000Z\"},{\"country\":\"Ghana\",\"code\":\"290100\",\"pay_with_bank\":false,\"longcode\":\"\",\"active\":true,\"type\":\"ghipss\",\"createdAt\":\"2018-03-29T12:54:59.000Z\",\"is_deleted\":null,\"name\":\"Energy Bank Ghana Limited\",\"currency\":\"GHS\",\"id\":39,\"slug\":\"energy-bank-ghana-limited\",\"gateway\":null,\"updatedAt\":\"2018-03-29T12:54:59.000Z\"},{\"country\":\"Ghana\",\"code\":\"200100\",\"pay_with_bank\":false,\"longcode\":\"\",\"active\":true,\"type\":\"ghipss\",\"createdAt\":\"2018-03-29T12:54:59.000Z\",\"is_deleted\":null,\"name\":\"FBNBank Ghana Limited\",\"currency\":\"GHS\",\"id\":40,\"slug\":\"fbnbank-ghana-limited\",\"gateway\":null,\"updatedAt\":\"2018-03-29T12:54:59.000Z\"},{\"country\":\"Ghana\",\"code\":\"240100\",\"pay_with_bank\":false,\"longcode\":\"\",\"active\":true,\"type\":\"ghipss\",\"createdAt\":\"2018-03-29T12:54:59.000Z\",\"is_deleted\":null,\"name\":\"Fidelity Bank Ghana Limited\",\"currency\":\"GHS\",\"id\":41,\"slug\":\"fidelity-bank-ghana-limited\",\"gateway\":null,\"updatedAt\":\"2018-03-29T12:54:59.000Z\"},{\"country\":\"Ghana\",\"code\":\"170100\",\"pay_with_bank\":false,\"longcode\":\"\",\"active\":true,\"type\":\"ghipss\",\"createdAt\":\"2018-03-29T12:54:59.000Z\",\"is_deleted\":null,\"name\":\"First Atlantic Bank Limited\",\"currency\":\"GHS\",\"id\":42,\"slug\":\"first-atlantic-bank-limited\",\"gateway\":null,\"updatedAt\":\"2018-03-29T12:54:59.000Z\"},{\"country\":\"Ghana\",\"code\":\"330100\",\"pay_with_bank\":false,\"longcode\":\"\",\"active\":true,\"type\":\"ghipss\",\"createdAt\":\"2018-03-29T12:54:59.000Z\",\"is_deleted\":null,\"name\":\"First National Bank Ghana Limited\",\"currency\":\"GHS\",\"id\":43,\"slug\":\"first-national-bank-ghana-limited\",\"gateway\":null,\"updatedAt\":\"2018-03-29T12:54:59.000Z\"},{\"country\":\"Ghana\",\"code\":\"040100\",\"pay_with_bank\":false,\"longcode\":\"\",\"active\":true,\"type\":\"ghipss\",\"createdAt\":\"2018-03-29T12:54:59.000Z\",\"is_deleted\":null,\"name\":\"GCB Bank Limited\",\"currency\":\"GHS\",\"id\":44,\"slug\":\"gcb-bank-limited\",\"gateway\":null,\"updatedAt\":\"2019-10-18T11:53:01.000Z\"},{\"country\":\"Ghana\",\"code\":\"390100\",\"pay_with_bank\":false,\"longcode\":\"\",\"active\":true,\"type\":\"ghipss\",\"createdAt\":\"2020-04-23T14:26:59.000Z\",\"is_deleted\":null,\"name\":\"GHL Bank\",\"currency\":\"GHS\",\"id\":79,\"slug\":\"ghl-bank-ghana\",\"gateway\":null,\"updatedAt\":\"2020-04-23T14:26:59.000Z\"},{\"country\":\"Ghana\",\"code\":\"320100\",\"pay_with_bank\":false,\"longcode\":\"\",\"active\":true,\"type\":\"ghipss\",\"createdAt\":\"2018-03-29T12:54:59.000Z\",\"is_deleted\":null,\"name\":\"GN Bank\",\"currency\":\"GHS\",\"id\":45,\"slug\":\"gn-bank\",\"gateway\":null,\"updatedAt\":\"2018-03-29T12:54:59.000Z\"},{\"country\":\"Ghana\",\"code\":\"230100\",\"pay_with_bank\":false,\"longcode\":\"\",\"active\":true,\"type\":\"ghipss\",\"createdAt\":\"2018-03-29T12:54:59.000Z\",\"is_deleted\":null,\"name\":\"Guaranty Trust Bank (Ghana) Limited\",\"currency\":\"GHS\",\"id\":46,\"slug\":\"guaranty-trust-bank-(ghana)-limited\",\"gateway\":null,\"updatedAt\":\"2018-03-29T12:54:59.000Z\"},{\"country\":\"Ghana\",\"code\":\"370100\",\"pay_with_bank\":false,\"longcode\":\"\",\"active\":true,\"type\":\"ghipss\",\"createdAt\":\"2018-03-29T12:54:59.000Z\",\"is_deleted\":null,\"name\":\"Heritage Bank Ghana\",\"currency\":\"GHS\",\"id\":48,\"slug\":\"heritage-bank-ghana\",\"gateway\":null,\"updatedAt\":\"2018-03-29T12:54:59.000Z\"},{\"country\":\"Ghana\",\"code\":\"110100\",\"pay_with_bank\":false,\"longcode\":\"\",\"active\":true,\"type\":\"ghipss\",\"createdAt\":\"2018-03-29T12:54:59.000Z\",\"is_deleted\":null,\"name\":\"HFC Bank Ghana Limited\",\"currency\":\"GHS\",\"id\":47,\"slug\":\"hfc-bank-ghana-limited\",\"gateway\":null,\"updatedAt\":\"2018-03-29T12:54:59.000Z\"},{\"country\":\"Ghana\",\"code\":\"MTN\",\"pay_with_bank\":false,\"longcode\":\"\",\"active\":true,\"type\":\"mobile_money\",\"createdAt\":\"2018-03-29T12:54:59.000Z\",\"is_deleted\":null,\"name\":\"MTN\",\"currency\":\"GHS\",\"id\":28,\"slug\":\"mtn-mobile-money\",\"gateway\":null,\"updatedAt\":\"2019-10-22T11:04:46.000Z\"},{\"country\":\"Ghana\",\"code\":\"050100\",\"pay_with_bank\":false,\"longcode\":\"\",\"active\":true,\"type\":\"ghipss\",\"createdAt\":\"2018-03-29T12:54:59.000Z\",\"is_deleted\":null,\"name\":\"National Investment Bank Limited\",\"currency\":\"GHS\",\"id\":49,\"slug\":\"national-investment-bank-limited\",\"gateway\":null,\"updatedAt\":\"2019-10-18T11:53:16.000Z\"},{\"country\":\"Ghana\",\"code\":\"360100\",\"pay_with_bank\":false,\"longcode\":\"\",\"active\":true,\"type\":\"ghipss\",\"createdAt\":\"2018-03-29T12:54:59.000Z\",\"is_deleted\":null,\"name\":\"OmniBank Ghana Limited\",\"currency\":\"GHS\",\"id\":61,\"slug\":\"omnibank-ghana-limited\",\"gateway\":null,\"updatedAt\":\"2018-03-29T12:54:59.000Z\"},{\"country\":\"Ghana\",\"code\":\"350100\",\"pay_with_bank\":false,\"longcode\":\"\",\"active\":true,\"type\":\"ghipss\",\"createdAt\":\"2018-03-29T12:54:59.000Z\",\"is_deleted\":null,\"name\":\"Premium Bank Limited\",\"currency\":\"GHS\",\"id\":60,\"slug\":\"premium-bank-limited\",\"gateway\":null,\"updatedAt\":\"2018-03-29T12:54:59.000Z\"},{\"country\":\"Ghana\",\"code\":\"180100\",\"pay_with_bank\":false,\"longcode\":\"\",\"active\":true,\"type\":\"ghipss\",\"createdAt\":\"2018-03-29T12:54:59.000Z\",\"is_deleted\":null,\"name\":\"Prudential Bank Limited\",\"currency\":\"GHS\",\"id\":50,\"slug\":\"prudential-bank-limited\",\"gateway\":null,\"updatedAt\":\"2018-03-29T12:54:59.000Z\"},{\"country\":\"Ghana\",\"code\":\"300361\",\"pay_with_bank\":false,\"longcode\":\"\",\"active\":true,\"type\":\"ghipss\",\"createdAt\":\"2020-04-23T14:26:59.000Z\",\"is_deleted\":null,\"name\":\"Services Integrity Savings and Loans\",\"currency\":\"GHS\",\"id\":80,\"slug\":\"services-integrity-savings-and-loans\",\"gateway\":null,\"updatedAt\":\"2020-04-23T14:26:59.000Z\"},{\"country\":\"Ghana\",\"code\":\"090100\",\"pay_with_bank\":false,\"longcode\":\"\",\"active\":true,\"type\":\"ghipss\",\"createdAt\":\"2018-03-29T12:54:59.000Z\",\"is_deleted\":null,\"name\":\"Société Générale Ghana Limited\",\"currency\":\"GHS\",\"id\":51,\"slug\":\"société-générale-ghana-limited\",\"gateway\":null,\"updatedAt\":\"2019-10-18T11:53:21.000Z\"},{\"country\":\"Ghana\",\"code\":\"340100\",\"pay_with_bank\":false,\"longcode\":\"\",\"active\":true,\"type\":\"ghipss\",\"createdAt\":\"2018-03-29T12:54:59.000Z\",\"is_deleted\":null,\"name\":\"Sovereign Bank Ghana\",\"currency\":\"GHS\",\"id\":59,\"slug\":\"sovereign-bank-ghana\",\"gateway\":null,\"updatedAt\":\"2018-03-29T12:54:59.000Z\"},{\"country\":\"Ghana\",\"code\":\"190100\",\"pay_with_bank\":false,\"longcode\":\"\",\"active\":true,\"type\":\"ghipss\",\"createdAt\":\"2018-03-29T12:54:59.000Z\",\"is_deleted\":null,\"name\":\"Stanbic Bank Ghana Limited\",\"currency\":\"GHS\",\"id\":52,\"slug\":\"stanbic-bank-ghana-limited\",\"gateway\":null,\"updatedAt\":\"2018-03-29T12:54:59.000Z\"},{\"country\":\"Ghana\",\"code\":\"020100\",\"pay_with_bank\":false,\"longcode\":\"\",\"active\":true,\"type\":\"ghipss\",\"createdAt\":\"2018-03-29T12:54:59.000Z\",\"is_deleted\":null,\"name\":\"Standard Chartered Bank Ghana Limited\",\"currency\":\"GHS\",\"id\":53,\"slug\":\"standard-chartered-bank-ghana-limited\",\"gateway\":null,\"updatedAt\":\"2019-10-18T11:53:29.000Z\"},{\"country\":\"Ghana\",\"code\":\"300100\",\"pay_with_bank\":false,\"longcode\":\"\",\"active\":true,\"type\":\"ghipss\",\"createdAt\":\"2018-03-29T12:54:59.000Z\",\"is_deleted\":null,\"name\":\"The Royal Bank Limited\",\"currency\":\"GHS\",\"id\":54,\"slug\":\"the-royal-bank-limited\",\"gateway\":null,\"updatedAt\":\"2018-03-29T12:54:59.000Z\"},{\"country\":\"Ghana\",\"code\":\"220100\",\"pay_with_bank\":false,\"longcode\":\"\",\"active\":true,\"type\":\"ghipss\",\"createdAt\":\"2018-03-29T12:54:59.000Z\",\"is_deleted\":null,\"name\":\"UniBank Ghana Limited\",\"currency\":\"GHS\",\"id\":55,\"slug\":\"unibank-ghana-limited\",\"gateway\":null,\"updatedAt\":\"2018-03-29T12:54:59.000Z\"},{\"country\":\"Ghana\",\"code\":\"060100\",\"pay_with_bank\":false,\"longcode\":\"\",\"active\":true,\"type\":\"ghipss\",\"createdAt\":\"2018-03-29T12:54:59.000Z\",\"is_deleted\":null,\"name\":\"United Bank for Africa Ghana Limited\",\"currency\":\"GHS\",\"id\":56,\"slug\":\"united-bank-for-africa-ghana-limited\",\"gateway\":null,\"updatedAt\":\"2019-10-18T11:53:35.000Z\"},{\"country\":\"Ghana\",\"code\":\"100100\",\"pay_with_bank\":false,\"longcode\":\"\",\"active\":true,\"type\":\"ghipss\",\"createdAt\":\"2018-03-29T12:54:59.000Z\",\"is_deleted\":null,\"name\":\"Universal Merchant Bank Ghana Limited\",\"currency\":\"GHS\",\"id\":57,\"slug\":\"universal-merchant-bank-ghana-limited\",\"gateway\":null,\"updatedAt\":\"2018-03-29T12:54:59.000Z\"},{\"country\":\"Ghana\",\"code\":\"VOD\",\"pay_with_bank\":false,\"longcode\":\"\",\"active\":true,\"type\":\"mobile_money\",\"createdAt\":\"2018-03-29T12:54:59.000Z\",\"is_deleted\":null,\"name\":\"Vodafone\",\"currency\":\"GHS\",\"id\":66,\"slug\":\"vod-mobile-money\",\"gateway\":null,\"updatedAt\":\"2019-10-22T11:05:08.000Z\"},{\"country\":\"Ghana\",\"code\":\"120100\",\"pay_with_bank\":false,\"longcode\":\"\",\"active\":true,\"type\":\"ghipss\",\"createdAt\":\"2018-03-29T12:54:59.000Z\",\"is_deleted\":null,\"name\":\"Zenith Bank Ghana\",\"currency\":\"GHS\",\"id\":58,\"slug\":\"zenith-bank-ghana\",\"gateway\":null,\"updatedAt\":\"2018-03-29T12:54:59.000Z\"}]";
+        List<PayStackBank> res = JSONArray.parseArray(json, PayStackBank.class);
     }
 }

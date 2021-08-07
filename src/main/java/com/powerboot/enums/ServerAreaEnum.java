@@ -9,6 +9,7 @@ public enum ServerAreaEnum {
     THAILAND("thailand","泰国"),
     NIGERIA("nigeria","尼日利亚"),
     SOUTH_AFRICA("south_africa","南非"),
+    GHANA("ghana","加纳"),
 
     ;
     private final String code;
