@@ -20,6 +20,10 @@ import com.powerboot.utils.gms.model.GmsPayOutNotify;
 import com.powerboot.utils.grecash.contants.GrecashConst;
 import com.powerboot.utils.grecash.model.GrecashPayInCallBack;
 import com.powerboot.utils.grecash.model.PayOutNotifyReq;
+import com.powerboot.utils.happylife.model.HappyLifeQueryPayDetailRes;
+import com.powerboot.utils.happylife.model.HappyLifeQueryPayOutDetailRes;
+import com.powerboot.utils.happylife.model.HappyLifeQueryPayOutRes;
+import com.powerboot.utils.happylife.model.HappyLifeQueryPayRes;
 import com.powerboot.utils.qeapay.contants.QeaPayConst;
 import com.powerboot.utils.qeapay.domain.QeaPayInNotify;
 import com.powerboot.utils.qeapay.domain.QeaPayOutNotify;
@@ -501,6 +505,32 @@ public class PayCallBackController extends BaseController{
             payService.payoutFail(payDO, PaymentServiceEnum.QEAPAY.getBeanName());
         }
         return "success";
+    }
+
+    @ApiOperation("happyLife 支付回调")
+    @PostMapping("/happyLife/payIn")
+    @Transactional(rollbackFor = Exception.class)
+    public String happyLifePayInCallBack(HappyLifeQueryPayDetailRes happyLifeQueryPayDetailRes) {
+        logger.info("happyLife 支付回调：happyLifePayInCallBack : {}", happyLifeQueryPayDetailRes);
+        PayDO payDO = payService.getOrderNo(happyLifeQueryPayDetailRes.getMer_order_no());
+        if (null != payDO) {
+            payService.getByOrderNo(payDO.getOrderNo());
+            return "SUCCESS";
+        }
+        return "FAIL";
+    }
+
+    @ApiOperation("happyLife 提现回调")
+    @PostMapping("/happyLife/payOut")
+    public String happyLifePayoutCallBack(HappyLifeQueryPayOutDetailRes happyLifeQueryPayOutDetailRes) {
+        logger.info("happyLife 提现回调：{}", happyLifeQueryPayOutDetailRes);
+        PayDO payDO = payService.getOrderNo(happyLifeQueryPayOutDetailRes.getOrder_no());
+        if (payDO == null){
+            return "order is not exist";
+        }
+        logger.info("happyLife 提现回调,用户ID--{}：{}" ,payDO.getUserId(), happyLifeQueryPayOutDetailRes);
+        payService.getByPayOutOrder(happyLifeQueryPayOutDetailRes.getOrder_no());
+        return "SUCCESS";
     }
 
 }

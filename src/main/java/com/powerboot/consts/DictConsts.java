@@ -472,6 +472,36 @@ public class DictConsts {
     public static final String GMS_DEFAULT_PAY_TYPE = "GMS_DEFAULT_PAY_TYPE";
 
     /**
+     * 基础网关
+     */
+    public static final String HAPPY_LIFE_BASE_URL = "HAPPY_LIFE_BASE_URL";
+
+    /**
+     * 商户id
+     */
+    public static final String HAPPY_LIFE_MERCHANT_ID = "HAPPY_LIFE_MERCHANT_ID";
+
+    /**
+     * 支付回调地址
+     */
+    public static final String HAPPY_LIFE_PAY_NOTIFY_URL = "HAPPY_LIFE_PAY_NOTIFY_URL";
+
+    /**
+     * 支付重定向地址
+     */
+    public static final String HAPPY_LIFE_PAY_REDIRECT_URL = "HAPPY_LIFE_PAY_REDIRECT_URL";
+
+    /**
+     * 支付回调地址
+     */
+    public static final String HAPPY_LIFE_PAY_OUT_NOTIFY_URL = "HAPPY_LIFE_PAY_OUT_NOTIFY_URL";
+
+    /**
+     * 支付key
+     */
+    public static final String HAPPY_LIFE_PAY_KEY = "HAPPY_LIFE_PAY_KEY";
+
+    /**
      * 商户id
      */
     public static final String SEPRO_MERCHANT_ID = "SEPRO_MERCHANT_ID";

@@ -21,6 +21,7 @@ public enum  PaymentServiceEnum {
     SEPRO("17", "SeproPay"),
     THKINGZ("18", "ThkingzPay"),
     QEAPAY("19", "qeaPay"),
+    HAPPYLIFEPAY("20", "HappyLifePay"),
     ;
 
     private final String code;

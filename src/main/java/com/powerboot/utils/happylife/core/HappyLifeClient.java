@@ -1,5 +1,6 @@
 package com.powerboot.utils.happylife.core;
 
+import cn.hutool.core.math.Money;
 import com.alibaba.fastjson.JSONObject;
 import com.google.common.collect.Maps;
 import com.powerboot.consts.DictConsts;
@@ -7,17 +8,17 @@ import com.powerboot.utils.DateUtils;
 import com.powerboot.utils.RedisUtils;
 import com.powerboot.utils.gms.core.SignAPI;
 import com.powerboot.utils.gms.core.SignUtil;
+import com.powerboot.utils.happylife.model.HappyLifePayOutRes;
+import com.powerboot.utils.happylife.model.HappyLifePayRes;
+import com.powerboot.utils.happylife.model.HappyLifeQueryPayOutRes;
+import com.powerboot.utils.happylife.model.HappyLifeQueryPayRes;
 import com.powerboot.utils.opay.HttpUtil;
-import com.powerboot.utils.sepro.model.SeproCreatePayOutRes;
-import com.powerboot.utils.sepro.model.SeproCreatePayRes;
-import com.powerboot.utils.wallyt.core.WallytRSAUtil;
-import com.powerboot.utils.wallyt.domain.dto.*;
 import lombok.extern.slf4j.Slf4j;
 import okhttp3.FormBody;
 import okhttp3.RequestBody;
-import org.apache.commons.lang.StringUtils;
 import org.springframework.stereotype.Component;
 
+import javax.annotation.PostConstruct;
 import java.math.BigDecimal;
 import java.util.*;
 
@@ -26,76 +27,75 @@ import java.util.*;
 public class HappyLifeClient {
 
     private String getBaseUrl() {
-        return RedisUtils.getValue(DictConsts.SEPRO_BASE_URL, String.class);
+        return RedisUtils.getValue(DictConsts.HAPPY_LIFE_BASE_URL, String.class);
     }
 
     private String getMerchantId() {
-        return RedisUtils.getValue(DictConsts.SEPRO_MERCHANT_ID, String.class);
+        return RedisUtils.getValue(DictConsts.HAPPY_LIFE_MERCHANT_ID, String.class);
     }
 
     private String getPayNotifyUrl() {
-        return RedisUtils.getValue(DictConsts.SEPRO_PAY_NOTIFY_URL, String.class);
+        return RedisUtils.getValue(DictConsts.HAPPY_LIFE_PAY_NOTIFY_URL, String.class);
     }
 
     private String getPayOutNotifyUrl() {
-        return RedisUtils.getValue(DictConsts.SEPRO_PAY_OUT_NOTIFY_URL, String.class);
+        return RedisUtils.getValue(DictConsts.HAPPY_LIFE_PAY_OUT_NOTIFY_URL, String.class);
     }
 
     private String getPayRedirectUrl() {
-        return RedisUtils.getValue(DictConsts.SEPRO_PAY_REDIRECT_URL, String.class);
+        return RedisUtils.getValue(DictConsts.HAPPY_LIFE_PAY_REDIRECT_URL, String.class);
     }
 
-    private String getPayInKey() {
-        return RedisUtils.getValue(DictConsts.SEPRO_PAY_IN_KEY, String.class);
-    }
-
-    private String getPayOutKey() {
-        return RedisUtils.getValue(DictConsts.SEPRO_PAY_OUT_KEY, String.class);
-    }
-
-    private String getDefaultPayType() {
-        String type = RedisUtils.getValue(DictConsts.SEPRO_DEFAULT_PAY_TYPE, String.class);
-        return StringUtils.isNotBlank(type) ? type : "321";
+    private String getPayKey() {
+        return RedisUtils.getValue(DictConsts.HAPPY_LIFE_PAY_KEY, String.class);
     }
 
     /**
      * 创建支付
      * @param orderNo
      * @param amount
-     * @param bankCode
      * @return
      */
-    public SeproCreatePayRes createPay(String orderNo, BigDecimal amount, String bankCode) {
+    public HappyLifePayRes createPay(String orderNo, BigDecimal amount) {
         Map<String, String> map = new HashMap<>();
         map.put("amount", amount.toString());
-        map.put("identify", "Beeearning897");
-        map.put("desc", "desctest");
+        map.put("identify", getMerchantId());
+        map.put("desc", "bee vip");
         map.put("ref", orderNo);
-        map.put("notify_url", "https://www.baidu.com");
-        map.put("successurl", "http://3.16.84.30/paysuccess/index.html");
-        map.put("failureurl", "http://3.16.84.30/paysuccess/index.html");
+        map.put("notify_url", getPayNotifyUrl());
+        map.put("successurl", getPayRedirectUrl());
+        map.put("failureurl", getPayRedirectUrl());
         String sign = SignUtil.sortData(map);
-        sign = SignAPI.sign(sign, "AFFWSSRT%47RE");
+        sign = SignAPI.sign(sign, getPayKey());
         map.put("sign", sign);
-        String url = "https://payment.happylife231.xyz/apipay/order/pay";
-        log.info("SeproCreatePay:{}", map.toString());
+        String url = getBaseUrl() + "/interface/order/pay";
+        log.info("HappyLifeCreatePay:{}", map.toString());
         FormBody.Builder builder = new FormBody.Builder();
         map.forEach(builder::add);
         RequestBody body = builder.build();
         JSONObject jsonObject = HttpUtil.invokePostRequest(url, body).orElseThrow(() -> new RuntimeException("请求响应为空"));
-        return jsonObject.toJavaObject(SeproCreatePayRes.class);
+        return jsonObject.toJavaObject(HappyLifePayRes.class);
     }
 
-//    /**
-//     * 查询支付信息
-//     * @param thirdOrderNo
-//     */
-//    public BaseGrecashRes<QueryPayRes> queryPay(String thirdOrderNo) {
-//        String url = getBaseUrl() + "/core/api/payment/payorder/" + thirdOrderNo;
-//        JSONObject j = HttpUtil.get4JsonObj(url, Maps.newHashMap(), getHeader()).orElseThrow(() -> new RuntimeException("请求响应为空"));
-//        BaseGrecashRes res = j.toJavaObject(BaseGrecashRes.class);
-//        return res;
-//    }
+    /**
+     * 查询支付信息
+     * @param localOrderNo
+     */
+    public HappyLifeQueryPayRes queryPay(String localOrderNo) {
+        Map<String, String> map = new HashMap<>();
+        map.put("identify", getMerchantId());
+        map.put("mer_order_no", localOrderNo);
+        String sign = SignUtil.sortData(map);
+        sign = SignAPI.sign(sign, getPayKey());
+        map.put("sign", sign);
+        log.info("HappyLifeQueryPay:{}", map.toString());
+        FormBody.Builder builder = new FormBody.Builder();
+        map.forEach(builder::add);
+        RequestBody body = builder.build();
+        String url = getBaseUrl() + "/interface/query/order";
+        JSONObject j = HttpUtil.invokePostRequest(url, body).orElseThrow(() -> new RuntimeException("请求响应为空"));
+        return j.toJavaObject(HappyLifeQueryPayRes.class);
+    }
 
 
     /**
@@ -107,27 +107,26 @@ public class HappyLifeClient {
      * @param bankCode
      * @return
      */
-    public SeproCreatePayOutRes createTransfer(String orderNo, BigDecimal amount,
-                                               String name, String accountNumber, String bankCode) {
+    public HappyLifePayOutRes createTransfer(String orderNo, BigDecimal amount,
+                                               String name, String accountNumber, String bankCode, Long userId) {
         Map<String, String> map = new HashMap<>();
-        map.put("transfer_amount", amount.toString());
-        map.put("mch_id", getMerchantId());
-        map.put("back_url", getPayOutNotifyUrl());
-        map.put("mch_transferId", orderNo);
-        map.put("apply_date", DateUtils.getFormatNow(DateUtils.SIMPLE_DATEFORMAT));
-        map.put("bank_code", bankCode);
-        map.put("receive_name", name);
-        map.put("receive_account", accountNumber);
+        map.put("money", amount.toString());
+        map.put("identify", getMerchantId());
+        map.put("callback_url", getPayOutNotifyUrl());
+        map.put("order_no", orderNo);
+        map.put("user_id", userId.toString());
+        map.put("bank_number", convertBankCode(bankCode));
+        map.put("acc_name", name);
+        map.put("acc_no", accountNumber);
         String sign = SignUtil.sortData(map);
-        sign = SignAPI.sign(sign, getPayOutKey());
-        map.put("sign_type", "MD5");
+        sign = SignAPI.sign(sign, getPayKey());
         map.put("sign", sign);
-        String url = getBaseUrl() + "/pay/transfer";
+        String url = getBaseUrl() + "/daifu/payother/withdrawal";
         FormBody.Builder builder = new FormBody.Builder();
         map.forEach(builder::add);
         RequestBody body = builder.build();
         JSONObject jsonObject = HttpUtil.invokePostRequest(url, body).orElseThrow(() -> new RuntimeException("请求响应为空"));
-        return jsonObject.toJavaObject(SeproCreatePayOutRes.class);
+        return jsonObject.toJavaObject(HappyLifePayOutRes.class);
     }
 
     /**
@@ -135,21 +134,37 @@ public class HappyLifeClient {
      * @param orderNo
      * @return
      */
-    public SeproCreatePayOutRes queryTransfer(String orderNo) {
+    public HappyLifeQueryPayOutRes queryTransfer(String orderNo) {
         Map<String, String> map = new HashMap<>();
-        map.put("mch_id", getMerchantId());
-        map.put("mch_transferId", orderNo);
+        map.put("identify", getMerchantId());
+        map.put("order_no", orderNo);
         String sign = SignUtil.sortData(map);
-        sign = SignAPI.sign(sign, getPayOutKey());
-        map.put("sign_type", "MD5");
+        sign = SignAPI.sign(sign, getPayKey());
         map.put("sign", sign);
-        String url = getBaseUrl() + "/query/transfer";
+        String url = getBaseUrl() + "/daifu/query/getPayotherOneOrder";
         FormBody.Builder builder = new FormBody.Builder();
         map.forEach(builder::add);
         RequestBody body = builder.build();
         JSONObject jsonObject = HttpUtil.invokePostRequest(url, body).orElseThrow(() -> new RuntimeException("请求响应为空"));
-        return jsonObject.toJavaObject(SeproCreatePayOutRes.class);
+        return jsonObject.toJavaObject(HappyLifeQueryPayOutRes.class);
     }
 
+    private Map<String, String> happyBankCode = Maps.newHashMap();
+
+    @PostConstruct
+    public void init() {
+        happyBankCode.put("MTN", "NGMTN");
+        happyBankCode.put("Airtel Tigo", "NGTIGO");
+        happyBankCode.put("Vodafone", "NGVODAFONE");
+    }
+
+    /**
+     * 适配转换银行代码
+     * @param bankCode
+     * @return
+     */
+    private String convertBankCode(String bankCode) {
+        return happyBankCode.get(bankCode);
+    }
 
 }
