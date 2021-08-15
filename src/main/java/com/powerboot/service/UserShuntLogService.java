@@ -3,6 +3,7 @@ package com.powerboot.service;
 import com.baomidou.mybatisplus.mapper.EntityWrapper;
 import com.baomidou.mybatisplus.service.impl.ServiceImpl;
 import com.powerboot.consts.CacheConsts;
+import com.powerboot.dao.UserDao;
 import com.powerboot.dao.UserShuntLogDao;
 import com.powerboot.domain.SaleShuntConfigDO;
 import com.powerboot.domain.UserDO;
@@ -26,6 +27,9 @@ public class UserShuntLogService extends ServiceImpl<UserShuntLogDao, UserShuntL
     @Autowired
     private UserShuntLogDao userShuntLogDao;
 
+    @Autowired
+    private UserDao userDao;
+
     /**
      * 添加用户分流记录
      * @param userDO
@@ -38,14 +42,24 @@ public class UserShuntLogService extends ServiceImpl<UserShuntLogDao, UserShuntL
         }
         UserShuntLogDO userShuntLogDO = new UserShuntLogDO();
         userShuntLogDO.setUserId(userDO.getId());
+
+        boolean updateUserFlag = false;
         if (null == userDO.getSaleId() || 1L == userDO.getSaleId()) {
             userShuntLogDO.setShuntType(1);
             userShuntLogDO.setSaleId(getBalanceSaleId());
+            updateUserFlag = true;
         } else {
             userShuntLogDO.setShuntType(3);
             userShuntLogDO.setSaleId(userDO.getSaleId());
         }
-        return userShuntLogDao.insert(userShuntLogDO);
+        int res = userShuntLogDao.insert(userShuntLogDO);
+        if (res > 0 && updateUserFlag) {
+            UserDO updateUser = new UserDO();
+            updateUser.setId(userDO.getId());
+            updateUser.setSaleId(userShuntLogDO.getSaleId());
+            userDao.updateById(updateUser);
+        }
+        return res;
     }
 
     /**
@@ -68,7 +82,7 @@ public class UserShuntLogService extends ServiceImpl<UserShuntLogDao, UserShuntL
         if (CollectionUtils.isEmpty(saleShuntConfigDOList)) {
             return 1L;
         }
-        if (balanceIndex >= saleShuntConfigDOList.size()) {
+        if (balanceIndex >= saleShuntConfigDOList.size() - 1) {
             balanceIndex = 0;
         } else {
             balanceIndex++;
