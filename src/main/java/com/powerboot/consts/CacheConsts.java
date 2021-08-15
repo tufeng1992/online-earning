@@ -53,6 +53,12 @@ public class CacheConsts {
      */
     public static final String PAYSTACK_USER_RECIPIENT = "PAYSTACK_USER_RECIPIENT:%s";
 
+    /**
+     * 分流游标
+     */
+    public static final String SHUNT_INDEX = "SHUNT_INDEX";
+
+
     //用户每日提现key
     public static String getTodayRechargeKey(Long userId){
         return DateUtils.format(new Date(),DateUtils.SIMPLE_DATEFORMAT_YMD) + userId;

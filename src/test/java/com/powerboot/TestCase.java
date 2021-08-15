@@ -1,20 +1,9 @@
 package com.powerboot;
 
-import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
-import com.baomidou.mybatisplus.mapper.Condition;
 import com.google.common.collect.Maps;
-import com.infobip.ApiClient;
-import com.infobip.ApiException;
-import com.infobip.Configuration;
-import com.infobip.api.SendSmsApi;
-import com.infobip.model.SmsAdvancedTextualRequest;
-import com.infobip.model.SmsDestination;
-import com.infobip.model.SmsResponse;
-import com.infobip.model.SmsTextualMessage;
 import com.powerboot.base.BaseResponse;
 import com.powerboot.common.StringCommonUtils;
-import com.powerboot.config.BaseException;
 import com.powerboot.config.SmsSendConfig;
 import com.powerboot.consts.I18nEnum;
 import com.powerboot.controller.OrderController;
@@ -23,11 +12,8 @@ import com.powerboot.dao.MemberInfoDao;
 import com.powerboot.dao.SmsSendResponse;
 import com.powerboot.dao.UserDao;
 import com.powerboot.domain.BalanceDO;
-import com.powerboot.domain.MemberInfoDO;
-import com.powerboot.domain.PayDO;
 import com.powerboot.domain.UserDO;
 import com.powerboot.enums.BalanceTypeEnum;
-import com.powerboot.enums.PayEnums;
 import com.powerboot.enums.StatusTypeEnum;
 import com.powerboot.job.PaymentTimeoutJob;
 import com.powerboot.job.SummaryTableJob;
@@ -35,21 +21,15 @@ import com.powerboot.response.pay.PaymentResult;
 import com.powerboot.service.PayService;
 import com.powerboot.service.ProductService;
 import com.powerboot.service.UserTaskOrderMissionService;
-import com.powerboot.utils.RedisUtils;
 import com.powerboot.utils.StringRandom;
-import com.powerboot.utils.StringUtils;
 import com.powerboot.utils.adjustevent.core.AdjustEventClient;
-import com.powerboot.utils.flutter.constants.FlutterConts;
 import com.powerboot.utils.flutter.core.FlutterPayment;
 import com.powerboot.utils.gms.core.GMSClient;
-import com.powerboot.utils.gms.model.GmsCreatePayOutRes;
-import com.powerboot.utils.gms.model.GmsCreatePayRes;
 import com.powerboot.utils.grecash.core.GrecashClient;
 import com.powerboot.utils.grecash.model.BaseGrecashRes;
-import com.powerboot.utils.grecash.model.CreatePayOutRes;
-import com.powerboot.utils.grecash.model.CreatePayRes;
 import com.powerboot.utils.grecash.model.QueryPayRes;
 import com.powerboot.utils.happylife.core.HappyLifeClient;
+import com.powerboot.utils.happylife.model.HappyLifePayOutRes;
 import com.powerboot.utils.infobip.utils.InfobMessageSendUtil;
 import com.powerboot.utils.paystack.core.PaystackInline;
 import com.powerboot.utils.qeapay.core.QeaPayClient;
@@ -58,16 +38,17 @@ import com.powerboot.utils.sepro.core.SeproClient;
 import com.powerboot.utils.sepro.model.SeproCreatePayRes;
 import com.powerboot.utils.thkingz.core.ThkingzClient;
 import com.powerboot.utils.thkingz.model.ThkingzBaseRes;
-import com.powerboot.utils.thkingz.model.ThkingzCreatePayOutRes;
 import com.powerboot.utils.thkingz.model.ThkingzCreatePayRes;
 import com.powerboot.utils.wallyt.core.WallytClient;
 import lombok.SneakyThrows;
-import okhttp3.*;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.junit4.SpringRunner;
+//import ug.sparkpl.momoapi.network.MomoApiException;
+//import ug.sparkpl.momoapi.network.RequestOptions;
+//import ug.sparkpl.momoapi.network.collections.CollectionsClient;
 
 import java.io.IOException;
 import java.math.BigDecimal;
@@ -280,16 +261,42 @@ public class TestCase {
 
     @Test
     public void test13() throws IOException {
-        System.out.println(happyLifeClient.createPay("testOrder", new BigDecimal("10"), null));
+//        System.out.println(happyLifeClient.createPay("testOrder01", new BigDecimal("10")));
+//        System.out.println(happyLifeClient.queryPay("testOrder01"));
+        System.out.println(JSONObject.parseObject("{\"msg\":\"SUCCESS\",\"data\":{\"identify\":\"Beeearning897\",\"order_no\":\"361oajmcwckb\",\"platform_no\":\"2021080817151854515352\",\"money\":164,\"status\":\"pending\",\"add_time\":1628442918},\"code\":0}", HappyLifePayOutRes.class));
         System.in.read();
     }
 
 
     @SneakyThrows
     public static void main(String[] args) {
-
-        System.out.println(new org.json.JSONObject().toString());
-
+//        RequestOptions opts = RequestOptions.builder()
+//                .setCollectionApiSecret("665ca5dc1d8542249e22c2eb31e406aa")
+//                .setCollectionPrimaryKey("51fa5f92859c4632bddde72aef94d03c")
+//                .setCollectionUserId("37582505-f2f0-4b84-a02a-6a5c332521e5")
+//                .setBaseUrl("https://sandbox.momodeveloper.mtn.com")  // Override the default base url
+//                .setCurrency("GHS") // Override default currency
+//                .setTargetEnvironment("sandbox").build();// Override default target environment
+//        // Make a request to pay call
+////        RequestOptions opts = RequestOptions.builder()
+////                .setCollectionApiSecret("MY_SECRET_API_KEY")
+////                .setCollectionPrimaryKey("MY_SECRET_SUBSCRIPTION_KEY")
+////                .setCollectionUserId("MYSECRET_USER_ID").build();
+//
+//        HashMap<String, String> collMap = new HashMap<String, String>();
+//        collMap.put("amount", "100");
+//        collMap.put("mobile", "1234");
+//        collMap.put("externalId", "ext123");
+//        collMap.put("payeeNote", "testNote");
+//        collMap.put("payerMessage", "testMessage");
+//        CollectionsClient client = new CollectionsClient(opts);
+//        try {
+//            String transactionRef = client.requestToPay(collMap);
+//            System.out.println(transactionRef);
+//        } catch (MomoApiException e) {
+//            e.printStackTrace();
+//        }
+        System.in.read();
     }
 
 }

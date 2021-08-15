@@ -57,6 +57,9 @@ public class UserService {
     @Resource(name = "commonExecutor")
     private ExecutorService commonExecutor;
 
+    @Autowired
+    private UserShuntLogService userShuntLogService;
+
     public UserDO getUser(Long parentId) {
         return userDao.get(parentId);
     }
@@ -261,6 +264,8 @@ public class UserService {
             return BaseResponse.fail(I18nEnum.REGISTER_FAIL.getMsg());
         }
         commonExecutor.execute(()->{
+            //添加用户分流记录
+            userShuntLogService.addUserShuntLog(userDO);
             Date now = new Date();
             //添加赠送余额
             if ("1".equals(giveSwitch)) {
