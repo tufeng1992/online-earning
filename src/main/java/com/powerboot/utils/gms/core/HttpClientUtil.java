@@ -16,7 +16,7 @@ import org.apache.http.message.BasicNameValuePair;
 import org.apache.http.util.EntityUtils;
 
 @SuppressWarnings("all")
-public class HttpClientUtil {//璇锋眰锟??
+public class HttpClientUtil {
 	public static String doPost(String url, Map<String,String> map, String encoding){
 		CloseableHttpClient httpClient = null;
 		HttpPost httpPost = null;
@@ -24,7 +24,6 @@ public class HttpClientUtil {//璇锋眰锟??
 		try{
 		httpClient = HttpClients.createDefault();
 		httpPost = new HttpPost(url);
-		//璁剧疆鍙傛暟
 		List<NameValuePair> list = new ArrayList<NameValuePair>();
 		Iterator iterator = map.entrySet().iterator();
 		while(iterator.hasNext()){

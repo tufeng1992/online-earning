@@ -1,5 +1,7 @@
 package com.powerboot.controller;
 
+import ci.bamba.regis.models.RequestToPay;
+import ci.bamba.regis.models.Transfer;
 import com.powerboot.common.JsonUtils;
 import com.powerboot.config.BaseException;
 import com.powerboot.consts.DictConsts;
@@ -45,11 +47,14 @@ import org.apache.commons.lang3.StringUtils;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 import javax.validation.Valid;
+import java.io.IOException;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
@@ -532,5 +537,49 @@ public class PayCallBackController extends BaseController{
         payService.getByPayOutOrder(happyLifeQueryPayOutDetailRes.getOrder_no());
         return "SUCCESS";
     }
+
+    @ApiOperation("momo 支付回调")
+    @PostMapping("/momo/payIn")
+    @Transactional(rollbackFor = Exception.class)
+    public String momoPayInCallBack(@RequestBody RequestToPay requestToPay) {
+        logger.info("momo 支付回调：momoPayInCallBack : {}", com.alibaba.fastjson.JSONObject.toJSONString(requestToPay));
+        PayDO payDO = payService.getOrderNo(requestToPay.getExternalId());
+        if (null != payDO) {
+            payService.getByOrderNo(requestToPay.getExternalId());
+            return "SUCCESS";
+        }
+        return "FAIL";
+    }
+
+    @ApiOperation("momo 提现回调")
+    @PostMapping("/momo/payOut")
+    public String momoPayoutCallBack(@RequestBody Transfer transfer) {
+        logger.info("momo 提现回调：{}", com.alibaba.fastjson.JSONObject.toJSONString(transfer));
+        PayDO payDO = payService.getOrderNo(transfer.getExternalId());
+        if (payDO == null){
+            return "order is not exist";
+        }
+        logger.info("momo 提现回调,用户ID--{}：{}" ,payDO.getUserId(), transfer);
+        payService.getByPayOutOrder(transfer.getExternalId());
+        return "SUCCESS";
+    }
+
+
+    @ApiOperation("theteller 支付回调")
+    @RequestMapping("/theteller/payIn")
+    @Transactional(rollbackFor = Exception.class)
+    public void thetellerPayInCallBack(HttpServletRequest request, HttpServletResponse response) throws IOException {
+        //https://redirect_url?code=000&status=successful&reason=transaction20%successful&transaction_id=000000000000
+        String transactionId = request.getParameter("transaction_id");
+        logger.info("theteller 支付回调：thetellerPayInCallBack : {}", transactionId);
+        if (StringUtils.isNotBlank(transactionId)) {
+            PayDO payDO = payService.getByOutNo(transactionId);
+            if (null != payDO) {
+                payService.getByOrderNo(payDO.getOrderNo());
+            }
+        }
+        response.sendRedirect(RedisUtils.getString(DictConsts.MOMO_COLLECTION_REDIRECT_URL));
+    }
+
 
 }

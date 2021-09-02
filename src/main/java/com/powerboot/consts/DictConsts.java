@@ -474,6 +474,21 @@ public class DictConsts {
     /**
      * 基础网关
      */
+    public static final String THETELLER_BASE_URL = "THETELLER_BASE_URL";
+
+    public static final String THETELLER_API_USER = "THETELLER_API_USER";
+
+    public static final String THETELLER_API_KEY = "THETELLER_API_KEY";
+
+    public static final String THETELLER_MERCHANT_ID = "THETELLER_MERCHANT_ID";
+
+    public static final String THETELLER_PAY_NOTIFY_URL = "THETELLER_PAY_NOTIFY_URL";
+
+    public static final String THETELLER_PASSCODE = "THETELLER_PASSCODE";
+
+    /**
+     * 基础网关
+     */
     public static final String HAPPY_LIFE_BASE_URL = "HAPPY_LIFE_BASE_URL";
 
     /**
@@ -608,6 +623,36 @@ public class DictConsts {
     public static final String PAYSTAX_ACCESS_KEY = "PAYSTAX_ACCESS_KEY";
     //PAYSTAX Secret Key ( SK )
     public static final String PAYSTAX_SECRET_KEY = "PAYSTAX_SECRET_KEY";
+
+    /**
+     * MOMO 环境
+     */
+    public static final String MOMO_EVN = "MOMO_EVN";
+
+    public static final String MOMO_COLLECTION_REDIRECT_URL = "MOMO_COLLECTION_REDIRECT_URL";
+
+    public static final String MOMO_COLLECTION_TOKEN = "MOMO_COLLECTION_TOKEN";
+
+    public static final String MOMO_REMITTANCE_TOKEN = "MOMO_REMITTANCE_TOKEN";
+
+    public static final String MOMO_COLLECTION_API_ID = "MOMO_COLLECTION_API_ID";
+
+    public static final String MOMO_COLLECTION_API_KEY = "MOMO_COLLECTION_API_KEY";
+
+    public static final String MOMO_REMITTANCE_API_ID = "MOMO_REMITTANCE_API_ID";
+
+    public static final String MOMO_REMITTANCE_API_KEY = "MOMO_REMITTANCE_API_KEY";
+
+    public static final String MOMO_CURRENCY = "MOMO_CURRENCY";
+
+    public static final String MOMO_REMITTANCE_SUB_KEY = "MOMO_REMITTANCE_SUB_KEY";
+
+    public static final String MOMO_COLLECTION_SUB_KEY = "MOMO_COLLECTION_SUB_KEY";
+
+    public static final String MOMO_REMITTANCE_CALLBACKURL = "MOMO_REMITTANCE_CALLBACKURL";
+
+    public static final String MOMO_COLLECTION_CALLBACKURL = "MOMO_COLLECTION_CALLBACKURL";
+
 
 
     //审批开关 0-关 1-开

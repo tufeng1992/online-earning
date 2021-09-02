@@ -1,5 +1,7 @@
 package com.powerboot;
 
+import ci.bamba.regis.models.RequestToPay;
+import ci.bamba.regis.models.Transfer;
 import com.alibaba.fastjson.JSONObject;
 import com.google.common.collect.Maps;
 import com.powerboot.base.BaseResponse;
@@ -31,11 +33,13 @@ import com.powerboot.utils.grecash.model.QueryPayRes;
 import com.powerboot.utils.happylife.core.HappyLifeClient;
 import com.powerboot.utils.happylife.model.HappyLifePayOutRes;
 import com.powerboot.utils.infobip.utils.InfobMessageSendUtil;
+import com.powerboot.utils.momo.core.MoMoClient;
 import com.powerboot.utils.paystack.core.PaystackInline;
 import com.powerboot.utils.qeapay.core.QeaPayClient;
 import com.powerboot.utils.qeapay.domain.QeaPayCreatePayRes;
 import com.powerboot.utils.sepro.core.SeproClient;
 import com.powerboot.utils.sepro.model.SeproCreatePayRes;
+import com.powerboot.utils.theteller.core.ThetellerClient;
 import com.powerboot.utils.thkingz.core.ThkingzClient;
 import com.powerboot.utils.thkingz.model.ThkingzBaseRes;
 import com.powerboot.utils.thkingz.model.ThkingzCreatePayRes;
@@ -114,6 +118,12 @@ public class TestCase {
 
     @Autowired
     private HappyLifeClient happyLifeClient;
+
+    @Autowired
+    private MoMoClient moMoClient;
+
+    @Autowired
+    private ThetellerClient thetellerClient;
 
     @Test
     public void test01() throws IOException {
@@ -267,9 +277,33 @@ public class TestCase {
         System.in.read();
     }
 
+    @Test
+    public void test14() throws IOException {
+//        System.out.println(moMoClient.createPay("test14OrderC1", BigDecimal.TEN, "0022505777777"));
+//        System.out.println(moMoClient.queryPay("bf01bc01-fa2f-4548-9436-af5f39ff2256"));
+        System.out.println(moMoClient.createTransfer("test14OrderT2", "0022505777777", BigDecimal.TEN));
+//        System.out.println(moMoClient.queryTransfer("260a60a1-602f-4ef9-a55e-be10f19acc56"));
+        System.in.read();
+    }
+
+    @Test
+    public void test15() throws IOException {
+//        System.out.println(thetellerClient.createPay(new BigDecimal("5"), "tufeng1992@sina.com"));
+//        System.out.println(thetellerClient.queryPay("026050933049"));
+        System.out.println(thetellerClient.createTransfer("testOrder02", new BigDecimal("100"),
+                "0557835808", "MTN"));
+        System.in.read();
+    }
+
 
     @SneakyThrows
     public static void main(String[] args) {
+        String json = "{\"amount\":\"10.0\",\"currency\":\"EUR\",\"financialTransactionId\":\"1628814832\",\"externalId\":\"test14Order26\",\"payee\":{\"partyIdType\":\"MSISDN\",\"partyId\":\"0022505777777\"},\"payeeNote\":\"Transfer to user: Merchant service fee\",\"status\":\"SUCCESSFUL\"}";
+
+        ci.bamba.regis.models.Transfer requestToPay = JSONObject.parseObject(json, Transfer.class);
+        System.out.println(requestToPay);
+
+
 //        RequestOptions opts = RequestOptions.builder()
 //                .setCollectionApiSecret("665ca5dc1d8542249e22c2eb31e406aa")
 //                .setCollectionPrimaryKey("51fa5f92859c4632bddde72aef94d03c")
