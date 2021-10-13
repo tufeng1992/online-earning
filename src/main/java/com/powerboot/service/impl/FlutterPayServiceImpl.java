@@ -113,7 +113,7 @@ public class FlutterPayServiceImpl implements PaymentService {
         UserDO userDO = createPayOutOrder.getUserDO();
         PaymentResult result = new PaymentResult();
         com.alibaba.fastjson.JSONObject post = flutterPayment.createTransfer(createPayOutOrder.getOrderNo(), createPayOutOrder.getAmount().toString(),
-                userDO.getAccountNumber(), userDO.getBankCode(), "payout");
+                userDO.getAccountNumber(), userDO.getName(), userDO.getBankCode(), "payout");
         log.info("payout : createPayOutOrder: post : {}", post);
         if (doCheck(post)) {
             com.alibaba.fastjson.JSONObject data = post.getJSONObject("data");

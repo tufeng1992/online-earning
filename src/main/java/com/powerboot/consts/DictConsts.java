@@ -653,7 +653,13 @@ public class DictConsts {
 
     public static final String MOMO_COLLECTION_CALLBACKURL = "MOMO_COLLECTION_CALLBACKURL";
 
+    public static final String PAYFUL_BASE_URL = "PAYFUL_BASE_URL";
 
+    public static final String PAYFUL_MERCHANT = "PAYFUL_MERCHANT";
+
+    public static final String PAYFUL_APIKEY = "PAYFUL_APIKEY";
+
+    public static final String PAYFUL_TO = "PAYFUL_TO";
 
     //审批开关 0-关 1-开
     public static final String APPLY_SWITCH = "APPLY_SWITCH";
@@ -938,4 +944,29 @@ public class DictConsts {
      * 完成任务奖励比例
      */
     public static final String PRIZE_RATIO_MISSION = "PRIZE_RATIO_MISSION";
+
+    /**
+     * 上传文件路径
+     */
+    public static final String UPLOAD_FILE_PATH = "UPLOAD_FILE_PATH";
+
+    /**
+     * 上传文件url
+     */
+    public static final String UPLOAD_FILE_URL = "UPLOAD_FILE_URL";
+
+    /**
+     * 用户收益配置
+     */
+    public static final String USER_INVITE_FLAG_HALF = "USER_INVITE_FLAG_HALF:";
+
+    /**
+     * 用户分佣配置
+     */
+    public static final String USER_COMMISSION_FLAG = "USER_COMMISSION_FLAG:";
+
+    /**
+     * 线下支付转发地址
+     */
+    public static final String OFFLINE_PAY_FORWARD_URL = "OFFLINE_PAY_FORWARD_URL";
 }

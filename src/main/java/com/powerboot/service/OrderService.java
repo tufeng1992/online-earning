@@ -1,7 +1,9 @@
 package com.powerboot.service;
 
 import com.powerboot.common.JsonUtils;
+import com.powerboot.config.BaseException;
 import com.powerboot.consts.DictAccount;
+import com.powerboot.consts.I18nEnum;
 import com.powerboot.dao.BalanceDao;
 import com.powerboot.domain.BalanceDO;
 import com.powerboot.domain.UserDO;
@@ -238,7 +240,9 @@ public class OrderService {
     }
 
     public int save(OrderDO order) {
-        return orderDao.save(order);
+        UserDO userDO = userService.get(order.getUserId());
+        order.setSaleId(userDO.getSaleId()==null?1L:userDO.getSaleId());
+        return orderDao.insert(order);
     }
 
     public int update(OrderDO order) {

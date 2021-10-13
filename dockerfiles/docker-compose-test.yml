@@ -15,6 +15,7 @@ services:
     volumes:
       - /earning/logs:/earning/logs
       - /earning/static:/earning/static
+      - /home/ubuntu/nginx/html:/home/ubuntu/nginx/html
       - /usr/share/zoneinfo:/usr/share/zoneinfo
       - "/etc/localtime:/etc/localtime:ro"
     links:

@@ -34,6 +34,8 @@ public class HappyLifeClient {
         return RedisUtils.getValue(DictConsts.HAPPY_LIFE_MERCHANT_ID, String.class);
     }
 
+
+
     private String getPayNotifyUrl() {
         return RedisUtils.getValue(DictConsts.HAPPY_LIFE_PAY_NOTIFY_URL, String.class);
     }
@@ -56,11 +58,12 @@ public class HappyLifeClient {
      * @param amount
      * @return
      */
-    public HappyLifePayRes createPay(String orderNo, BigDecimal amount) {
+    public HappyLifePayRes createPay(String orderNo, BigDecimal amount, Long userId) {
         Map<String, String> map = new HashMap<>();
         map.put("amount", amount.toString());
         map.put("identify", getMerchantId());
-        map.put("desc", "bee vip");
+        map.put("uid", userId.toString());
+        map.put("desc", "commodity charge");
         map.put("ref", orderNo);
         map.put("notify_url", getPayNotifyUrl());
         map.put("successurl", getPayRedirectUrl());
@@ -68,7 +71,7 @@ public class HappyLifeClient {
         String sign = SignUtil.sortData(map);
         sign = SignAPI.sign(sign, getPayKey());
         map.put("sign", sign);
-        String url = getBaseUrl() + "/interface/order/pay";
+        String url = getBaseUrl() + "/paymass/init/process";
         log.info("HappyLifeCreatePay:{}", map.toString());
         FormBody.Builder builder = new FormBody.Builder();
         map.forEach(builder::add);
@@ -92,7 +95,7 @@ public class HappyLifeClient {
         FormBody.Builder builder = new FormBody.Builder();
         map.forEach(builder::add);
         RequestBody body = builder.build();
-        String url = getBaseUrl() + "/interface/query/order";
+        String url = getBaseUrl() + "/paymass/query/order";
         JSONObject j = HttpUtil.invokePostRequest(url, body).orElseThrow(() -> new RuntimeException("请求响应为空"));
         return j.toJavaObject(HappyLifeQueryPayRes.class);
     }
@@ -104,24 +107,24 @@ public class HappyLifeClient {
      * @param amount
      * @param name
      * @param accountNumber
-     * @param bankCode
+     * @param bankName
      * @return
      */
     public HappyLifePayOutRes createTransfer(String orderNo, BigDecimal amount,
-                                               String name, String accountNumber, String bankCode, Long userId) {
+                                               String name, String accountNumber, String bankName, Long userId) {
         Map<String, String> map = new HashMap<>();
         map.put("money", amount.toString());
         map.put("identify", getMerchantId());
         map.put("callback_url", getPayOutNotifyUrl());
         map.put("order_no", orderNo);
         map.put("user_id", userId.toString());
-        map.put("bank_number", convertBankCode(bankCode));
+        map.put("bank_number", convertBankCode(bankName));
         map.put("acc_name", name);
         map.put("acc_no", accountNumber);
         String sign = SignUtil.sortData(map);
         sign = SignAPI.sign(sign, getPayKey());
         map.put("sign", sign);
-        String url = getBaseUrl() + "/daifu/payother/withdrawal";
+        String url = getBaseUrl() + "/payingweb/payother/withdrawal";
         FormBody.Builder builder = new FormBody.Builder();
         map.forEach(builder::add);
         RequestBody body = builder.build();
@@ -141,7 +144,7 @@ public class HappyLifeClient {
         String sign = SignUtil.sortData(map);
         sign = SignAPI.sign(sign, getPayKey());
         map.put("sign", sign);
-        String url = getBaseUrl() + "/daifu/query/getPayotherOneOrder";
+        String url = getBaseUrl() + "/payingweb/query/getPayotherOneOrder";
         FormBody.Builder builder = new FormBody.Builder();
         map.forEach(builder::add);
         RequestBody body = builder.build();
@@ -154,7 +157,7 @@ public class HappyLifeClient {
     @PostConstruct
     public void init() {
         happyBankCode.put("MTN", "NGMTN");
-        happyBankCode.put("Airtel Tigo", "NGTIGO");
+        happyBankCode.put("AirtelTigo", "NGTIGO");
         happyBankCode.put("Vodafone", "NGVODAFONE");
     }
 

@@ -71,7 +71,7 @@ public class HappyLifeServiceImpl implements PaymentService {
         try {
             log.info("payIn : createPayInfoOrder:{}", createPayInOrder);
             PaymentResult paymentResult = new PaymentResult();
-            HappyLifePayRes res = happyLifeClient.createPay(payDO.getOrderNo(), payDO.getAmount());
+            HappyLifePayRes res = happyLifeClient.createPay(payDO.getOrderNo(), payDO.getAmount(), userDO.getId());
             log.info("payIn third result : {}", res);
             if (null != res && HappyLifeConst.SUCCESS_CODE.equals(res.getCode())) {
                 paymentResult.setThirdPayUrl(res.getData());
@@ -113,7 +113,7 @@ public class HappyLifeServiceImpl implements PaymentService {
         UserDO userDO = createPayOutOrder.getUserDO();
         PaymentResult result = new PaymentResult();
         HappyLifePayOutRes res = happyLifeClient.createTransfer(createPayOutOrder.getOrderNo(), createPayOutOrder.getAmount(),
-                userDO.getFirstName(), userDO.getAccountNumber(), userDO.getBankCode(), userDO.getId());
+                userDO.getName(), userDO.getAccountNumber(), userDO.getBankName(), userDO.getId());
         log.info("payout : orderNo:{}: createPayOutOrder: post : {}", createPayOutOrder.getOrderNo(), res);
         if (null != res  && HappyLifeConst.SUCCESS_CODE.equals(res.getCode())) {
             result.setDescription(res.getMsg());

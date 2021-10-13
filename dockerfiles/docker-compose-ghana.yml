@@ -16,6 +16,7 @@ services:
       - /earning/logs:/earning/logs
       - /earning/static:/earning/static
       - /usr/share/zoneinfo:/usr/share/zoneinfo
+      - /home/ubuntu/nginx/html:/home/ubuntu/nginx/html
       - "/etc/localtime:/etc/localtime:ro"
     links:
       - db07:mysql

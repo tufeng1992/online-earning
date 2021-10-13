@@ -10,6 +10,6 @@ public class AmountConstants {
 
     public static final BigDecimal WITHDRAW_REAL_RATE = new BigDecimal("10");
 
-    public static final BigDecimal WITHDRAW_REAL_RATE_2 = new BigDecimal("1.01");
+    public static final BigDecimal WITHDRAW_REAL_RATE_2 = new BigDecimal("1.062");
 
 }

@@ -139,6 +139,11 @@ public class PayService {
         return result;
     }
 
+    /**
+     * 通过第三方订单号查询
+     * @param outNo
+     * @return
+     */
     public PayDO getByOutNo(String outNo) {
         return payDao.getByOutNo(outNo);
     }
@@ -425,11 +430,21 @@ public class PayService {
         createPayInOrder.setUserDO(userDO);
         BaseResponse<PaymentResult> paymentResultResp = paymentService.payIn(createPayInOrder);
         PaymentResult paymentResult = paymentResultResp.getResultData();
-        payDO.setThirdUrl(paymentResult.getThirdPayUrl());
-        payDO.setThirdNo(paymentResult.getThirdOrderNo());
-        logger.info("支付渠道:{} 用户id:{},创建支付订单成功,内部订单号:{},第三方URL:{}", "daraja", param.getUserId(), orderNo,
-            payDO.getThirdUrl());
-        update(payDO);
+        if (PaymentServiceEnum.PAYFULPAY.getBeanName().equalsIgnoreCase(payBeanName)) {
+            payDO.setThirdUrlType(3);
+            payDO.setThirdNo(paymentResult.getThirdOrderNo());
+            payDO.setThirdUrl(paymentResult.getThirdPayUrl());
+            logger.info("支付渠道:{} 用户id:{},创建支付订单成功,内部订单号:{},第三方URL:{}", "daraja", param.getUserId(), orderNo,
+                    payDO.getThirdUrl());
+            update(payDO);
+        } else {
+            payDO.setThirdUrlType(1);
+            payDO.setThirdUrl(paymentResult.getThirdPayUrl());
+            payDO.setThirdNo(paymentResult.getThirdOrderNo());
+            logger.info("支付渠道:{} 用户id:{},创建支付订单成功,内部订单号:{},第三方URL:{}", "daraja", param.getUserId(), orderNo,
+                    payDO.getThirdUrl());
+            update(payDO);
+        }
         return BaseResponse.success(payDO);
     }
 
@@ -438,6 +453,13 @@ public class PayService {
     public BaseResponse<PayDO> createOrderForBalance(LoanDetailRequest param, UserDO userDO) {
         logger.info("创建订单,参数:{}", param);
         logger.info("用户id:{},准备创建订单!", param.getUserId());
+
+        //判断余额是否足够
+        UserDO tempUserDO = userService.get(userDO.getId());
+        BigDecimal subBalance = tempUserDO.getBalance().subtract(param.getPayAmount());
+        if (subBalance.doubleValue() < 0) {
+            return BaseResponse.fail(I18nEnum.CREATE_ORDER_BALANCE_FAIL.getMsg());
+        }
         //生成随机订单号
         String orderFirstNo = param.getUserId() + "p";
         String orderNo = orderFirstNo + StringRandom.getNumberAndLetterRandom(12 - orderFirstNo.length());
@@ -465,15 +487,21 @@ public class PayService {
         if (saveSuccess <= 0) {
             return BaseResponse.fail(I18nEnum.PAYMENT_FAIL.getMsg());
         }
-        UserDO tempUserDO = userService.get(userDO.getId());
-        BigDecimal subBalance = tempUserDO.getBalance().subtract(param.getPayAmount());
-        if (subBalance.doubleValue() < 0) {
-            return BaseResponse.fail(I18nEnum.CREATE_ORDER_BALANCE_FAIL.getMsg());
-        }
+
         //扣减余额
-        boolean res = userService.reduceMoney(userDO.getId(), param.getPayAmount(), userDO.getVersion());
-        if (!res) {
-            return BaseResponse.fail(I18nEnum.CREATE_ORDER_BALANCE_FAIL.getMsg());
+        //充值成功
+        Date now = new Date();
+        BalanceDO balanceDO = new BalanceDO();
+        balanceDO.setAmount(param.getPayAmount().negate());
+        balanceDO.setType(BalanceTypeEnum.Q.getCode());
+        balanceDO.setUserId(payDO.getUserId());
+        balanceDO.setStatus(StatusTypeEnum.SUCCESS.getCode());
+        balanceDO.setCreateTime(now);
+        balanceDO.setUpdateTime(now);
+        balanceDO.setOrderNo(payDO.getOrderNo());
+        int res = balanceService.addBalanceDetail(balanceDO);
+        if (res <= 0) {
+            throw new BaseException(I18nEnum.CREATE_ORDER_BALANCE_FAIL.getMsg());
         }
         //购买会员成功
         userService.updateUserVIP(payDO.getUserId(), payDO.getType());
@@ -673,6 +701,32 @@ public class PayService {
         logger.info(
             "**** " + payBeanName + "提现失败通知 ****" + "用户id:" + payDO.getUserId() + "支付类型--" + PayEnums.PayTypeEnum
                 .getDescByCode(payDO.getType()) + ",支付金额: " + payDO.getAmount());
+    }
+
+    @Transactional
+    public BaseResponse<PayDO> successPay(String orderNo) {
+        logger.info("获取第三方支付状态,param:{}", orderNo);
+        PayDO payDO = payDao.getByOrderNo(orderNo);
+        if (payDO == null) {
+            return BaseResponse.fail("this order not found");
+        }
+        payDO.setStatus(PayEnums.PayStatusEnum.PAID.getCode());
+        payDO.setApplyStatus(2);
+        PayDO updatePay = new PayDO();
+        updatePay.setId(payDO.getId());
+        updatePay.setStatus(PayEnums.PayStatusEnum.PAID.getCode());
+        updatePay.setApplyStatus(2);
+        updatePay.setThirdResponse("人工成功");
+        int res = payDao.update(updatePay);
+        if (res > 0) {
+            logger.info("successPay:{}", payDO);
+            if (PayEnums.PayTypeEnum.WITHDRAW.getCode().equals(payDO.getType())) {
+                balanceService.updateStatusByOrderNo(payDO.getOrderNo(), StatusTypeEnum.SUCCESS.getCode());
+            } else {
+                payInComplete(payDO);
+            }
+        }
+        return BaseResponse.success(payDO);
     }
 
     @Transactional

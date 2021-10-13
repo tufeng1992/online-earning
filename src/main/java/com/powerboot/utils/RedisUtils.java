@@ -11,6 +11,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.poi.ss.formula.functions.T;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.data.redis.core.HashOperations;
 import org.springframework.data.redis.core.StringRedisTemplate;
 
 /**
@@ -158,5 +159,16 @@ public class RedisUtils {
             return Collections.emptyList();
         }
         return JsonUtils.parseArray(str, clazz);
+    }
+
+    public static <T> T setHash(String hkey, String fkey, T value) {
+        HashOperations<String, String, T> hashOperations = stringRedisTemplate.opsForHash();
+        hashOperations.put(hkey, fkey, value);
+        return value;
+    }
+
+    public static Object getHash(String hkey, String fkey) {
+        HashOperations<String, String, T> hashOperations = stringRedisTemplate.opsForHash();
+        return hashOperations.get(hkey, fkey);
     }
 }

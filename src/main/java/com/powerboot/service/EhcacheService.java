@@ -1,7 +1,14 @@
 package com.powerboot.service;
 
+import com.alibaba.fastjson.JSONObject;
+import com.baomidou.mybatisplus.mapper.Condition;
+import com.google.common.base.Splitter;
 import com.powerboot.consts.DictAccount;
+import com.powerboot.dao.MemberInfoDao;
+import com.powerboot.domain.MemberInfoDO;
 import com.powerboot.utils.RedisUtils;
+import org.apache.commons.lang.StringUtils;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
@@ -11,6 +18,9 @@ import java.util.List;
 
 @Service
 public class EhcacheService {
+
+    @Autowired
+    private MemberInfoDao memberInfoDao;
 
 //    /**
 //     * 获取余额等下相关配置信息
@@ -57,40 +67,22 @@ public class EhcacheService {
      * @return
      */
     public HashMap<Integer, List<Integer>> getVipInfo() {
+        String vipPowerCache = RedisUtils.getString(DictAccount.VIP_POWER);
+        if (StringUtils.isNotBlank(vipPowerCache)) {
+            return JSONObject.parseObject(vipPowerCache, HashMap.class);
+        }
+        Condition condition = new Condition();
+        List<MemberInfoDO> memberInfoDOList = memberInfoDao.selectList(condition);
         HashMap<Integer, List<Integer>> hashMap = new HashMap<>();
-        String vip1 = RedisUtils.getValue(DictAccount.VIP1, String.class);
-        String vip2 = RedisUtils.getValue(DictAccount.VIP2, String.class);
-        String vip3 = RedisUtils.getValue(DictAccount.VIP3, String.class);
-        String vip4 = RedisUtils.getValue(DictAccount.VIP4, String.class);
-        String[] infoArray1 = vip1.split(",");
-        String[] infoArray2 = vip2.split(",");
-        String[] infoArray3 = vip3.split(",");
-        String[] infoArray4 = vip4.split(",");
-
-        List<Integer> list1 = new ArrayList<>();
-        for (int j = 0; j < infoArray1.length; j++) {
-            list1.add(Integer.valueOf(infoArray1[j]));
-        }
-        hashMap.put(1, list1);
-
-        List<Integer> list2  = new ArrayList<>();
-        for (int j = 0; j < infoArray2.length; j++) {
-            list2.add(Integer.valueOf(infoArray2[j]));
-        }
-        hashMap.put(2, list2);
-
-        List<Integer> list3  = new ArrayList<>();
-        for (int j = 0; j < infoArray3.length; j++) {
-            list3.add(Integer.valueOf(infoArray3[j]));
-        }
-        hashMap.put(3, list3);
-
-        List<Integer> list4  = new ArrayList<>();
-        for (int j = 0; j < infoArray4.length; j++) {
-            list4.add(Integer.valueOf(infoArray4[j]));
-        }
-        hashMap.put(4, list4);
-
+        memberInfoDOList.forEach(memberInfoDO -> {
+            String[] info = memberInfoDO.getVipPower().split(",");
+            List<Integer> list = new ArrayList<>();
+            for (int j = 0; j < info.length; j++) {
+                list.add(Integer.valueOf(info[j]));
+            }
+            hashMap.put(memberInfoDO.getType(), list);
+        });
+        RedisUtils.setValue(DictAccount.VIP_POWER, JSONObject.toJSONString(hashMap));
         return hashMap;
     }
 

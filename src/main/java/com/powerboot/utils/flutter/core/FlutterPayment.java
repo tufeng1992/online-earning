@@ -122,13 +122,14 @@ public class FlutterPayment {
      * @param narration
      * @return
      */
-    public JSONObject createTransfer(String reference, String amount, String accountNumber, String accountBank, String narration) {
+    public JSONObject createTransfer(String reference, String amount, String accountNumber, String accountName, String accountBank, String narration) {
         JSONObject body = new JSONObject();
         body.put("account_bank", accountBank);
         body.put("account_number", accountNumber);
         body.put("amount", amount);
         body.put("narration", narration);
         body.put("currency", "GHS");
+        body.put("beneficiary_name", accountName);
         body.put("reference", reference);
 //        body.put("callback_url", getCallbackUrl());
         body.put("debit_currency", "GHS");

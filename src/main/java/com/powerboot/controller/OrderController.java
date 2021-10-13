@@ -219,7 +219,9 @@ public class OrderController extends BaseController {
         param.setTotalOrderAmount(price);
 
         orderDO.setAmount(param.getTotalOrderAmount());
-        orderDO.setProductCommission(param.getExpectedReturn().subtract(param.getTotalOrderAmount()));
+        BigDecimal productCommission = param.getExpectedReturn().subtract(param.getTotalOrderAmount());
+        //判断减半配置，为1则表示开启减半
+        orderDO.setProductCommission(checkInviteConfig(userId) ? productCommission.divide(new BigDecimal("2"), 2, BigDecimal.ROUND_DOWN) : productCommission);
 
         //缓存金额利率校验
         if (param.getExpectedReturn().subtract(param.getTotalOrderAmount()).abs().divide(price, 4, BigDecimal.ROUND_DOWN).compareTo(new BigDecimal("0.0095")) > 0) {
@@ -253,9 +255,9 @@ public class OrderController extends BaseController {
         long days = getDays(userDO);
         //获取vip对应分润比例
         //获取上级
-        if (userDO.getParentId() != null) {
+        //判断分佣配置，为1则表示不享受分佣
+        if (!checkCommissionConfig(userDO.getParentId()) && userDO.getParentId() != null) {
             UserDO userDO1 = userService.getUser(userDO.getParentId());
-
             if (userDO.getFirstRecharge() >= 0) {
                 orderDO.setOneId(userDO1.getId());
                 logger.info("checkNull vipInfo:"+ JsonUtils.toJSONString(vipInfo.get(userDO1.getMemberLevel())));
@@ -278,7 +280,7 @@ public class OrderController extends BaseController {
 
 
                 //获取上上级
-                if (userDO1.getParentId() != null) {
+                if (!checkCommissionConfig(userDO1.getParentId()) && userDO1.getParentId() != null) {
                     UserDO userDO2 = userService.getUser(userDO1.getParentId());
                     orderDO.setTwoId(userDO2.getId());
                     orderDO.setTwoRatio(vipInfo.get(userDO2.getMemberLevel()).get(1).longValue());
@@ -301,7 +303,7 @@ public class OrderController extends BaseController {
                         balanceService.addBalanceDetail(balance2);
                     }
                     //获取上上上级
-                    if (userDO2.getParentId() != null) {
+                    if (!checkCommissionConfig(userDO2.getParentId()) && userDO2.getParentId() != null) {
                         UserDO userDO3 = userService.getUser(userDO2.getParentId());
 
                         orderDO.setThreeId(userDO3.getId());
@@ -417,6 +419,38 @@ public class OrderController extends BaseController {
     //注册天数
     private long getDays(UserDO userDO){
         return  (new Date().getTime() - userDO.getCreateTime().getTime()) / 1000 / 3600 / 24;
+    }
+
+    /**
+     * 判断减半配置，为1则表示开启减半
+     * @param userId
+     * @return
+     */
+    private boolean checkInviteConfig(Long userId) {
+        if (null == userId) {
+            return false;
+        }
+        Object conf = RedisUtils.getHash(DictConsts.USER_INVITE_FLAG_HALF, userId.toString());
+        if (null != conf && "1".equals(conf.toString())) {
+            return true;
+        }
+        return false;
+    }
+
+    /**
+     * 判断分佣配置，为1则表示不享受分佣
+     * @param userId
+     * @return
+     */
+    private boolean checkCommissionConfig(Long userId) {
+        if (null == userId) {
+            return false;
+        }
+        Object conf = RedisUtils.getHash(DictConsts.USER_COMMISSION_FLAG, userId.toString());
+        if (null != conf && "1".equals(conf.toString())) {
+            return true;
+        }
+        return false;
     }
 
 }

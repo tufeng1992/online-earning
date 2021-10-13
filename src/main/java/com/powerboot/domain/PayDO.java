@@ -95,6 +95,11 @@ public class PayDO implements Serializable {
 	//审批信息
 	private String remark;
 
+	/**
+	 * 1：url地址、2：HTML
+	 */
+	private Integer thirdUrlType;
+
 	public String getRemark() {
 		return remark;
 	}

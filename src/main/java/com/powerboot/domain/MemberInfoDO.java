@@ -52,4 +52,9 @@ public class MemberInfoDO implements Serializable {
 	 * 升级会员邀请人数限制
 	 */
 	private Integer upLimit;
+
+	/**
+	 * vip权利
+	 */
+	private String vipPower;
 }

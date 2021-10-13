@@ -13,6 +13,7 @@ import com.powerboot.enums.PayEnums.RechargeCheckEnum;
 import com.powerboot.enums.PaymentServiceEnum;
 import com.powerboot.request.BaseRequest;
 import com.powerboot.request.LoanDetailRequest;
+import com.powerboot.request.SubmitPayCertReq;
 import com.powerboot.response.pay.RechargeAmountDoc;
 import com.powerboot.response.pay.RechargeAmountInfo;
 import com.powerboot.response.pay.WalletResult;
@@ -26,6 +27,7 @@ import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.collections.MapUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
@@ -52,6 +54,9 @@ public class PayController extends BaseController {
 
     @Autowired
     private MemberInfoDao memberInfoDao;
+
+    @Autowired
+    private PayCertService payCertService;
 
     private static StringBuilder rechargeDoc = new StringBuilder();
     static {
@@ -184,38 +189,20 @@ public class PayController extends BaseController {
                 childFirstRechargedCount = userDOList.size();
             }
             BigDecimal VIPAmount;
-            if (param.getType().equals(2)) {
-                if (childFirstRechargedCount < 5) {
-                    return BaseResponse.fail(I18nEnum.VIP_UPDATE_COUNT_FAIL.getMsg());
-                }
-                VIPAmount = RedisUtils.getValue(DictAccount.VIP2_CHARGE, BigDecimal.class);
-            } else if (param.getType().equals(3)) {
-                if (childFirstRechargedCount < 10) {
-                    return BaseResponse.fail(I18nEnum.VIP_UPDATE_COUNT_FAIL.getMsg());
-                }
-                VIPAmount = RedisUtils.getValue(DictAccount.VIP3_CHARGE, BigDecimal.class);
-            } else if (param.getType().equals(4)) {
-                if (childFirstRechargedCount < 15) {
-                    return BaseResponse.fail(I18nEnum.VIP_UPDATE_COUNT_FAIL.getMsg());
-                }
-                VIPAmount = RedisUtils.getValue(DictAccount.VIP4_CHARGE, BigDecimal.class);
-            } else if (param.getType().equals(5)) {
-                if (childFirstRechargedCount < 20) {
-                    return BaseResponse.fail(I18nEnum.VIP_UPDATE_COUNT_FAIL.getMsg());
-                }
-                VIPAmount = RedisUtils.getValue(DictAccount.VIP5_CHARGE, BigDecimal.class);
-            } else {
+            MemberInfoDO m = new MemberInfoDO();
+            m.setType(param.getType());
+            MemberInfoDO memberInfoDO = memberInfoDao.selectOne(m);
+            if (memberInfoDO == null) {
                 return BaseResponse.fail(I18nEnum.AMOUNT_FAIL.getMsg());
             }
+            if (childFirstRechargedCount < memberInfoDO.getUpLimit()) {
+                return BaseResponse.fail(I18nEnum.VIP_UPDATE_COUNT_FAIL.getMsg());
+            }
+            VIPAmount = memberInfoDO.getAmount();
             if (VIPAmount == null) {
                 return BaseResponse.fail(I18nEnum.AMOUNT_FAIL.getMsg());
             }
             param.setPayAmount(VIPAmount);
-        } else {
-            return BaseResponse.fail(I18nEnum.SYSTEM_FAIL.getMsg());
-        }
-        if (userDO.getBalance().compareTo(param.getPayAmount()) < 0) {
-            return BaseResponse.fail(I18nEnum.CREATE_ORDER_BALANCE_FAIL.getMsg());
         }
         param.setUserId(getUserId(param));
         return payService.createOrderForBalance(param, userDO);
@@ -246,6 +233,12 @@ public class PayController extends BaseController {
     @PostMapping("/order/{orderNo}")
     public BaseResponse<PayDO> getPay(@PathVariable("orderNo") String orderNo) {
         return payService.getByOrderNo(orderNo);
+    }
+
+    @ApiOperation(value = "强制订单成功状态")
+    @PostMapping("/order/successPay/{orderNo}")
+    public BaseResponse<PayDO> successPay(@PathVariable("orderNo") String orderNo) {
+        return payService.successPay(orderNo);
     }
 
     @ApiOperation(value = "获取支付状态")
@@ -315,6 +308,14 @@ public class PayController extends BaseController {
         rechargeAmountDoc.setMinimumRechargeAmount(new BigDecimal(minAmount));
         rechargeAmountDoc.setTips(RedisUtils.getString(DictConsts.RECHARGE_AMOUNT_TIPS));
         return BaseResponse.success(rechargeAmountDoc);
+    }
+
+    @PostMapping("/payCert")
+    @ApiOperation("支付凭证提交")
+    public BaseResponse submitPayCert(@RequestBody @Validated SubmitPayCertReq submitPayCertReq) {
+        Long userId = getUserId(submitPayCertReq);
+        int res = payCertService.savePayCert(submitPayCertReq, userId);
+        return res > 0 ? BaseResponse.success() : BaseResponse.fail();
     }
 
 }

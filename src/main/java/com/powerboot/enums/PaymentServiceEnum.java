@@ -24,7 +24,8 @@ public enum  PaymentServiceEnum {
     HAPPYLIFEPAY("20", "HappyLifePay"),
     MOMPAY("21", "MoMoPay"),
     THETELLERPAY("22", "ThetellerPay"),
-
+    PAYFULPAY("23", "PayfulPay"),
+    OFFLINEPAY("24", "OfflinePay"),
 
     ;
 

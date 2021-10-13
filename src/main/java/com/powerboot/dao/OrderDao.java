@@ -1,5 +1,6 @@
 package com.powerboot.dao;
 
+import com.baomidou.mybatisplus.mapper.BaseMapper;
 import com.powerboot.domain.OrderDO;
 import org.apache.ibatis.annotations.Mapper;
 
@@ -13,7 +14,7 @@ import java.util.Map;
  * @email system@163.com
  */
 @Mapper
-public interface OrderDao {
+public interface OrderDao extends BaseMapper<OrderDO> {
 
 	OrderDO get(Long id);
 

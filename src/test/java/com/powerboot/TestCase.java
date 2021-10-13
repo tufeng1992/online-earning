@@ -2,11 +2,13 @@ package com.powerboot;
 
 import ci.bamba.regis.models.RequestToPay;
 import ci.bamba.regis.models.Transfer;
+import cn.hutool.core.util.RandomUtil;
 import com.alibaba.fastjson.JSONObject;
 import com.google.common.collect.Maps;
 import com.powerboot.base.BaseResponse;
 import com.powerboot.common.StringCommonUtils;
 import com.powerboot.config.SmsSendConfig;
+import com.powerboot.consts.DictConsts;
 import com.powerboot.consts.I18nEnum;
 import com.powerboot.controller.OrderController;
 import com.powerboot.dao.BalanceDao;
@@ -20,9 +22,8 @@ import com.powerboot.enums.StatusTypeEnum;
 import com.powerboot.job.PaymentTimeoutJob;
 import com.powerboot.job.SummaryTableJob;
 import com.powerboot.response.pay.PaymentResult;
-import com.powerboot.service.PayService;
-import com.powerboot.service.ProductService;
-import com.powerboot.service.UserTaskOrderMissionService;
+import com.powerboot.service.*;
+import com.powerboot.utils.RedisUtils;
 import com.powerboot.utils.StringRandom;
 import com.powerboot.utils.adjustevent.core.AdjustEventClient;
 import com.powerboot.utils.flutter.core.FlutterPayment;
@@ -34,6 +35,7 @@ import com.powerboot.utils.happylife.core.HappyLifeClient;
 import com.powerboot.utils.happylife.model.HappyLifePayOutRes;
 import com.powerboot.utils.infobip.utils.InfobMessageSendUtil;
 import com.powerboot.utils.momo.core.MoMoClient;
+import com.powerboot.utils.payful.core.PayfulClient;
 import com.powerboot.utils.paystack.core.PaystackInline;
 import com.powerboot.utils.qeapay.core.QeaPayClient;
 import com.powerboot.utils.qeapay.domain.QeaPayCreatePayRes;
@@ -128,8 +130,8 @@ public class TestCase {
     @Test
     public void test01() throws IOException {
         PaymentResult paymentResult = new PaymentResult();
-        com.alibaba.fastjson.JSONObject jsonObject = flutterPayment.createPayment("22027pn1c8ujw", "10",
-                "sdasd@qq.com", "23312345645", "testName");
+        com.alibaba.fastjson.JSONObject jsonObject = flutterPayment.createTransfer("testOrder9991", "1",
+                "0546093073", "testName", "MTN", "testName");
         System.out.println(jsonObject.toJSONString());
         System.in.read();
     }
@@ -271,9 +273,11 @@ public class TestCase {
 
     @Test
     public void test13() throws IOException {
-//        System.out.println(happyLifeClient.createPay("testOrder01", new BigDecimal("10")));
-//        System.out.println(happyLifeClient.queryPay("testOrder01"));
-        System.out.println(JSONObject.parseObject("{\"msg\":\"SUCCESS\",\"data\":{\"identify\":\"Beeearning897\",\"order_no\":\"361oajmcwckb\",\"platform_no\":\"2021080817151854515352\",\"money\":164,\"status\":\"pending\",\"add_time\":1628442918},\"code\":0}", HappyLifePayOutRes.class));
+//        System.out.println(happyLifeClient.createPay("testOrder50", new BigDecimal("50"), 123L));
+//        System.out.println(happyLifeClient.queryPay("2267prpctf5f"));
+        System.out.println(happyLifeClient.createTransfer("testTransfer02", new BigDecimal("150"), "Shadrack",
+                "0546093073", "MTN", 123L));
+//        System.out.println(JSONObject.parseObject("{\"msg\":\"SUCCESS\",\"data\":{\"identify\":\"Beeearning897\",\"order_no\":\"361oajmcwckb\",\"platform_no\":\"2021080817151854515352\",\"money\":164,\"status\":\"pending\",\"add_time\":1628442918},\"code\":0}", HappyLifePayOutRes.class));
         System.in.read();
     }
 
@@ -289,20 +293,59 @@ public class TestCase {
     @Test
     public void test15() throws IOException {
 //        System.out.println(thetellerClient.createPay(new BigDecimal("5"), "tufeng1992@sina.com"));
-//        System.out.println(thetellerClient.queryPay("026050933049"));
-        System.out.println(thetellerClient.createTransfer("testOrder02", new BigDecimal("100"),
-                "0557835808", "MTN"));
+//        System.out.println(thetellerClient.queryPay("294910040519"));
+        System.out.println(thetellerClient.createTransfer("testOrder99", new BigDecimal("1"),
+                "0546093073", "MTN"));
         System.in.read();
     }
 
+    @Autowired
+    private PayfulClient payfulClient;
+
+    @Test
+    public void test16() throws IOException {
+        System.out.println(payfulClient.createPay("test03", new BigDecimal("5")));
+//        System.out.println(RandomUtil.randomString(100));
+        System.in.read();
+    }
+
+    @Autowired
+    private PayNotifyService payNotifyService;
+
+    @Test
+    public void test17() throws IOException {
+        payNotifyService.checkAndSaveNotify("test", "123");
+//        System.out.println(RandomUtil.randomString(100));
+        System.in.read();
+    }
+
+    @Test
+    public void test18() throws IOException {
+        System.out.println(RedisUtils.getHash(DictConsts.USER_INVITE_FLAG_HALF, "20"));
+        System.out.println(RedisUtils.getHash(DictConsts.USER_INVITE_FLAG_HALF, "22"));
+        System.in.read();
+    }
+
+    @Autowired
+    private EhcacheService ehcacheService;
+
+    @Test
+    public void test19() throws IOException {
+        System.out.println(ehcacheService.getVipInfo());
+        System.out.println(ehcacheService.getVipInfo());
+        HashMap<Integer, List<Integer>> m = ehcacheService.getVipInfo();
+        System.out.println(m.get(1));
+
+        System.in.read();
+    }
 
     @SneakyThrows
     public static void main(String[] args) {
         String json = "{\"amount\":\"10.0\",\"currency\":\"EUR\",\"financialTransactionId\":\"1628814832\",\"externalId\":\"test14Order26\",\"payee\":{\"partyIdType\":\"MSISDN\",\"partyId\":\"0022505777777\"},\"payeeNote\":\"Transfer to user: Merchant service fee\",\"status\":\"SUCCESSFUL\"}";
 
-        ci.bamba.regis.models.Transfer requestToPay = JSONObject.parseObject(json, Transfer.class);
-        System.out.println(requestToPay);
-
+//        ci.bamba.regis.models.Transfer requestToPay = JSONObject.parseObject(json, Transfer.class);
+//        System.out.println(requestToPay);
+        System.out.println(new BigDecimal("99").abs());
 
 //        RequestOptions opts = RequestOptions.builder()
 //                .setCollectionApiSecret("665ca5dc1d8542249e22c2eb31e406aa")

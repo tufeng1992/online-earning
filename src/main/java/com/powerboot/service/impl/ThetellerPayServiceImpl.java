@@ -6,6 +6,7 @@ import com.powerboot.consts.I18nEnum;
 import com.powerboot.domain.PayDO;
 import com.powerboot.domain.UserDO;
 import com.powerboot.enums.PayEnums;
+import com.powerboot.enums.StatusTypeEnum;
 import com.powerboot.request.payment.CreatePayInOrder;
 import com.powerboot.request.payment.CreatePayOutOrder;
 import com.powerboot.request.payment.QueryPayInParam;
@@ -45,9 +46,9 @@ public class ThetellerPayServiceImpl implements PaymentService {
             ThetellerQueryPay thetellerQueryPay = thetellerClient.queryPay(queryPayInParam.getThirdOrderNo());
             paymentResult.setThirdOrderStatus(thetellerQueryPay.getStatus());
             log.info("getPayInfoOrder : thetellerQueryPay : {}", thetellerQueryPay);
-            if ("success".equalsIgnoreCase(thetellerQueryPay.getStatus())) {
+            if ("000".equalsIgnoreCase(thetellerQueryPay.getCode())) {
                 paymentResult.setStatus(PayEnums.PayStatusEnum.PAID.getCode());
-            } else if ("approved".equalsIgnoreCase(paymentResult.getThirdOrderStatus())) {
+            } else if ("111".equalsIgnoreCase(thetellerQueryPay.getCode())) {
                 paymentResult.setStatus(PayEnums.PayStatusEnum.PAYING.getCode());
             } else {
                 paymentResult.setStatus(PayEnums.PayStatusEnum.FAIL.getCode());
@@ -59,20 +60,9 @@ public class ThetellerPayServiceImpl implements PaymentService {
     @Override
     public BaseResponse<PaymentResult> getPayoutOrder(QueryPayOutParam queryPayOutParam) {
         log.info("getPayoutOrder : queryPayOutParam:{}", queryPayOutParam);
-//        PaymentResult result = new PaymentResult();
-//        Transfer transfer = moMoClient.queryTransfer(queryPayOutParam.getThirdOrderNo());
-//        log.info("getPayoutOrder : getPayoutOrder: post : {}", transfer);
-//        result.setThirdOrderAmount(new BigDecimal(transfer.getAmount()));
-//        result.setDescription(transfer.getPayerMessage());
-//        result.setThirdOrderStatus(transfer.getStatus());
-//        if (MoMoConst.PAY_OUT_SUCCESSFUL.equalsIgnoreCase(result.getThirdOrderStatus())) {
-//            result.setStatus(PayEnums.PayStatusEnum.PAID.getCode());
-//        } else if (MoMoConst.PAY_OUT_PENDING.equalsIgnoreCase(result.getThirdOrderStatus())) {
-//            result.setStatus(PayEnums.PayStatusEnum.PAYING.getCode());
-//        } else {
-//            result.setStatus(PayEnums.PayStatusEnum.FAIL.getCode());
-//        }
-        return null;//BaseResponse.success(result);
+        PaymentResult result = new PaymentResult();
+        result.setStatus(PayEnums.PayStatusEnum.FAIL.getCode());
+        return BaseResponse.success(result);
     }
 
     @Override
@@ -83,11 +73,13 @@ public class ThetellerPayServiceImpl implements PaymentService {
         ThetellerCreatePayOut thetellerCreatePayOut = thetellerClient.createTransfer(createPayOutOrder.getOrderNo(),
                 createPayOutOrder.getAmount(), userDO.getAccountNumber(), userDO.getBankCode());
         log.info("payout : createPayOutOrder: thetellerCreatePayOut : {}", thetellerCreatePayOut);
-        if ("successful".equalsIgnoreCase(thetellerCreatePayOut.getStatus())) {
-            result.setThirdOrderNo(thetellerCreatePayOut.getReference_id());
-            return BaseResponse.success(result);
+        result.setDescription(thetellerCreatePayOut.getReason());
+        result.setThirdOrderStatus(thetellerCreatePayOut.getStatus());
+        if ("000".equalsIgnoreCase(thetellerCreatePayOut.getCode())
+                && "Aprroved: Transaction successful!".equalsIgnoreCase(thetellerCreatePayOut.getReason())) {
+            result.setStatus(StatusTypeEnum.SUCCESS.getCode());
         }
-        return null;
+        return BaseResponse.success(result);
     }
 
     @Override

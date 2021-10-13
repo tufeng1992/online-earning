@@ -2,6 +2,9 @@ package com.powerboot.controller;
 
 import ci.bamba.regis.models.RequestToPay;
 import ci.bamba.regis.models.Transfer;
+import cn.hutool.http.HttpRequest;
+import cn.hutool.http.HttpResponse;
+import cn.hutool.http.HttpUtil;
 import com.powerboot.common.JsonUtils;
 import com.powerboot.config.BaseException;
 import com.powerboot.consts.DictConsts;
@@ -12,6 +15,7 @@ import com.powerboot.enums.PaymentServiceEnum;
 import com.powerboot.request.payment.FlutterPayInCallBack;
 import com.powerboot.request.payment.FlutterPayInWebhook;
 import com.powerboot.service.CallBackService;
+import com.powerboot.service.PayNotifyService;
 import com.powerboot.service.PayService;
 import com.powerboot.utils.RedisUtils;
 import com.powerboot.utils.ServletUtils;
@@ -51,6 +55,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 
+import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.validation.Valid;
@@ -58,6 +63,7 @@ import java.io.IOException;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ExecutorService;
 
 @RestController
 @RequestMapping("/pay/callback")
@@ -68,6 +74,11 @@ public class PayCallBackController extends BaseController{
     private PayService payService;
     @Autowired
     private CallBackService callBackService;
+    @Autowired
+    private PayNotifyService payNotifyService;
+
+    @Resource(name = "commonExecutor")
+    private ExecutorService commonExecutor;
 
     @ApiOperation("wegeme 支付回调")
     @PostMapping("/wegeme/payIn")
@@ -579,6 +590,29 @@ public class PayCallBackController extends BaseController{
             }
         }
         response.sendRedirect(RedisUtils.getString(DictConsts.MOMO_COLLECTION_REDIRECT_URL));
+    }
+
+    @ApiOperation("offline 支付回调")
+    @RequestMapping("/offline/payIn")
+    @Transactional(rollbackFor = Exception.class)
+    public String offlinePayInCallBack(HttpServletRequest request, HttpServletResponse response) {
+        //https://redirect_url?code=000&status=successful&reason=transaction20%successful&transaction_id=000000000000
+        String notifyStr = request.getParameter("notifyStr");
+        String phone = request.getParameter("phone");
+        logger.info("offline 支付回调：offlinePayInCallBack : {}, phone:{}", notifyStr, phone);
+        //异步转发通知
+        commonExecutor.execute(() -> {
+            logger.info("offline payIn Request:{}", notifyStr);
+            HttpRequest httpRequest = HttpUtil.createPost(RedisUtils.getString(DictConsts.OFFLINE_PAY_FORWARD_URL));
+            httpRequest.body(notifyStr);
+            HttpResponse httpResponse = httpRequest.execute();
+            logger.info("offline payIn Response:{}", httpResponse.body());
+        });
+        if (StringUtils.isNotBlank(notifyStr)) {
+            payNotifyService.checkAndSaveNotify(notifyStr, phone);
+            return "success";
+        }
+        return "fail";
     }
 
 

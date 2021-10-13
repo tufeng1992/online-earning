@@ -41,4 +41,9 @@ public class DictAccount {
     //VIP4等级信息
     public static final int VIP4_LEVEL = 4;
 
+    /**
+     * 会员VIP对应分润率,最后一位是每日刷单上限
+     */
+    public static final String VIP_POWER = "VIP_POWER";
+
 }

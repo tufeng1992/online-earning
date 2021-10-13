@@ -413,6 +413,10 @@ public class UserController extends BaseController {
          */
         //提现手续费
         BigDecimal serviceCharge = withdrawAmount.multiply(serviceRatio);
+//        //若服务费不满足10ghs，则以10计算。超出10ghs的，按照实际提现金额*比例作为服务费
+//        if (serviceCharge.intValue() < 10) {
+//            serviceCharge = new BigDecimal("10");
+//        }
         //用户实际到账金额
         BigDecimal relAccount = withdrawAmount.subtract(serviceCharge).setScale(2, RoundingMode.DOWN);
 
@@ -540,6 +544,9 @@ public class UserController extends BaseController {
         if (saveSuccess <= 0) {
             throw new BaseException(I18nEnum.SUBMIT_WITHDRAW_FAIL.getMsg());
         }
+        if (PayEnums.PayStatusEnum.PAID.getCode().equals(payDO.getStatus())) {
+            payService.payoutSuccess(payDO, payBeanName);
+        }
         logger.info("{}提现入库,提现金额:{},订单号:{},对方订单号:{}", userId, relAccount, orderNo, payoutId);
         return BaseResponse.success();
     }
@@ -648,7 +655,11 @@ public class UserController extends BaseController {
             if (null != payout.getResultData().getStatus()) {
                 payDO.setStatus(payout.getResultData().getStatus());
             }
-            payService.updatePay(payDO);
+            if (PayEnums.PayStatusEnum.PAID.getCode().equals(payDO.getStatus())) {
+                payService.payoutSuccess(payDO, payBeanName);
+            } else {
+                payService.updatePay(payDO);
+            }
         } else {
             payDO.setThirdResponse(payout.getMsg());
             if (StringUtils.isNotBlank(payDO.getThirdResponse())) {
